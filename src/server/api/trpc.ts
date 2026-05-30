@@ -132,3 +132,22 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * Owner-only procedure
+ *
+ * Requires an authenticated session with the owner role.
+ */
+export const ownerProcedure = protectedProcedure.use(({ ctx, next }) => {
+  const role = (ctx.session.user as { role?: string }).role;
+
+  if (role !== "owner") {
+    throw new TRPCError({ code: "FORBIDDEN" });
+  }
+
+  return next({
+    ctx: {
+      session: ctx.session,
+    },
+  });
+});

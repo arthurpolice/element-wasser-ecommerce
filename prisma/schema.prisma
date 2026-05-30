@@ -15,6 +15,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  customer
+  owner
+}
+
 model Post {
   id        String   @id @default(cuid())
   name      String
@@ -33,6 +38,7 @@ model User {
   email         String
   emailVerified Boolean   @default(false)
   image         String? //@db.Text
+  role          UserRole  @default(customer)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
   sessions      Session[]
@@ -257,6 +263,12 @@ model ProductCategory {
 
 model OrderNumberSequence {
   year       Int      @id
+  nextNumber Int
+  updatedAt  DateTime @updatedAt
+}
+
+model ProductSkuSequence {
+  prefix     String   @id
   nextNumber Int
   updatedAt  DateTime @updatedAt
 }

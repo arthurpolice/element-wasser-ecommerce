@@ -11,12 +11,32 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    BETTER_AUTH_GITHUB_CLIENT_ID: z.string(),
-    BETTER_AUTH_GITHUB_CLIENT_SECRET: z.string(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    AWS_ACCESS_KEY_ID:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    AWS_SECRET_ACCESS_KEY:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    S3_BUCKET:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    S3_REGION:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    S3_ENDPOINT: z.string().url().optional(),
+    S3_PUBLIC_URL_BASE: z.string().url().optional(),
+    S3_FORCE_PATH_STYLE: z
+      .enum(["true", "false"])
+      .optional()
+      .transform((value) => value === "true"),
   },
 
   /**
@@ -34,11 +54,15 @@ export const env = createEnv({
    */
   runtimeEnv: {
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
-    BETTER_AUTH_GITHUB_CLIENT_ID: process.env.BETTER_AUTH_GITHUB_CLIENT_ID,
-    BETTER_AUTH_GITHUB_CLIENT_SECRET:
-      process.env.BETTER_AUTH_GITHUB_CLIENT_SECRET,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
+    S3_BUCKET: process.env.S3_BUCKET,
+    S3_REGION: process.env.S3_REGION,
+    S3_ENDPOINT: process.env.S3_ENDPOINT,
+    S3_PUBLIC_URL_BASE: process.env.S3_PUBLIC_URL_BASE,
+    S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

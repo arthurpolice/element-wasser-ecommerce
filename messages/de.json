@@ -1,0 +1,319 @@
+{
+  "Dashboard": {
+    "title": "Inhaber-Dashboard",
+    "subtitle": "Verwalten Sie Kunden, Produkte und Bestellungen.",
+    "nav": {
+      "overview": "Übersicht",
+      "customers": "Kunden",
+      "products": "Produkte",
+      "orders": "Bestellungen"
+    },
+    "empty": {
+      "overview": "Übersichtsmetriken und Diagramme folgen in einem späteren Schritt.",
+      "products": "Noch keine Produkte vorhanden. Produktverwaltung folgt in einem späteren Schritt.",
+      "orders": "Noch keine Bestellungen vorhanden. Bestellverwaltung folgt in einem späteren Schritt."
+    },
+    "signInRequired": "Melden Sie sich an, um auf das Inhaber-Dashboard zuzugreifen."
+  },
+  "Overview": {
+    "title": "Übersicht",
+    "description": "Wichtige Kennzahlen und Trends für Ihren Shop.",
+    "loading": "Dashboard-Kennzahlen werden geladen…",
+    "error": "Dashboard-Kennzahlen konnten nicht geladen werden.",
+    "cards": {
+      "revenue": "Umsatz (bezahlt)",
+      "placedOrders": "Aufgegebene Bestellungen",
+      "pendingPayments": "Ausstehende Zahlungen",
+      "lowStockProducts": "Produkte mit niedrigem Lagerbestand",
+      "newCustomers": "Neue Kunden (30 Tage)"
+    },
+    "charts": {
+      "revenueOrdersTitle": "Umsatz und Bestellungen",
+      "revenueOrdersDescription": "Täglicher bezahlter Umsatz und aufgegebene Bestellungen der letzten 30 Tage.",
+      "statusTitle": "Bestellstatus",
+      "statusDescription": "Verteilung der Bestellungen nach Status.",
+      "revenueSeries": "Umsatz",
+      "ordersSeries": "Bestellungen",
+      "totalOrders": "Bestellungen gesamt",
+      "noData": "Keine Daten",
+      "emptyPeriod": "In diesem Zeitraum wurden keine Bestellungen oder Umsätze erfasst.",
+      "emptyStatus": "Noch keine Bestellungen. Die Statusverteilung erscheint, sobald Bestellungen vorliegen."
+    }
+  },
+  "AccessDenied": {
+    "title": "Zugriff verweigert",
+    "description": "Sie haben keine Berechtigung, auf das Inhaber-Dashboard zuzugreifen.",
+    "backHome": "Zur Startseite"
+  },
+  "LanguageSwitcher": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "Englisch"
+  },
+  "OrderStatus": {
+    "PLACED": "Aufgegeben",
+    "COMPLETED": "Abgeschlossen",
+    "CANCELLED": "Storniert"
+  },
+  "OrderPaymentStatus": {
+    "PENDING": "Ausstehend",
+    "PAID": "Bezahlt",
+    "FAILED": "Fehlgeschlagen",
+    "REFUNDED": "Erstattet",
+    "CANCELLED": "Storniert"
+  },
+  "PaymentStatus": {
+    "PENDING": "Ausstehend",
+    "AUTHORIZED": "Autorisiert",
+    "CAPTURED": "Erfasst",
+    "FAILED": "Fehlgeschlagen",
+    "CANCELLED": "Storniert",
+    "REFUNDED": "Erstattet"
+  },
+  "PaymentProvider": {
+    "STRIPE": "Stripe",
+    "TWINT": "TWINT"
+  },
+  "FulfillmentStatus": {
+    "UNFULFILLED": "Nicht erfüllt",
+    "FULFILLED": "Erfüllt",
+    "CANCELLED": "Storniert"
+  },
+  "ProductStatus": {
+    "active": "Aktiv",
+    "inactive": "Inaktiv"
+  },
+  "ReviewStatus": {
+    "pending": "Ausstehend",
+    "approved": "Genehmigt",
+    "rejected": "Abgelehnt"
+  },
+  "Customers": {
+    "title": "Kunden",
+    "description": "Verwalten Sie Kunden mit Bestell- und Anmeldekontext.",
+    "createButton": "Kunde anlegen",
+    "searchLabel": "Suche",
+    "searchPlaceholder": "Nach Name oder E-Mail suchen",
+    "loading": "Kunden werden geladen…",
+    "error": "Kunden konnten nicht geladen werden.",
+    "empty": "Noch keine Kunden vorhanden. Legen Sie den ersten Kunden an.",
+    "emptySearch": "Keine Kunden für diese Suche gefunden.",
+    "table": {
+      "columns": {
+        "name": "Name",
+        "email": "E-Mail",
+        "status": "Status",
+        "orderCount": "Bestellungen",
+        "latestOrder": "Letzte Bestellung",
+        "totalSpent": "Gesamtumsatz",
+        "createdAt": "Erstellt am"
+      },
+      "registered": "Registriert",
+      "guest": "Gast",
+      "linkedUser": "Verknüpfter Benutzer",
+      "noOrders": "Keine Bestellungen"
+    },
+    "pagination": {
+      "summary": "{count, plural, =0 {Keine Kunden} one {# Kunde} other {# Kunden}} · Seite {page} von {totalPages}",
+      "previous": "Zurück",
+      "next": "Weiter"
+    },
+    "create": {
+      "title": "Kunde anlegen",
+      "description": "Erfassen Sie die Kontaktdaten für einen neuen Kunden.",
+      "fields": {
+        "email": "E-Mail",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "salutation": "Anrede",
+        "salutationNone": "Keine Anrede"
+      },
+      "salutations": {
+        "HERR": "Herr",
+        "FRAU": "Frau"
+      },
+      "cancel": "Abbrechen",
+      "submit": "Kunde speichern",
+      "submitting": "Speichern…",
+      "validation": {
+        "emailRequired": "E-Mail ist erforderlich.",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+        "emailConflict": "Ein Kunde mit dieser E-Mail existiert bereits.",
+        "firstNameRequired": "Vorname ist erforderlich.",
+        "lastNameRequired": "Nachname ist erforderlich.",
+        "generic": "Der Kunde konnte nicht gespeichert werden."
+      }
+    }
+  },
+  "Products": {
+    "title": "Produkte",
+    "description": "Verwalten Sie Katalogprodukte, Lagerbestand und Hersteller.",
+    "createButton": "Produkt anlegen",
+    "searchLabel": "Suche",
+    "searchPlaceholder": "Nach Name oder Hersteller suchen",
+    "loading": "Produkte werden geladen…",
+    "error": "Produkte konnten nicht geladen werden.",
+    "empty": "Noch keine Produkte vorhanden. Legen Sie das erste Produkt an.",
+    "emptySearch": "Keine Produkte für diese Suche gefunden.",
+    "table": {
+      "columns": {
+        "name": "Produktname",
+        "sku": "SKU",
+        "manufacturer": "Hersteller",
+        "active": "Status",
+        "price": "Preis",
+        "cost": "Kosten",
+        "discount": "Rabatt",
+        "stockOnHand": "Lagerbestand",
+        "stockReserved": "Reserviert",
+        "dispatchEstimate": "Versandzeit",
+        "categoryCount": "Kategorien"
+      },
+      "discountValue": "{percent} %",
+      "noDiscount": "—",
+      "dispatchRange": "{min}–{max} Tage"
+    },
+    "pagination": {
+      "summary": "{count, plural, =0 {Keine Produkte} one {# Produkt} other {# Produkte}} · Seite {page} von {totalPages}",
+      "previous": "Zurück",
+      "next": "Weiter"
+    },
+    "create": {
+      "title": "Produkt anlegen",
+      "description": "Fügen Sie ein neues Produkt zum Katalog hinzu.",
+      "fields": {
+        "name": "Produktname",
+        "manufacturer": "Hersteller",
+        "manufacturerPlaceholder": "Suchen oder neu anlegen",
+        "price": "Preis (CHF)",
+        "cost": "Kosten (CHF)",
+        "stockOnHand": "Lagerbestand",
+        "dispatchMinDays": "Versand min. (Tage)",
+        "dispatchMaxDays": "Versand max. (Tage)",
+        "active": "Aktiv"
+      },
+      "cancel": "Abbrechen",
+      "submit": "Produkt speichern",
+      "submitting": "Speichern…",
+      "validation": {
+        "nameRequired": "Produktname ist erforderlich.",
+        "manufacturerRequired": "Hersteller ist erforderlich.",
+        "priceRequired": "Bitte geben Sie einen gültigen Preis ein.",
+        "costRequired": "Bitte geben Sie gültige Kosten ein.",
+        "stockRequired": "Bitte geben Sie eine gültige Lagermenge ein.",
+        "dispatchMinRequired": "Bitte geben Sie eine gültige Mindest-Versandzeit ein.",
+        "dispatchMaxRequired": "Bitte geben Sie eine gültige Maximal-Versandzeit ein.",
+        "dispatchRangeInvalid": "Die maximale Versandzeit muss mindestens der minimalen entsprechen.",
+        "generic": "Das Produkt konnte nicht gespeichert werden.",
+        "imageUploadFailed": "Mindestens ein Bild konnte nicht hochgeladen werden. Bitte erneut versuchen.",
+        "imageUploadNotConfigured": "Bild-Uploads sind noch nicht konfiguriert."
+      },
+      "uploadingImages": "Bilder werden hochgeladen…",
+      "images": {
+        "title": "Bilder",
+        "description": "Bis zu 5 Produktbilder hinzufügen. Das erste Bild wird als Hauptvorschaubild verwendet.",
+        "dropzoneTitle": "Bilder hierher ziehen",
+        "dropzoneHint": "oder klicken zum Auswählen · PNG, JPG, WEBP · max. 5 Bilder",
+        "count": "{count} von {max} Bildern",
+        "previewTitle": "Bildvorschau",
+        "closePreview": "Vorschau schließen",
+        "previewImage": "Bild {index} anzeigen",
+        "removeImage": "Bild {index} entfernen",
+        "addImageSlot": "Bild in Slot {index} hinzufügen"
+      }
+    }
+  },
+  "Orders": {
+    "title": "Bestellungen",
+    "description": "Bestellungen mit Zahlungs- und Erfüllungskontext aus Checkout-Snapshots einsehen.",
+    "createButton": "Bestellung erstellen",
+    "searchLabel": "Suche",
+    "searchPlaceholder": "Nach Bestellnummer, Kunde oder Versandort suchen",
+    "loading": "Bestellungen werden geladen…",
+    "error": "Bestellungen konnten nicht geladen werden.",
+    "empty": "Noch keine Bestellungen vorhanden.",
+    "emptySearch": "Keine Bestellungen für diese Suche gefunden.",
+    "table": {
+      "columns": {
+        "orderNumber": "Bestellung",
+        "customer": "Kunde",
+        "orderStatus": "Bestellstatus",
+        "paymentStatus": "Zahlung",
+        "fulfillmentStatus": "Erfüllung",
+        "total": "Total",
+        "latestPayment": "Letzte Zahlung",
+        "shipping": "Versand",
+        "placedAt": "Aufgegeben"
+      },
+      "noPayment": "Keine Zahlung"
+    },
+    "pagination": {
+      "summary": "{count, plural, =0 {Keine Bestellungen} one {# Bestellung} other {# Bestellungen}} · Seite {page} von {totalPages}",
+      "previous": "Zurück",
+      "next": "Weiter"
+    },
+    "create": {
+      "title": "Bestellung erstellen",
+      "description": "Eine einzeilige Bestellung mit Kunden-, Produkt- und Versand-Snapshots anlegen.",
+      "sections": {
+        "order": "Bestelldetails",
+        "shipping": "Lieferadresse"
+      },
+      "fields": {
+        "customer": "Kunde",
+        "customerPlaceholder": "Kunde auswählen",
+        "product": "Produkt",
+        "productPlaceholder": "Produkt auswählen",
+        "quantity": "Menge",
+        "shippingCents": "Versand (Rappen)",
+        "shippingSalutation": "Anrede",
+        "salutationNone": "Keine Anrede",
+        "shippingFirstName": "Vorname",
+        "shippingLastName": "Nachname",
+        "shippingCompany": "Firma",
+        "shippingStreetLine1": "Strasse Zeile 1",
+        "shippingStreetLine2": "Strasse Zeile 2",
+        "shippingPostalCode": "PLZ",
+        "shippingCity": "Ort",
+        "shippingCountryCode": "Ländercode",
+        "shippingPhone": "Telefon"
+      },
+      "salutations": {
+        "HERR": "Herr",
+        "FRAU": "Frau"
+      },
+      "hints": {
+        "availableStock": "{count, plural, one {# Stück verfügbar} other {# Stück verfügbar}}",
+        "shippingCents": "Pauschale Versandgebühr als Snapshot in CHF-Rappen."
+      },
+      "preview": {
+        "title": "Totalvorschau",
+        "subtotal": "Zwischensumme",
+        "discount": "Produktrabatt",
+        "shipping": "Versand",
+        "total": "Total"
+      },
+      "cancel": "Abbrechen",
+      "submit": "Bestellung erstellen",
+      "submitting": "Wird erstellt…",
+      "validation": {
+        "customerRequired": "Bitte einen Kunden auswählen.",
+        "productRequired": "Bitte ein Produkt auswählen.",
+        "quantityRequired": "Bitte eine gültige Menge eingeben.",
+        "insufficientStock": "Nur {available} Stück verfügbar.",
+        "insufficientStockServer": "Für dieses Produkt ist nicht genug Bestand verfügbar.",
+        "shippingCentsRequired": "Bitte einen gültigen Versandbetrag in Rappen eingeben.",
+        "shippingFirstNameRequired": "Vorname für die Lieferadresse ist erforderlich.",
+        "shippingLastNameRequired": "Nachname für die Lieferadresse ist erforderlich.",
+        "shippingStreetRequired": "Strasse ist erforderlich.",
+        "shippingPostalCodeRequired": "PLZ ist erforderlich.",
+        "shippingCityRequired": "Ort ist erforderlich.",
+        "shippingCountryCodeRequired": "Bitte einen zweistelligen Ländercode eingeben.",
+        "customerNotFound": "Der ausgewählte Kunde existiert nicht mehr.",
+        "productNotFound": "Das ausgewählte Produkt existiert nicht mehr.",
+        "orderNumberConflict": "Bestellnummer konnte nicht vergeben werden. Bitte erneut versuchen.",
+        "generic": "Bestellung konnte nicht erstellt werden."
+      }
+    }
+  }
+}

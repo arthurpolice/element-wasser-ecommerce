@@ -57,7 +57,7 @@ A sellable catalog item with current price, current cost, inventory, manufacture
 _Avoid_: Item, article
 
 **SKU**:
-A merchant-facing unique product code used for inventory, support, and operations.
+A system-assigned unique product code stored on products and copied onto order lines for support and operations. Structured as a brand prefix, a three-character manufacturer hint, a three-character product-name hint, and a sequence (for example `EW-BRI-WAT-00001`). Once assigned, a SKU never changes. The merchant does not assign or manage SKUs.
 _Avoid_: Product ID
 
 **Manufacturer**:

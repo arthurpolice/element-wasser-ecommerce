@@ -1,6 +1,75 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: var(--font-sora), var(--font-figtree), ui-sans-serif, system-ui,
+    sans-serif;
+
+  --color-dash-bg: #e8edf3;
+  --color-dash-surface: #ffffff;
+  --color-dash-sidebar: #0a1628;
+  --color-dash-sidebar-elevated: #111f35;
+  --color-dash-accent: #0ea5b7;
+  --color-dash-accent-muted: #0891b2;
+  --color-dash-ink: #0f172a;
+  --color-dash-muted: #64748b;
+  --color-dash-border: #d8e0ea;
+  --color-dash-danger: #dc2626;
+  --color-dash-danger-bg: #fef2f2;
+}
+
+@keyframes dash-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dash-shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.dashboard-root {
+  --dash-sidebar-width: 15.5rem;
+  background-color: var(--color-dash-bg);
+  color: var(--color-dash-ink);
+  font-family: var(--font-sans);
+}
+
+.dashboard-enter {
+  animation: dash-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dashboard-enter-delay-1 {
+  animation-delay: 0.06s;
+}
+
+.dashboard-enter-delay-2 {
+  animation-delay: 0.12s;
+}
+
+.dashboard-enter-delay-3 {
+  animation-delay: 0.18s;
+}
+
+.dashboard-enter-delay-4 {
+  animation-delay: 0.24s;
+}
+
+.dashboard-enter-delay-5 {
+  animation-delay: 0.3s;
+}
+
+.dashboard-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
 }

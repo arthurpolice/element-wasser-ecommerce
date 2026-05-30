@@ -1,0 +1,319 @@
+{
+  "Dashboard": {
+    "title": "Owner Dashboard",
+    "subtitle": "Manage customers, products, and orders.",
+    "nav": {
+      "overview": "Overview",
+      "customers": "Customers",
+      "products": "Products",
+      "orders": "Orders"
+    },
+    "empty": {
+      "overview": "Overview metrics and charts will appear in a later step.",
+      "products": "No products yet. Product management will arrive in a later step.",
+      "orders": "No orders yet. Order management will arrive in a later step."
+    },
+    "signInRequired": "Sign in to access the owner dashboard."
+  },
+  "Overview": {
+    "title": "Overview",
+    "description": "Key metrics and trends for your shop.",
+    "loading": "Loading dashboard metrics…",
+    "error": "Could not load dashboard metrics.",
+    "cards": {
+      "revenue": "Revenue (paid)",
+      "placedOrders": "Placed orders",
+      "pendingPayments": "Pending payments",
+      "lowStockProducts": "Low-stock products",
+      "newCustomers": "New customers (30 days)"
+    },
+    "charts": {
+      "revenueOrdersTitle": "Revenue and orders",
+      "revenueOrdersDescription": "Daily paid revenue and placed orders over the last 30 days.",
+      "statusTitle": "Order status",
+      "statusDescription": "Distribution of orders by status.",
+      "revenueSeries": "Revenue",
+      "ordersSeries": "Orders",
+      "totalOrders": "Total orders",
+      "noData": "No data",
+      "emptyPeriod": "No orders or revenue recorded in this period.",
+      "emptyStatus": "No orders yet. Status distribution will appear once orders exist."
+    }
+  },
+  "AccessDenied": {
+    "title": "Access denied",
+    "description": "You do not have permission to access the owner dashboard.",
+    "backHome": "Back to home"
+  },
+  "LanguageSwitcher": {
+    "label": "Language",
+    "de": "German",
+    "en": "English"
+  },
+  "OrderStatus": {
+    "PLACED": "Placed",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled"
+  },
+  "OrderPaymentStatus": {
+    "PENDING": "Pending",
+    "PAID": "Paid",
+    "FAILED": "Failed",
+    "REFUNDED": "Refunded",
+    "CANCELLED": "Cancelled"
+  },
+  "PaymentStatus": {
+    "PENDING": "Pending",
+    "AUTHORIZED": "Authorized",
+    "CAPTURED": "Captured",
+    "FAILED": "Failed",
+    "CANCELLED": "Cancelled",
+    "REFUNDED": "Refunded"
+  },
+  "PaymentProvider": {
+    "STRIPE": "Stripe",
+    "TWINT": "TWINT"
+  },
+  "FulfillmentStatus": {
+    "UNFULFILLED": "Unfulfilled",
+    "FULFILLED": "Fulfilled",
+    "CANCELLED": "Cancelled"
+  },
+  "ProductStatus": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "ReviewStatus": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "Customers": {
+    "title": "Customers",
+    "description": "Manage customers with order and sign-in context.",
+    "createButton": "Create customer",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by name or email",
+    "loading": "Loading customers…",
+    "error": "Could not load customers.",
+    "empty": "No customers yet. Create the first customer.",
+    "emptySearch": "No customers match this search.",
+    "table": {
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "status": "Status",
+        "orderCount": "Orders",
+        "latestOrder": "Latest order",
+        "totalSpent": "Total spent",
+        "createdAt": "Created"
+      },
+      "registered": "Registered",
+      "guest": "Guest",
+      "linkedUser": "Linked user",
+      "noOrders": "No orders"
+    },
+    "pagination": {
+      "summary": "{count, plural, =0 {No customers} one {# customer} other {# customers}} · Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "create": {
+      "title": "Create customer",
+      "description": "Capture contact details for a new customer.",
+      "fields": {
+        "email": "Email",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "salutation": "Salutation",
+        "salutationNone": "No salutation"
+      },
+      "salutations": {
+        "HERR": "Mr",
+        "FRAU": "Ms"
+      },
+      "cancel": "Cancel",
+      "submit": "Save customer",
+      "submitting": "Saving…",
+      "validation": {
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Please enter a valid email address.",
+        "emailConflict": "A customer with this email already exists.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "generic": "Could not save the customer."
+      }
+    }
+  },
+  "Products": {
+    "title": "Products",
+    "description": "Manage catalog products, inventory, and manufacturers.",
+    "createButton": "Create product",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by name or manufacturer",
+    "loading": "Loading products…",
+    "error": "Could not load products.",
+    "empty": "No products yet. Create the first product.",
+    "emptySearch": "No products match this search.",
+    "table": {
+      "columns": {
+        "name": "Product name",
+        "sku": "SKU",
+        "manufacturer": "Manufacturer",
+        "active": "Status",
+        "price": "Price",
+        "cost": "Cost",
+        "discount": "Discount",
+        "stockOnHand": "Stock on hand",
+        "stockReserved": "Stock reserved",
+        "dispatchEstimate": "Dispatch estimate",
+        "categoryCount": "Categories"
+      },
+      "discountValue": "{percent}%",
+      "noDiscount": "—",
+      "dispatchRange": "{min}–{max} days"
+    },
+    "pagination": {
+      "summary": "{count, plural, =0 {No products} one {# product} other {# products}} · Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "create": {
+      "title": "Create product",
+      "description": "Add a new product to the catalog.",
+      "fields": {
+        "name": "Product name",
+        "manufacturer": "Manufacturer",
+        "manufacturerPlaceholder": "Type to search or create",
+        "price": "Price (CHF)",
+        "cost": "Cost (CHF)",
+        "stockOnHand": "Stock on hand",
+        "dispatchMinDays": "Dispatch min (days)",
+        "dispatchMaxDays": "Dispatch max (days)",
+        "active": "Active"
+      },
+      "cancel": "Cancel",
+      "submit": "Save product",
+      "submitting": "Saving…",
+      "validation": {
+        "nameRequired": "Product name is required.",
+        "manufacturerRequired": "Manufacturer is required.",
+        "priceRequired": "Enter a valid price.",
+        "costRequired": "Enter a valid cost.",
+        "stockRequired": "Enter a valid stock quantity.",
+        "dispatchMinRequired": "Enter a valid minimum dispatch estimate.",
+        "dispatchMaxRequired": "Enter a valid maximum dispatch estimate.",
+        "dispatchRangeInvalid": "Maximum dispatch days must be at least the minimum.",
+        "generic": "Could not save the product.",
+        "imageUploadFailed": "Could not upload one or more images. Please try again.",
+        "imageUploadNotConfigured": "Image uploads are not configured yet."
+      },
+      "uploadingImages": "Uploading images…",
+      "images": {
+        "title": "Images",
+        "description": "Add up to 5 product images. The first image is used as the primary thumbnail.",
+        "dropzoneTitle": "Drag and drop images here",
+        "dropzoneHint": "or click to browse · PNG, JPG, WEBP · max 5 images",
+        "count": "{count} of {max} images",
+        "previewTitle": "Image preview",
+        "closePreview": "Close preview",
+        "previewImage": "Preview image {index}",
+        "removeImage": "Remove image {index}",
+        "addImageSlot": "Add image to slot {index}"
+      }
+    }
+  },
+  "Orders": {
+    "title": "Orders",
+    "description": "Review orders with payment and fulfillment context from checkout snapshots.",
+    "createButton": "Create order",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by order number, customer, or shipping location",
+    "loading": "Loading orders…",
+    "error": "Could not load orders.",
+    "empty": "No orders yet.",
+    "emptySearch": "No orders match this search.",
+    "table": {
+      "columns": {
+        "orderNumber": "Order",
+        "customer": "Customer",
+        "orderStatus": "Order status",
+        "paymentStatus": "Payment",
+        "fulfillmentStatus": "Fulfillment",
+        "total": "Total",
+        "latestPayment": "Latest payment",
+        "shipping": "Shipping",
+        "placedAt": "Placed"
+      },
+      "noPayment": "No payment"
+    },
+    "pagination": {
+      "summary": "{count, plural, =0 {No orders} one {# order} other {# orders}} · Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "create": {
+      "title": "Create order",
+      "description": "Place a one-line order with customer, product, and shipping snapshots.",
+      "sections": {
+        "order": "Order details",
+        "shipping": "Shipping address"
+      },
+      "fields": {
+        "customer": "Customer",
+        "customerPlaceholder": "Select a customer",
+        "product": "Product",
+        "productPlaceholder": "Select a product",
+        "quantity": "Quantity",
+        "shippingCents": "Shipping (cents)",
+        "shippingSalutation": "Salutation",
+        "salutationNone": "No salutation",
+        "shippingFirstName": "First name",
+        "shippingLastName": "Last name",
+        "shippingCompany": "Company",
+        "shippingStreetLine1": "Street line 1",
+        "shippingStreetLine2": "Street line 2",
+        "shippingPostalCode": "Postal code",
+        "shippingCity": "City",
+        "shippingCountryCode": "Country code",
+        "shippingPhone": "Phone"
+      },
+      "salutations": {
+        "HERR": "Mr",
+        "FRAU": "Ms"
+      },
+      "hints": {
+        "availableStock": "{count, plural, one {# unit available} other {# units available}}",
+        "shippingCents": "Flat shipping charge stored on the order in CHF cents."
+      },
+      "preview": {
+        "title": "Totals preview",
+        "subtotal": "Subtotal",
+        "discount": "Product discount",
+        "shipping": "Shipping",
+        "total": "Total"
+      },
+      "cancel": "Cancel",
+      "submit": "Create order",
+      "submitting": "Creating…",
+      "validation": {
+        "customerRequired": "Select a customer.",
+        "productRequired": "Select a product.",
+        "quantityRequired": "Enter a valid quantity.",
+        "insufficientStock": "Only {available} units are available.",
+        "insufficientStockServer": "Not enough stock is available for this product.",
+        "shippingCentsRequired": "Enter a valid shipping amount in cents.",
+        "shippingFirstNameRequired": "Shipping first name is required.",
+        "shippingLastNameRequired": "Shipping last name is required.",
+        "shippingStreetRequired": "Shipping street is required.",
+        "shippingPostalCodeRequired": "Shipping postal code is required.",
+        "shippingCityRequired": "Shipping city is required.",
+        "shippingCountryCodeRequired": "Enter a two-letter country code.",
+        "customerNotFound": "The selected customer no longer exists.",
+        "productNotFound": "The selected product no longer exists.",
+        "orderNumberConflict": "Could not assign an order number. Please try again.",
+        "generic": "Could not create the order."
+      }
+    }
+  }
+}

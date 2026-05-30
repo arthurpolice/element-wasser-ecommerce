@@ -4,7 +4,20 @@
  */
 import "./src/env.js";
 
-/** @type {import("next").NextConfig} */
-const config = {};
+import createNextIntlPlugin from "next-intl/plugin";
 
-export default config;
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+/** @type {import("next").NextConfig} */
+const config = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.amazonaws.com",
+      },
+    ],
+  },
+};
+
+export default withNextIntl(config);
