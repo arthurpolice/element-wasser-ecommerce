@@ -6,6 +6,7 @@
       "overview": "Overview",
       "customers": "Customers",
       "products": "Products",
+      "categories": "Categories",
       "orders": "Orders"
     },
     "empty": {
@@ -149,6 +150,7 @@
     "title": "Products",
     "description": "Manage catalog products, inventory, and manufacturers.",
     "createButton": "Create product",
+    "editButton": "Edit",
     "searchLabel": "Search",
     "searchPlaceholder": "Search by name or manufacturer",
     "loading": "Loading products…",
@@ -167,7 +169,8 @@
         "stockOnHand": "Stock on hand",
         "stockReserved": "Stock reserved",
         "dispatchEstimate": "Dispatch estimate",
-        "categoryCount": "Categories"
+        "categoryCount": "Categories",
+        "actions": "Actions"
       },
       "discountValue": "{percent}%",
       "noDiscount": "—",
@@ -190,7 +193,8 @@
         "stockOnHand": "Stock on hand",
         "dispatchMinDays": "Dispatch min (days)",
         "dispatchMaxDays": "Dispatch max (days)",
-        "active": "Active"
+        "active": "Active",
+        "featured": "Highlight on storefront (Featured Product)"
       },
       "cancel": "Cancel",
       "submit": "Save product",
@@ -221,6 +225,133 @@
         "removeImage": "Remove image {index}",
         "addImageSlot": "Add image to slot {index}"
       }
+    },
+    "edit": {
+      "title": "Edit product",
+      "description": "Update {product} and its category assignments.",
+      "loading": "Loading product…",
+      "error": "Could not load the product.",
+      "cancel": "Cancel",
+      "submit": "Save changes",
+      "submitting": "Saving…",
+      "fields": {
+        "sku": "SKU",
+        "name": "Product name",
+        "manufacturer": "Manufacturer",
+        "manufacturerPlaceholder": "Type to search or create",
+        "price": "Price (CHF)",
+        "cost": "Cost (CHF)",
+        "stockOnHand": "Stock on hand",
+        "dispatchMinDays": "Dispatch min (days)",
+        "dispatchMaxDays": "Dispatch max (days)",
+        "active": "Active",
+        "featured": "Highlight on storefront (Featured Product)"
+      },
+      "validation": {
+        "nameRequired": "Product name is required.",
+        "manufacturerRequired": "Manufacturer is required.",
+        "priceRequired": "Enter a valid price.",
+        "costRequired": "Enter a valid cost.",
+        "stockRequired": "Enter a valid stock quantity.",
+        "dispatchMinRequired": "Enter a valid minimum dispatch estimate.",
+        "dispatchMaxRequired": "Enter a valid maximum dispatch estimate.",
+        "dispatchRangeInvalid": "Maximum dispatch days must be at least the minimum.",
+        "generic": "Could not save the product."
+      }
+    },
+    "form": {
+      "categories": {
+        "label": "Categories",
+        "description": "Choose which categories include this product in the storefront.",
+        "loading": "Loading categories…",
+        "empty": "Create categories first, then assign them here.",
+        "searchPlaceholder": "Search categories…",
+        "emptySearch": "No categories match this search.",
+        "inactive": "Inactive"
+      }
+    }
+  },
+  "Categories": {
+    "title": "Categories",
+    "description": "Organize the nested category tree for storefront navigation and browsing.",
+    "loading": "Loading categories…",
+    "error": "Could not load categories.",
+    "empty": "No categories yet. Create the first category.",
+    "create": {
+      "button": "Create category",
+      "title": "Create category",
+      "description": "Add a root or child category for storefront navigation.",
+      "fields": {
+        "name": "Category name",
+        "parent": "Parent category",
+        "rootCategory": "Root category",
+        "sortOrder": "Sort order",
+        "active": "Active"
+      },
+      "cancel": "Cancel",
+      "submit": "Save category",
+      "submitting": "Saving…",
+      "validation": {
+        "generic": "Could not save the category."
+      }
+    },
+    "tree": {
+      "expand": "Expand category",
+      "collapse": "Collapse category",
+      "statusActive": "Active",
+      "statusInactive": "Inactive",
+      "meta": "{children, plural, =0 {No subcategories} one {# subcategory} other {# subcategories}} · {products, plural, =0 {No products} one {# product} other {# products}}",
+      "addChild": "Add child",
+      "draftPlaceholder": "New category name",
+      "draftHint": "Press Enter to create · Escape to cancel",
+      "dragHint": "Drag categories to reorder or reparent. Use Space to grab with the keyboard, then arrow keys to choose a drop position.",
+      "moveError": "Could not move the category.",
+      "invalidDrop": "Cannot drop a category onto one of its descendants.",
+      "creating": "Creating…",
+      "createError": "Could not create the category."
+    }
+  },
+  "Storefront": {
+    "tagline": "Natural filtration for water and air.",
+    "ownerSignIn": "Owner sign in",
+    "openCategories": "Categories",
+    "closeCategories": "Close",
+    "categoriesTitle": "Browse categories",
+    "navigation": {
+      "label": "Store categories",
+      "loading": "Loading categories…",
+      "empty": "Categories will appear here once they are published.",
+      "allInCategory": "All {category}"
+    },
+    "home": {
+      "eyebrow": "Element Wasser",
+      "title": "Pure water. Clean air.",
+      "description": "Explore our curated selection of natural water and air filtration products.",
+      "sectionEyebrow": "Category highlight",
+      "viewAll": "View all",
+      "empty": "Products will appear here once categories and active products are configured."
+    },
+    "categoryPage": {
+      "eyebrow": "Category",
+      "description": "Browse active products in this category and its subcategories."
+    },
+    "categoryGrid": {
+      "summary": "{count, plural, =0 {No products} one {# product} other {# products}}",
+      "empty": "No active products are assigned to this category yet.",
+      "loadMore": "Load more products",
+      "loadingMore": "Loading…"
+    },
+    "productCard": {
+      "noImage": "No image",
+      "reviewsSummary": "{rating} · {count, plural, one {# review} other {# reviews}}"
+    },
+    "productPage": {
+      "noImage": "No image available",
+      "dispatchEstimate": "Dispatch estimate: {range}",
+      "reviewsSummary": "{rating} average · {count, plural, one {# review} other {# reviews}}",
+      "noReviews": "No approved reviews yet.",
+      "descriptionPlaceholder": "Detailed product description content will appear here.",
+      "noDescription": "No product description yet."
     }
   },
   "Orders": {

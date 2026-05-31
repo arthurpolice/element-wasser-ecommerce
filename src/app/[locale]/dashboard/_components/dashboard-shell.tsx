@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { CustomersTab } from "~/app/[locale]/dashboard/_components/customers/customers-tab";
+import { CategoriesTab } from "~/app/[locale]/dashboard/_components/categories/categories-tab";
 import { OverviewTab } from "~/app/[locale]/dashboard/_components/overview/overview-tab";
 import { ProductsTab } from "~/app/[locale]/dashboard/_components/products/products-tab";
 import { OrdersTab } from "~/app/[locale]/dashboard/_components/orders/orders-tab";
@@ -20,7 +21,7 @@ export function DashboardShell({ activeTab, userName }: DashboardShellProps) {
 
   return (
     <div className="dashboard-root dashboard-noise min-h-screen lg:flex">
-      <aside className="relative flex w-full shrink-0 flex-col border-b border-white/5 bg-dash-sidebar text-white lg:fixed lg:inset-y-0 lg:w-[var(--dash-sidebar-width)] lg:border-b-0 lg:border-r">
+      <aside className="bg-dash-sidebar relative flex w-full shrink-0 flex-col border-b border-white/5 text-white lg:fixed lg:inset-y-0 lg:w-(--dash-sidebar-width) lg:border-r lg:border-b-0">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(14,165,183,0.18),transparent_55%)]"
@@ -28,7 +29,7 @@ export function DashboardShell({ activeTab, userName }: DashboardShellProps) {
 
         <div className="relative flex flex-1 flex-col px-5 py-6 lg:py-8">
           <div className="dashboard-enter">
-            <p className="font-display text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-dash-accent">
+            <p className="font-display text-dash-accent text-[0.65rem] font-semibold tracking-[0.22em] uppercase">
               Element Wasser
             </p>
             <h1 className="font-display mt-2 text-xl font-semibold tracking-tight text-white">
@@ -41,14 +42,16 @@ export function DashboardShell({ activeTab, userName }: DashboardShellProps) {
           </div>
 
           <div className="dashboard-enter dashboard-enter-delay-2 mt-8 border-t border-white/10 pt-5">
-            <p className="truncate text-sm font-medium text-white/90">{userName}</p>
+            <p className="truncate text-sm font-medium text-white/90">
+              {userName}
+            </p>
             <p className="mt-0.5 text-xs text-white/45">{t("subtitle")}</p>
           </div>
         </div>
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col lg:pl-[var(--dash-sidebar-width)]">
-        <header className="dashboard-enter sticky top-0 z-10 border-b border-dash-border/80 bg-dash-bg/85 px-6 py-4 backdrop-blur-md lg:px-10">
+      <div className="flex min-h-screen flex-1 flex-col lg:pl-(--dash-sidebar-width)">
+        <header className="dashboard-enter border-dash-border/80 bg-dash-bg/85 sticky top-0 z-10 border-b px-6 py-4 backdrop-blur-md lg:px-10">
           <div className="flex items-center justify-end">
             <LanguageSwitcher />
           </div>
@@ -62,6 +65,8 @@ export function DashboardShell({ activeTab, userName }: DashboardShellProps) {
               <CustomersTab />
             ) : activeTab === "products" ? (
               <ProductsTab />
+            ) : activeTab === "categories" ? (
+              <CategoriesTab />
             ) : activeTab === "orders" ? (
               <OrdersTab />
             ) : null}

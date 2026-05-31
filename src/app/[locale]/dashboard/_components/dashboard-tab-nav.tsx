@@ -17,6 +17,7 @@ const TAB_ICONS: Record<DashboardTab, string> = {
   overview: "◈",
   customers: "◎",
   products: "◫",
+  categories: "◧",
   orders: "◷",
 };
 

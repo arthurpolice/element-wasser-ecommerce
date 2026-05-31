@@ -11887,6 +11887,7 @@ export namespace Prisma {
     slug: string | null
     sku: string | null
     active: boolean | null
+    featured: boolean | null
     priceCents: number | null
     costCents: number | null
     discountPercent: number | null
@@ -11905,6 +11906,7 @@ export namespace Prisma {
     slug: string | null
     sku: string | null
     active: boolean | null
+    featured: boolean | null
     priceCents: number | null
     costCents: number | null
     discountPercent: number | null
@@ -11923,6 +11925,7 @@ export namespace Prisma {
     slug: number
     sku: number
     active: number
+    featured: number
     description: number
     priceCents: number
     costCents: number
@@ -11964,6 +11967,7 @@ export namespace Prisma {
     slug?: true
     sku?: true
     active?: true
+    featured?: true
     priceCents?: true
     costCents?: true
     discountPercent?: true
@@ -11982,6 +11986,7 @@ export namespace Prisma {
     slug?: true
     sku?: true
     active?: true
+    featured?: true
     priceCents?: true
     costCents?: true
     discountPercent?: true
@@ -12000,6 +12005,7 @@ export namespace Prisma {
     slug?: true
     sku?: true
     active?: true
+    featured?: true
     description?: true
     priceCents?: true
     costCents?: true
@@ -12106,6 +12112,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active: boolean
+    featured: boolean
     description: JsonValue | null
     priceCents: number
     costCents: number
@@ -12144,6 +12151,7 @@ export namespace Prisma {
     slug?: boolean
     sku?: boolean
     active?: boolean
+    featured?: boolean
     description?: boolean
     priceCents?: boolean
     costCents?: boolean
@@ -12169,6 +12177,7 @@ export namespace Prisma {
     slug?: boolean
     sku?: boolean
     active?: boolean
+    featured?: boolean
     description?: boolean
     priceCents?: boolean
     costCents?: boolean
@@ -12189,6 +12198,7 @@ export namespace Prisma {
     slug?: boolean
     sku?: boolean
     active?: boolean
+    featured?: boolean
     description?: boolean
     priceCents?: boolean
     costCents?: boolean
@@ -12209,6 +12219,7 @@ export namespace Prisma {
     slug?: boolean
     sku?: boolean
     active?: boolean
+    featured?: boolean
     description?: boolean
     priceCents?: boolean
     costCents?: boolean
@@ -12221,7 +12232,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "manufacturerId" | "name" | "slug" | "sku" | "active" | "description" | "priceCents" | "costCents" | "discountPercent" | "stockOnHand" | "stockReserved" | "dispatchMinDays" | "dispatchMaxDays" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "manufacturerId" | "name" | "slug" | "sku" | "active" | "featured" | "description" | "priceCents" | "costCents" | "discountPercent" | "stockOnHand" | "stockReserved" | "dispatchMinDays" | "dispatchMaxDays" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     manufacturer?: boolean | ManufacturerDefaultArgs<ExtArgs>
     images?: boolean | Product$imagesArgs<ExtArgs>
@@ -12253,6 +12264,7 @@ export namespace Prisma {
       slug: string
       sku: string
       active: boolean
+      featured: boolean
       description: Prisma.JsonValue | null
       priceCents: number
       costCents: number
@@ -12697,6 +12709,7 @@ export namespace Prisma {
     readonly slug: FieldRef<"Product", 'String'>
     readonly sku: FieldRef<"Product", 'String'>
     readonly active: FieldRef<"Product", 'Boolean'>
+    readonly featured: FieldRef<"Product", 'Boolean'>
     readonly description: FieldRef<"Product", 'Json'>
     readonly priceCents: FieldRef<"Product", 'Int'>
     readonly costCents: FieldRef<"Product", 'Int'>
@@ -25168,6 +25181,7 @@ export namespace Prisma {
     slug: 'slug',
     sku: 'sku',
     active: 'active',
+    featured: 'featured',
     description: 'description',
     priceCents: 'priceCents',
     costCents: 'costCents',
@@ -26207,6 +26221,7 @@ export namespace Prisma {
     slug?: StringFilter<"Product"> | string
     sku?: StringFilter<"Product"> | string
     active?: BoolFilter<"Product"> | boolean
+    featured?: BoolFilter<"Product"> | boolean
     description?: JsonNullableFilter<"Product">
     priceCents?: IntFilter<"Product"> | number
     costCents?: IntFilter<"Product"> | number
@@ -26231,6 +26246,7 @@ export namespace Prisma {
     slug?: SortOrder
     sku?: SortOrder
     active?: SortOrder
+    featured?: SortOrder
     description?: SortOrderInput | SortOrder
     priceCents?: SortOrder
     costCents?: SortOrder
@@ -26258,6 +26274,7 @@ export namespace Prisma {
     manufacturerId?: StringFilter<"Product"> | string
     name?: StringFilter<"Product"> | string
     active?: BoolFilter<"Product"> | boolean
+    featured?: BoolFilter<"Product"> | boolean
     description?: JsonNullableFilter<"Product">
     priceCents?: IntFilter<"Product"> | number
     costCents?: IntFilter<"Product"> | number
@@ -26282,6 +26299,7 @@ export namespace Prisma {
     slug?: SortOrder
     sku?: SortOrder
     active?: SortOrder
+    featured?: SortOrder
     description?: SortOrderInput | SortOrder
     priceCents?: SortOrder
     costCents?: SortOrder
@@ -26309,6 +26327,7 @@ export namespace Prisma {
     slug?: StringWithAggregatesFilter<"Product"> | string
     sku?: StringWithAggregatesFilter<"Product"> | string
     active?: BoolWithAggregatesFilter<"Product"> | boolean
+    featured?: BoolWithAggregatesFilter<"Product"> | boolean
     description?: JsonNullableWithAggregatesFilter<"Product">
     priceCents?: IntWithAggregatesFilter<"Product"> | number
     costCents?: IntWithAggregatesFilter<"Product"> | number
@@ -27894,6 +27913,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -27918,6 +27938,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -27940,6 +27961,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -27964,6 +27986,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -27987,6 +28010,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -28005,6 +28029,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -28024,6 +28049,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -29660,6 +29686,7 @@ export namespace Prisma {
     slug?: SortOrder
     sku?: SortOrder
     active?: SortOrder
+    featured?: SortOrder
     description?: SortOrder
     priceCents?: SortOrder
     costCents?: SortOrder
@@ -29689,6 +29716,7 @@ export namespace Prisma {
     slug?: SortOrder
     sku?: SortOrder
     active?: SortOrder
+    featured?: SortOrder
     priceCents?: SortOrder
     costCents?: SortOrder
     discountPercent?: SortOrder
@@ -29707,6 +29735,7 @@ export namespace Prisma {
     slug?: SortOrder
     sku?: SortOrder
     active?: SortOrder
+    featured?: SortOrder
     priceCents?: SortOrder
     costCents?: SortOrder
     discountPercent?: SortOrder
@@ -32841,6 +32870,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -32863,6 +32893,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -32915,6 +32946,7 @@ export namespace Prisma {
     slug?: StringFilter<"Product"> | string
     sku?: StringFilter<"Product"> | string
     active?: BoolFilter<"Product"> | boolean
+    featured?: BoolFilter<"Product"> | boolean
     description?: JsonNullableFilter<"Product">
     priceCents?: IntFilter<"Product"> | number
     costCents?: IntFilter<"Product"> | number
@@ -33223,6 +33255,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -33246,6 +33279,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -33283,6 +33317,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -33306,6 +33341,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -33497,6 +33533,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -33520,6 +33557,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -33586,6 +33624,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -33609,6 +33648,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -33959,6 +33999,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -33982,6 +34023,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -34178,6 +34220,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -34201,6 +34244,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -34490,6 +34534,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -34513,6 +34558,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -34620,6 +34666,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -34643,6 +34690,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -35254,6 +35302,7 @@ export namespace Prisma {
     slug: string
     sku: string
     active?: boolean
+    featured?: boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents: number
     costCents: number
@@ -35272,6 +35321,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -35294,6 +35344,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number
@@ -35316,6 +35367,7 @@ export namespace Prisma {
     slug?: StringFieldUpdateOperationsInput | string
     sku?: StringFieldUpdateOperationsInput | string
     active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
     description?: NullableJsonNullValueInput | InputJsonValue
     priceCents?: IntFieldUpdateOperationsInput | number
     costCents?: IntFieldUpdateOperationsInput | number

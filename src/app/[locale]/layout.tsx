@@ -1,6 +1,5 @@
 import "~/styles/globals.css";
 
-import { type Metadata } from "next";
 import { Figtree, Sora } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";

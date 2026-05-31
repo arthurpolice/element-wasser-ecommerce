@@ -62,6 +62,7 @@ export const createProductFormSchema = (messages: {
         messages.dispatchMaxRequired,
       ),
       active: z.boolean(),
+      featured: z.boolean(),
     })
     .superRefine((data, ctx) => {
       const dispatchMinDays = parseNonNegativeInt(data.dispatchMinDays);
@@ -110,6 +111,7 @@ export function mapCreateProductFormToInput(values: CreateProductFormValues) {
     dispatchMinDays,
     dispatchMaxDays,
     active: values.active,
+    featured: values.featured,
   };
 }
 
@@ -193,7 +195,7 @@ export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
     shippingSalutation:
       values.shippingSalutation === ""
         ? undefined
-        : (values.shippingSalutation as "HERR" | "FRAU"),
+        : values.shippingSalutation,
     shippingFirstName: values.shippingFirstName,
     shippingLastName: values.shippingLastName,
     shippingCompany: values.shippingCompany.trim() || undefined,

@@ -6,6 +6,7 @@
       "overview": "Übersicht",
       "customers": "Kunden",
       "products": "Produkte",
+      "categories": "Kategorien",
       "orders": "Bestellungen"
     },
     "empty": {
@@ -149,6 +150,7 @@
     "title": "Produkte",
     "description": "Verwalten Sie Katalogprodukte, Lagerbestand und Hersteller.",
     "createButton": "Produkt anlegen",
+    "editButton": "Bearbeiten",
     "searchLabel": "Suche",
     "searchPlaceholder": "Nach Name oder Hersteller suchen",
     "loading": "Produkte werden geladen…",
@@ -167,7 +169,8 @@
         "stockOnHand": "Lagerbestand",
         "stockReserved": "Reserviert",
         "dispatchEstimate": "Versandzeit",
-        "categoryCount": "Kategorien"
+        "categoryCount": "Kategorien",
+        "actions": "Aktionen"
       },
       "discountValue": "{percent} %",
       "noDiscount": "—",
@@ -190,7 +193,8 @@
         "stockOnHand": "Lagerbestand",
         "dispatchMinDays": "Versand min. (Tage)",
         "dispatchMaxDays": "Versand max. (Tage)",
-        "active": "Aktiv"
+        "active": "Aktiv",
+        "featured": "In Storefront hervorheben (Featured Product)"
       },
       "cancel": "Abbrechen",
       "submit": "Produkt speichern",
@@ -221,6 +225,133 @@
         "removeImage": "Bild {index} entfernen",
         "addImageSlot": "Bild in Slot {index} hinzufügen"
       }
+    },
+    "edit": {
+      "title": "Produkt bearbeiten",
+      "description": "{product} und Kategoriezuordnungen aktualisieren.",
+      "loading": "Produkt wird geladen…",
+      "error": "Das Produkt konnte nicht geladen werden.",
+      "cancel": "Abbrechen",
+      "submit": "Änderungen speichern",
+      "submitting": "Speichern…",
+      "fields": {
+        "sku": "SKU",
+        "name": "Produktname",
+        "manufacturer": "Hersteller",
+        "manufacturerPlaceholder": "Suchen oder neu anlegen",
+        "price": "Preis (CHF)",
+        "cost": "Kosten (CHF)",
+        "stockOnHand": "Lagerbestand",
+        "dispatchMinDays": "Versand min. (Tage)",
+        "dispatchMaxDays": "Versand max. (Tage)",
+        "active": "Aktiv",
+        "featured": "In Storefront hervorheben (Featured Product)"
+      },
+      "validation": {
+        "nameRequired": "Produktname ist erforderlich.",
+        "manufacturerRequired": "Hersteller ist erforderlich.",
+        "priceRequired": "Bitte geben Sie einen gültigen Preis ein.",
+        "costRequired": "Bitte geben Sie gültige Kosten ein.",
+        "stockRequired": "Bitte geben Sie eine gültige Lagermenge ein.",
+        "dispatchMinRequired": "Bitte geben Sie eine gültige Mindest-Versandzeit ein.",
+        "dispatchMaxRequired": "Bitte geben Sie eine gültige Maximal-Versandzeit ein.",
+        "dispatchRangeInvalid": "Die maximale Versandzeit muss mindestens der minimalen entsprechen.",
+        "generic": "Das Produkt konnte nicht gespeichert werden."
+      }
+    },
+    "form": {
+      "categories": {
+        "label": "Kategorien",
+        "description": "Wählen Sie, in welchen Kategorien dieses Produkt in der Storefront erscheint.",
+        "loading": "Kategorien werden geladen…",
+        "empty": "Erstellen Sie zuerst Kategorien und ordnen Sie sie hier zu.",
+        "searchPlaceholder": "Kategorien suchen…",
+        "emptySearch": "Keine Kategorien entsprechen dieser Suche.",
+        "inactive": "Inaktiv"
+      }
+    }
+  },
+  "Categories": {
+    "title": "Kategorien",
+    "description": "Organisieren Sie den verschachtelten Kategoriebaum für Storefront-Navigation und -Browsing.",
+    "loading": "Kategorien werden geladen…",
+    "error": "Kategorien konnten nicht geladen werden.",
+    "empty": "Noch keine Kategorien vorhanden. Erstellen Sie die erste Kategorie.",
+    "create": {
+      "button": "Kategorie erstellen",
+      "title": "Kategorie erstellen",
+      "description": "Fügen Sie eine Haupt- oder Unterkategorie für die Storefront-Navigation hinzu.",
+      "fields": {
+        "name": "Kategoriename",
+        "parent": "Übergeordnete Kategorie",
+        "rootCategory": "Hauptkategorie",
+        "sortOrder": "Sortierreihenfolge",
+        "active": "Aktiv"
+      },
+      "cancel": "Abbrechen",
+      "submit": "Kategorie speichern",
+      "submitting": "Wird gespeichert…",
+      "validation": {
+        "generic": "Die Kategorie konnte nicht gespeichert werden."
+      }
+    },
+    "tree": {
+      "expand": "Kategorie aufklappen",
+      "collapse": "Kategorie zuklappen",
+      "statusActive": "Aktiv",
+      "statusInactive": "Inaktiv",
+      "meta": "{children, plural, =0 {Keine Unterkategorien} one {# Unterkategorie} other {# Unterkategorien}} · {products, plural, =0 {Keine Produkte} one {# Produkt} other {# Produkte}}",
+      "addChild": "Unterkategorie hinzufügen",
+      "draftPlaceholder": "Name der neuen Kategorie",
+      "draftHint": "Enter zum Erstellen · Escape zum Abbrechen",
+      "dragHint": "Kategorien per Drag-and-drop sortieren oder verschieben. Mit Leertaste greifen und mit Pfeiltasten die Zielposition wählen.",
+      "moveError": "Die Kategorie konnte nicht verschoben werden.",
+      "invalidDrop": "Eine Kategorie kann nicht in eine eigene Unterkategorie gezogen werden.",
+      "creating": "Wird erstellt…",
+      "createError": "Die Kategorie konnte nicht erstellt werden."
+    }
+  },
+  "Storefront": {
+    "tagline": "Natürliche Filtration für Wasser und Luft.",
+    "ownerSignIn": "Inhaber-Anmeldung",
+    "openCategories": "Kategorien",
+    "closeCategories": "Schließen",
+    "categoriesTitle": "Kategorien durchsuchen",
+    "navigation": {
+      "label": "Shop-Kategorien",
+      "loading": "Kategorien werden geladen…",
+      "empty": "Kategorien erscheinen hier, sobald sie veröffentlicht sind.",
+      "allInCategory": "Alle {category}"
+    },
+    "home": {
+      "eyebrow": "Element Wasser",
+      "title": "Reines Wasser. Saubere Luft.",
+      "description": "Entdecken Sie unsere kuratierte Auswahl natürlicher Wasser- und Luftfilterprodukte.",
+      "sectionEyebrow": "Kategorie-Highlight",
+      "viewAll": "Alle anzeigen",
+      "empty": "Produkte erscheinen hier, sobald Kategorien und aktive Produkte konfiguriert sind."
+    },
+    "categoryPage": {
+      "eyebrow": "Kategorie",
+      "description": "Durchsuchen Sie aktive Produkte in dieser Kategorie und ihren Unterkategorien."
+    },
+    "categoryGrid": {
+      "summary": "{count, plural, =0 {Keine Produkte} one {# Produkt} other {# Produkte}}",
+      "empty": "Dieser Kategorie sind noch keine aktiven Produkte zugeordnet.",
+      "loadMore": "Weitere Produkte laden",
+      "loadingMore": "Wird geladen…"
+    },
+    "productCard": {
+      "noImage": "Kein Bild",
+      "reviewsSummary": "{rating} · {count, plural, one {# Bewertung} other {# Bewertungen}}"
+    },
+    "productPage": {
+      "noImage": "Kein Bild verfügbar",
+      "dispatchEstimate": "Versandzeit: {range}",
+      "reviewsSummary": "{rating} Durchschnitt · {count, plural, one {# Bewertung} other {# Bewertungen}}",
+      "noReviews": "Noch keine freigegebenen Bewertungen.",
+      "descriptionPlaceholder": "Ausführliche Produktbeschreibung erscheint hier.",
+      "noDescription": "Noch keine Produktbeschreibung vorhanden."
     }
   },
   "Orders": {

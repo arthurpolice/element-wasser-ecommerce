@@ -199,6 +199,7 @@ model Product {
   slug            String            @unique
   sku             String            @unique
   active          Boolean           @default(false)
+  featured        Boolean           @default(false)
   description     Json?
   priceCents      Int
   costCents       Int

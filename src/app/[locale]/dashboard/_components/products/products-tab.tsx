@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { CreateProductDialog } from "~/app/[locale]/dashboard/_components/products/create-product-modal";
+import { EditProductDialog } from "~/app/[locale]/dashboard/_components/products/edit-product-modal";
 import {
   ProductsTable,
   type SortField,
@@ -83,6 +84,12 @@ export function ProductsTab() {
           <ProductsTable
             items={items}
             onSortChange={handleSortChange}
+            renderActions={(product) => (
+              <EditProductDialog
+                productId={product.id}
+                productName={product.name}
+              />
+            )}
             sortBy={sortBy}
             sortDir={sortDir}
           />

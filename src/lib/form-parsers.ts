@@ -34,3 +34,7 @@ export function parsePositiveInt(value: string): number | null {
 
   return parsed;
 }
+
+export function formatCentsToMoney(cents: number): string {
+  return (cents / 100).toFixed(2);
+}

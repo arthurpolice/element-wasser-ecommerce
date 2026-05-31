@@ -39,6 +39,7 @@ type ProductsTableProps = {
   sortBy: SortField;
   sortDir: "asc" | "desc";
   onSortChange: (sortBy: SortField, sortDir: "asc" | "desc") => void;
+  renderActions?: (product: ProductRow) => React.ReactNode;
 };
 
 export function ProductsTable({
@@ -46,6 +47,7 @@ export function ProductsTable({
   sortBy,
   sortDir,
   onSortChange,
+  renderActions,
 }: ProductsTableProps) {
   const t = useTranslations("Products.table");
   const tStatus = useTranslations("ProductStatus");
@@ -137,8 +139,18 @@ export function ProductsTable({
         accessorKey: "categoryCount",
         header: t("columns.categoryCount"),
       },
+      ...(renderActions
+        ? [
+            {
+              id: "actions",
+              header: t("columns.actions"),
+              cell: ({ row }: { row: { original: ProductRow } }) =>
+                renderActions(row.original),
+            } satisfies ColumnDef<ProductRow>,
+          ]
+        : []),
     ],
-    [format, t, tStatus],
+    [format, renderActions, t, tStatus],
   );
 
   const table = useReactTable({

@@ -56,6 +56,10 @@ _Avoid_: Payment address
 A sellable catalog item with current price, current cost, inventory, manufacturer, slug, and SKU.
 _Avoid_: Item, article
 
+**Featured Product**:
+A product deliberately promoted wherever it appears in storefront Category views. Category membership determines which Category views can feature the Product, including ancestor views.
+_Avoid_: Featured item
+
 **SKU**:
 A system-assigned unique product code stored on products and copied onto order lines for support and operations. Structured as a brand prefix, a three-character manufacturer hint, a three-character product-name hint, and a sequence (for example `EW-BRI-WAT-00001`). Once assigned, a SKU never changes. The merchant does not assign or manage SKUs.
 _Avoid_: Product ID
@@ -65,7 +69,7 @@ The company or brand responsible for a product; every product has exactly one ma
 _Avoid_: Brand, supplier
 
 **Category**:
-A navigational grouping for products. Categories can be nested, and a product can appear in multiple categories.
+A navigational grouping for products. Categories can be nested, and a product can appear in multiple categories. Catalog maintenance links each product to the categories where it should appear in the storefront.
 _Avoid_: Collection, tag
 
 **Stock On Hand**:

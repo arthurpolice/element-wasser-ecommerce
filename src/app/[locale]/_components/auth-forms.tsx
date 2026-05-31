@@ -14,9 +14,9 @@ import {
 } from "~/lib/form-schemas";
 
 const inputClass =
-  "rounded-lg bg-white/10 px-4 py-2 text-white placeholder:text-white/60";
+  "w-full rounded-lg border border-store-border bg-store-surface px-4 py-2 text-store-ink placeholder:text-store-muted";
 const buttonClass =
-  "rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20";
+  "rounded-full bg-store-accent px-10 py-3 font-semibold text-white transition hover:bg-store-accent/90";
 
 export function AuthForms() {
   const signInForm = useForm({
@@ -56,7 +56,7 @@ export function AuthForms() {
       </form>
 
       <form
-        className="flex flex-col gap-3 border-t border-white/20 pt-6"
+        className="flex flex-col gap-3 border-t border-store-border pt-6"
         onSubmit={signUpForm.handleSubmit((data) => signUpAction(data))}
       >
         <p className="text-lg font-semibold">Create account</p>

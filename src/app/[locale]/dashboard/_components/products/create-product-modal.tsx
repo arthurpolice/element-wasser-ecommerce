@@ -17,6 +17,7 @@ import {
   revokeProductImageDrafts,
   type ProductImageSlots,
 } from "~/app/[locale]/dashboard/_components/products/product-image-upload";
+import { ProductCategoryPicker } from "~/app/[locale]/dashboard/_components/products/product-category-picker";
 import {
   createProductFormSchema,
   mapCreateProductFormToInput,
@@ -37,6 +38,7 @@ const defaultValues: CreateProductFormValues = {
   dispatchMinDays: "",
   dispatchMaxDays: "",
   active: false,
+  featured: false,
 };
 
 export function CreateProductDialog() {
@@ -51,6 +53,7 @@ export function CreateProductDialog() {
   const [imageSlots, setImageSlots] = useState<ProductImageSlots>(
     createEmptyProductImageSlots,
   );
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const utils = api.useUtils();
@@ -103,7 +106,9 @@ export function CreateProductDialog() {
   const createProduct = api.product.create.useMutation({
     onSuccess: async () => {
       await utils.product.list.invalidate();
+      await utils.catalog.invalidate();
       reset(defaultValues);
+      setSelectedCategoryIds([]);
       setManufacturerSearch("");
       setShowManufacturerSuggestions(false);
       revokeProductImageDrafts(imageSlots);
@@ -158,6 +163,7 @@ export function CreateProductDialog() {
     setShowManufacturerSuggestions(false);
     revokeProductImageDrafts(imageSlots);
     setImageSlots(createEmptyProductImageSlots());
+    setSelectedCategoryIds([]);
     setSubmitError(null);
     createProduct.reset();
     createImageUploadUrls.reset();
@@ -184,6 +190,7 @@ export function CreateProductDialog() {
 
       await createProduct.mutateAsync({
         ...input,
+        categoryIds: selectedCategoryIds,
         images: uploadedImages.length > 0 ? uploadedImages : undefined,
       });
     } catch (error) {
@@ -385,6 +392,21 @@ export function CreateProductDialog() {
             />
             <span>{tForm("fields.active")}</span>
           </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              className="rounded border-dash-border text-dash-accent focus:ring-dash-accent/30"
+              type="checkbox"
+              {...register("featured")}
+            />
+            <span>{tForm("fields.featured")}</span>
+          </label>
+
+          <ProductCategoryPicker
+            enabled={open}
+            onChange={setSelectedCategoryIds}
+            selectedCategoryIds={selectedCategoryIds}
+          />
 
           <ProductImageUpload onChange={setImageSlots} slots={imageSlots} />
         </div>

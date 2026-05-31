@@ -2,6 +2,7 @@ export const DASHBOARD_TABS = [
   "overview",
   "customers",
   "products",
+  "categories",
   "orders",
 ] as const;
 

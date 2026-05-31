@@ -4,6 +4,8 @@ import { z } from "zod";
 
 import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc";
 import { allocateProductSku } from "~/lib/product-sku";
+import { replaceProductCategories } from "~/lib/product-categories";
+import { toSlug } from "~/lib/slug";
 import {
   isValidProductImageKey,
   MAX_PRODUCT_IMAGES,
@@ -48,6 +50,8 @@ const createInputSchema = z.object({
   dispatchMinDays: z.number().int().min(0),
   dispatchMaxDays: z.number().int().min(0),
   active: z.boolean().default(false),
+  featured: z.boolean().default(false),
+  categoryIds: z.array(z.string()).default([]),
   images: z
     .array(
       z.object({
@@ -58,6 +62,16 @@ const createInputSchema = z.object({
     )
     .max(MAX_PRODUCT_IMAGES)
     .optional(),
+});
+
+const updateInputSchema = createInputSchema
+  .omit({ images: true })
+  .extend({
+    id: z.string(),
+  });
+
+const getForEditInputSchema = z.object({
+  id: z.string(),
 });
 
 const createImageUploadUrlsInputSchema = z.object({
@@ -82,18 +96,6 @@ const listManufacturersInputSchema = z.object({
   search: z.string().trim().optional(),
   limit: z.number().int().min(1).max(20).default(10),
 });
-
-function toSlug(value: string): string {
-  const slug = value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-  return slug || "item";
-}
 
 async function uniqueProductSlug(
   db: Prisma.TransactionClient,
@@ -217,6 +219,7 @@ function mapProductRow(
     sku: product.sku,
     manufacturerName: product.manufacturer.name,
     active: product.active,
+    featured: product.featured,
     priceCents: product.priceCents,
     costCents: product.costCents,
     discountPercent: product.discountPercent,
@@ -340,7 +343,7 @@ export const productRouter = createTRPCRouter({
             input.manufacturerName,
           );
 
-          return tx.product.create({
+          const created = await tx.product.create({
             data: {
               name: input.name,
               sku: await allocateProductSku(
@@ -356,6 +359,7 @@ export const productRouter = createTRPCRouter({
               dispatchMinDays: input.dispatchMinDays,
               dispatchMaxDays: input.dispatchMaxDays,
               active: input.active,
+              featured: input.featured,
               ...(input.images?.length
                 ? {
                     images: {
@@ -373,6 +377,10 @@ export const productRouter = createTRPCRouter({
               _count: { select: { categories: true } },
             },
           });
+
+          await replaceProductCategories(tx, created.id, input.categoryIds);
+
+          return created;
         });
 
         return mapProductRow(product);
@@ -384,6 +392,112 @@ export const productRouter = createTRPCRouter({
           throw new TRPCError({
             code: "CONFLICT",
             message: "Could not create the product.",
+          });
+        }
+
+        throw error;
+      }
+    }),
+
+  getForEdit: ownerProcedure
+    .input(getForEditInputSchema)
+    .query(async ({ ctx, input }) => {
+      const product = await ctx.db.product.findUnique({
+        where: { id: input.id },
+        include: {
+          manufacturer: { select: { name: true } },
+          categories: {
+            select: { categoryId: true },
+            orderBy: { sortOrder: "asc" },
+          },
+        },
+      });
+
+      if (!product) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found.",
+        });
+      }
+
+      return {
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        manufacturerName: product.manufacturer.name,
+        priceCents: product.priceCents,
+        costCents: product.costCents,
+        stockOnHand: product.stockOnHand,
+        dispatchMinDays: product.dispatchMinDays,
+        dispatchMaxDays: product.dispatchMaxDays,
+        active: product.active,
+        featured: product.featured,
+        categoryIds: product.categories.map((entry) => entry.categoryId),
+      };
+    }),
+
+  update: ownerProcedure
+    .input(updateInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      if (input.dispatchMaxDays < input.dispatchMinDays) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Dispatch estimate max days must be at least min days.",
+        });
+      }
+
+      const existing = await ctx.db.product.findUnique({
+        where: { id: input.id },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found.",
+        });
+      }
+
+      try {
+        const product = await ctx.db.$transaction(async (tx) => {
+          const manufacturer = await findOrCreateManufacturer(
+            tx,
+            input.manufacturerName,
+          );
+
+          const updated = await tx.product.update({
+            where: { id: input.id },
+            data: {
+              name: input.name,
+              manufacturerId: manufacturer.id,
+              priceCents: input.priceCents,
+              costCents: input.costCents,
+              stockOnHand: input.stockOnHand,
+              dispatchMinDays: input.dispatchMinDays,
+              dispatchMaxDays: input.dispatchMaxDays,
+              active: input.active,
+              featured: input.featured,
+            },
+            include: {
+              manufacturer: { select: { name: true } },
+              _count: { select: { categories: true } },
+            },
+          });
+
+          await replaceProductCategories(tx, updated.id, input.categoryIds);
+
+          return updated;
+        });
+
+        return mapProductRow(product);
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002"
+        ) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Could not update the product.",
           });
         }
 

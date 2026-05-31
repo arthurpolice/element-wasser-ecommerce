@@ -21,7 +21,7 @@ export default async function DashboardPage({
   const activeTab = parseDashboardTab(resolvedSearchParams.tab);
 
   if (!session?.user) {
-    redirect(`/${locale}`);
+    redirect(`/${locale}/sign-in`);
   }
 
   const role = (session.user as { role?: string }).role;

@@ -1,14 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const envMock = vi.hoisted(() => ({
-  S3_BUCKET: "ew-bucket" as string | undefined,
-  S3_REGION: "eu-central-1" as string | undefined,
-  AWS_ACCESS_KEY_ID: "access-key" as string | undefined,
-  AWS_SECRET_ACCESS_KEY: "secret-key" as string | undefined,
-  S3_PUBLIC_URL_BASE: undefined as string | undefined,
-  S3_ENDPOINT: undefined as string | undefined,
-  S3_FORCE_PATH_STYLE: undefined as boolean | undefined,
-}));
+type EnvMock = {
+  S3_BUCKET: string | undefined;
+  S3_REGION: string | undefined;
+  AWS_ACCESS_KEY_ID: string | undefined;
+  AWS_SECRET_ACCESS_KEY: string | undefined;
+  S3_PUBLIC_URL_BASE: string | undefined;
+  S3_ENDPOINT: string | undefined;
+  S3_FORCE_PATH_STYLE: boolean | undefined;
+};
+
+const envMock = vi.hoisted(
+  (): EnvMock => ({
+    S3_BUCKET: "ew-bucket",
+    S3_REGION: "eu-central-1",
+    AWS_ACCESS_KEY_ID: "access-key",
+    AWS_SECRET_ACCESS_KEY: "secret-key",
+    S3_PUBLIC_URL_BASE: undefined,
+    S3_ENDPOINT: undefined,
+    S3_FORCE_PATH_STYLE: undefined,
+  }),
+);
 
 vi.mock("~/env", () => ({
   env: envMock,

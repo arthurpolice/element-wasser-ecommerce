@@ -17,9 +17,10 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 | ---- | ---------- | ---------------- |
 | **Catalog** | The mutable set of sellable products, categories, manufacturers, and current prices. | Shop, inventory list |
 | **Product** | A sellable catalog item with current price, cost, stock, manufacturer, slug, and SKU. | Item, article |
+| **Featured Product** | A Product deliberately promoted wherever it appears in storefront Category views. Category membership determines which Category views can feature it, including ancestor views. | Featured item |
 | **SKU** | A system-assigned unique product code copied onto order lines for support and operations; structured as brand prefix, manufacturer hint, product-name hint, and sequence (for example `EW-BRI-WAT-00001`). Once assigned, never changes. | Product ID |
 | **Manufacturer** | The company or brand responsible for a product; every product has exactly one. | Brand, supplier |
-| **Category** | A navigational grouping for products; categories nest and products may belong to several. | Collection, tag |
+| **Category** | A navigational grouping for products; categories nest and products may belong to several. Catalog maintenance links each product to the categories where it should appear in the storefront. | Collection, tag |
 | **Product Image** | An optional image attached to a product for catalog presentation. | Picture, media asset |
 | **Product Description** | Rich product content stored as structured JSON. | HTML description |
 | **Dispatch Estimate** | The product-level business-day range shown before checkout for expected ship timing. | Delivery range, lead time |
@@ -98,7 +99,9 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 - Placing an **Order** creates a **Stock Reservation** on each line's quantity; **Payment Expiry** releases **Stock Reserved** if unpaid.
 - An **Order** may have multiple **Payment** records (retries or providers); **Order Payment Status** reflects the order-level outcome.
 - A **Review** belongs to exactly one **Order Line** and one **Product**; a **Review Invite** belongs to exactly one **Order Line**.
+- A **Featured Product** is always a **Product**.
 - A **Product** belongs to exactly one **Manufacturer** and may appear in multiple **Categories**.
+- **Product** membership in **Categories** is maintained when creating or editing the **Product**; Featured Product status belongs to the **Product** and applies wherever that **Product** appears through Category membership.
 - **Stock On Hand** and **Stock Reserved** apply per **Product**; available sellable quantity is on hand minus reserved.
 
 ## Example dialogue
@@ -126,3 +129,4 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 - **"Address" in code vs domain"**: the reusable customer record is an **Address Book Entry**; fields copied onto an **Order** are **Shipping Address** or **Billing Address** snapshots — not live links to the book entry.
 - **"Discount" vs coupon"**: clearance pricing is a product-level percentage reflected as cent snapshots on the **Order**; there are no coupon codes in the current model.
 - **"Payment" vs transaction"**: a **Payment** is one provider attempt or refund; **Order Payment Status** summarizes whether the **Order** is paid overall.
+- **"Highlight" vs Featured Product"**: "highlight" may be used as a UI action label, but the domain term is **Featured Product**.
