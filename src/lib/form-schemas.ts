@@ -1,10 +1,13 @@
 import { z } from "zod";
+import type { JSONContent } from "@tiptap/react";
 
 import { parseMoneyToCents, parseNonNegativeInt } from "~/lib/form-parsers";
 
 const salutationValues = ["", "HERR", "FRAU"] as const;
 
 export type SalutationFieldValue = (typeof salutationValues)[number];
+
+export type ProductDescriptionJson = JSONContent;
 
 export const createCustomerFormSchema = (messages: {
   emailRequired: string;
@@ -41,26 +44,37 @@ export const createProductFormSchema = (messages: {
     .object({
       name: z.string().trim().min(1, messages.nameRequired),
       manufacturerName: z.string().trim().min(1, messages.manufacturerRequired),
-      price: z.string().refine(
-        (value) => parseMoneyToCents(value) != null,
-        messages.priceRequired,
-      ),
-      cost: z.string().refine(
-        (value) => parseMoneyToCents(value) != null,
-        messages.costRequired,
-      ),
-      stockOnHand: z.string().refine(
-        (value) => parseNonNegativeInt(value) != null,
-        messages.stockRequired,
-      ),
-      dispatchMinDays: z.string().refine(
-        (value) => parseNonNegativeInt(value) != null,
-        messages.dispatchMinRequired,
-      ),
-      dispatchMaxDays: z.string().refine(
-        (value) => parseNonNegativeInt(value) != null,
-        messages.dispatchMaxRequired,
-      ),
+      description: z.custom<ProductDescriptionJson>().nullable(),
+      price: z
+        .string()
+        .refine(
+          (value) => parseMoneyToCents(value) != null,
+          messages.priceRequired,
+        ),
+      cost: z
+        .string()
+        .refine(
+          (value) => parseMoneyToCents(value) != null,
+          messages.costRequired,
+        ),
+      stockOnHand: z
+        .string()
+        .refine(
+          (value) => parseNonNegativeInt(value) != null,
+          messages.stockRequired,
+        ),
+      dispatchMinDays: z
+        .string()
+        .refine(
+          (value) => parseNonNegativeInt(value) != null,
+          messages.dispatchMinRequired,
+        ),
+      dispatchMaxDays: z
+        .string()
+        .refine(
+          (value) => parseNonNegativeInt(value) != null,
+          messages.dispatchMaxRequired,
+        ),
       active: z.boolean(),
       featured: z.boolean(),
     })
@@ -105,6 +119,7 @@ export function mapCreateProductFormToInput(values: CreateProductFormValues) {
   return {
     name: values.name,
     manufacturerName: values.manufacturerName,
+    description: values.description,
     priceCents,
     costCents,
     stockOnHand,
@@ -135,10 +150,7 @@ export const createOrderFormSchema = (
     .object({
       customerId: z.string().min(1, messages.customerRequired),
       productId: z.string().min(1, messages.productRequired),
-      quantity: z.coerce
-        .number()
-        .int()
-        .min(1, messages.quantityRequired),
+      quantity: z.coerce.number().int().min(1, messages.quantityRequired),
       shippingCents: z.coerce
         .number()
         .int()
@@ -193,9 +205,7 @@ export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
     quantity: values.quantity,
     shippingCents: values.shippingCents,
     shippingSalutation:
-      values.shippingSalutation === ""
-        ? undefined
-        : values.shippingSalutation,
+      values.shippingSalutation === "" ? undefined : values.shippingSalutation,
     shippingFirstName: values.shippingFirstName,
     shippingLastName: values.shippingLastName,
     shippingCompany: values.shippingCompany.trim() || undefined,

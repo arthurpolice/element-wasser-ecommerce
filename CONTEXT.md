@@ -20,6 +20,14 @@ _Avoid_: Anonymous user
 A customer linked to exactly one authenticated user.
 _Avoid_: Account, user profile
 
+**Customer Area**:
+The self-service area where a registered customer can view their own customer information and orders.
+_Avoid_: Account area, user profile
+
+**Customer Onboarding**:
+The step where a signed-in user provides the missing customer information required to become a registered customer.
+_Avoid_: Account setup, profile completion
+
 **Order**:
 A customer commitment to buy one or more products at recorded purchase terms. Cancellations apply to whole orders, and customer contact details are stored as order snapshots.
 _Avoid_: Purchase, transaction
@@ -43,6 +51,10 @@ _Avoid_: Delivery
 **Address Book Entry**:
 A reusable registered-customer address selected during checkout and copied into the order.
 _Avoid_: Order address
+
+**Main Address Book Entry**:
+The registered customer's preferred address book entry, shown first and preselected during checkout.
+_Avoid_: Default address, primary address
 
 **Shipping Address**:
 The address snapshot stored on an order for fulfillment.

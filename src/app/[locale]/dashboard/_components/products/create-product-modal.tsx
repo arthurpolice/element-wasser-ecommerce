@@ -18,6 +18,7 @@ import {
   type ProductImageSlots,
 } from "~/app/[locale]/dashboard/_components/products/product-image-upload";
 import { ProductCategoryPicker } from "~/app/[locale]/dashboard/_components/products/product-category-picker";
+import { ProductDescriptionEditor } from "~/app/[locale]/dashboard/_components/products/product-description-editor";
 import {
   createProductFormSchema,
   mapCreateProductFormToInput,
@@ -32,6 +33,7 @@ import { api } from "~/trpc/react";
 const defaultValues: CreateProductFormValues = {
   name: "",
   manufacturerName: "",
+  description: null,
   price: "",
   cost: "",
   stockOnHand: "0",
@@ -90,6 +92,7 @@ export function CreateProductDialog() {
   });
 
   const manufacturerName = watch("manufacturerName");
+  const description = watch("description");
 
   const manufacturersQuery = api.product.listManufacturers.useQuery(
     {
@@ -119,9 +122,7 @@ export function CreateProductDialog() {
   });
 
   const isBusy =
-    isSubmitting ||
-    createProduct.isPending ||
-    createImageUploadUrls.isPending;
+    isSubmitting || createProduct.isPending || createImageUploadUrls.isPending;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -227,7 +228,7 @@ export function CreateProductDialog() {
 
       <dialog
         ref={dialogRef}
-        className={`${dashDialogClass} max-w-lg`}
+        className={`${dashDialogClass} max-w-2xl`}
         onCancel={(event) => {
           event.preventDefault();
           handleClose();
@@ -238,211 +239,233 @@ export function CreateProductDialog() {
           className="max-h-[calc(100vh-2rem)] overflow-y-auto p-6"
           onSubmit={handleSubmit(handleCreateSubmit)}
         >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="font-display text-lg font-semibold">{tForm("title")}</h2>
-            <p className="mt-1 text-sm text-dash-muted">{tForm("description")}</p>
-          </div>
-          <button
-            aria-label={tForm("cancel")}
-            className="rounded-lg px-2 py-1 text-dash-muted transition hover:bg-[#f6f9fc] hover:text-dash-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/30"
-            onClick={handleClose}
-            type="button"
-          >
-            ×
-          </button>
-        </div>
-
-        <div className="mt-6 grid gap-4">
-          <label className="grid gap-1 text-sm">
-            <span>{tForm("fields.name")}</span>
-            <input className={dashInputClass} type="text" {...register("name")} />
-            {errors.name ? (
-              <span className="text-xs text-dash-danger">{errors.name.message}</span>
-            ) : null}
-          </label>
-
-          <div className="relative grid gap-1 text-sm" ref={manufacturerListRef}>
-            <span>{tForm("fields.manufacturer")}</span>
-            <input
-              autoComplete="off"
-              className={dashInputClass}
-              onChange={(event) => {
-                const value = event.target.value;
-                setManufacturerSearch(value);
-                setValue("manufacturerName", value);
-                setShowManufacturerSuggestions(true);
-              }}
-              onFocus={() => setShowManufacturerSuggestions(true)}
-              placeholder={tForm("fields.manufacturerPlaceholder")}
-              type="text"
-              value={manufacturerName}
-            />
-            {errors.manufacturerName ? (
-              <span className="text-xs text-dash-danger">
-                {errors.manufacturerName.message}
-              </span>
-            ) : null}
-            {showManufacturerSuggestions && suggestions.length > 0 ? (
-              <ul className="absolute top-full z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-dash-border bg-dash-surface shadow-lg">
-                {suggestions.map((manufacturer) => (
-                  <li key={manufacturer.id}>
-                    <button
-                      className="w-full px-3 py-2 text-left text-sm transition hover:bg-[#f6f9fc]"
-                      onClick={() => selectManufacturer(manufacturer.name)}
-                      type="button"
-                    >
-                      {manufacturer.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-display text-lg font-semibold">
+                {tForm("title")}
+              </h2>
+              <p className="text-dash-muted mt-1 text-sm">
+                {tForm("description")}
+              </p>
+            </div>
+            <button
+              aria-label={tForm("cancel")}
+              className="text-dash-muted hover:text-dash-ink focus-visible:ring-dash-accent/30 rounded-lg px-2 py-1 transition hover:bg-[#f6f9fc] focus-visible:ring-2 focus-visible:outline-none"
+              onClick={handleClose}
+              type="button"
+            >
+              ×
+            </button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-4">
             <label className="grid gap-1 text-sm">
-              <span>{tForm("fields.price")}</span>
+              <span>{tForm("fields.name")}</span>
               <input
                 className={dashInputClass}
-                inputMode="decimal"
-                placeholder="0.00"
                 type="text"
-                {...register("price")}
+                {...register("name")}
               />
-              {errors.price ? (
-                <span className="text-xs text-dash-danger">
-                  {errors.price.message}
+              {errors.name ? (
+                <span className="text-dash-danger text-xs">
+                  {errors.name.message}
                 </span>
               ) : null}
             </label>
 
-            <label className="grid gap-1 text-sm">
-              <span>{tForm("fields.cost")}</span>
+            <div
+              className="relative grid gap-1 text-sm"
+              ref={manufacturerListRef}
+            >
+              <span>{tForm("fields.manufacturer")}</span>
               <input
+                autoComplete="off"
                 className={dashInputClass}
-                inputMode="decimal"
-                placeholder="0.00"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setManufacturerSearch(value);
+                  setValue("manufacturerName", value);
+                  setShowManufacturerSuggestions(true);
+                }}
+                onFocus={() => setShowManufacturerSuggestions(true)}
+                placeholder={tForm("fields.manufacturerPlaceholder")}
                 type="text"
-                {...register("cost")}
+                value={manufacturerName}
               />
-              {errors.cost ? (
-                <span className="text-xs text-dash-danger">
-                  {errors.cost.message}
+              {errors.manufacturerName ? (
+                <span className="text-dash-danger text-xs">
+                  {errors.manufacturerName.message}
                 </span>
               ) : null}
-            </label>
-          </div>
+              {showManufacturerSuggestions && suggestions.length > 0 ? (
+                <ul className="border-dash-border bg-dash-surface absolute top-full z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border shadow-lg">
+                  {suggestions.map((manufacturer) => (
+                    <li key={manufacturer.id}>
+                      <button
+                        className="w-full px-3 py-2 text-left text-sm transition hover:bg-[#f6f9fc]"
+                        onClick={() => selectManufacturer(manufacturer.name)}
+                        type="button"
+                      >
+                        {manufacturer.name}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
 
-          <label className="grid gap-1 text-sm">
-            <span>{tForm("fields.stockOnHand")}</span>
-            <input
-              className={dashInputClass}
-              inputMode="numeric"
-              min={0}
-              type="number"
-              {...register("stockOnHand")}
+            <ProductDescriptionEditor
+              label={tForm("fields.description")}
+              onChange={(value) =>
+                setValue("description", value, { shouldDirty: true })
+              }
+              placeholder={tForm("fields.descriptionPlaceholder")}
+              value={description}
             />
-            {errors.stockOnHand ? (
-              <span className="text-xs text-dash-danger">
-                {errors.stockOnHand.message}
-              </span>
-            ) : null}
-          </label>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm">
+                <span>{tForm("fields.price")}</span>
+                <input
+                  className={dashInputClass}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  type="text"
+                  {...register("price")}
+                />
+                {errors.price ? (
+                  <span className="text-dash-danger text-xs">
+                    {errors.price.message}
+                  </span>
+                ) : null}
+              </label>
+
+              <label className="grid gap-1 text-sm">
+                <span>{tForm("fields.cost")}</span>
+                <input
+                  className={dashInputClass}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  type="text"
+                  {...register("cost")}
+                />
+                {errors.cost ? (
+                  <span className="text-dash-danger text-xs">
+                    {errors.cost.message}
+                  </span>
+                ) : null}
+              </label>
+            </div>
+
             <label className="grid gap-1 text-sm">
-              <span>{tForm("fields.dispatchMinDays")}</span>
+              <span>{tForm("fields.stockOnHand")}</span>
               <input
                 className={dashInputClass}
                 inputMode="numeric"
                 min={0}
                 type="number"
-                {...register("dispatchMinDays")}
+                {...register("stockOnHand")}
               />
-              {errors.dispatchMinDays ? (
-                <span className="text-xs text-dash-danger">
-                  {errors.dispatchMinDays.message}
+              {errors.stockOnHand ? (
+                <span className="text-dash-danger text-xs">
+                  {errors.stockOnHand.message}
                 </span>
               ) : null}
             </label>
 
-            <label className="grid gap-1 text-sm">
-              <span>{tForm("fields.dispatchMaxDays")}</span>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm">
+                <span>{tForm("fields.dispatchMinDays")}</span>
+                <input
+                  className={dashInputClass}
+                  inputMode="numeric"
+                  min={0}
+                  type="number"
+                  {...register("dispatchMinDays")}
+                />
+                {errors.dispatchMinDays ? (
+                  <span className="text-dash-danger text-xs">
+                    {errors.dispatchMinDays.message}
+                  </span>
+                ) : null}
+              </label>
+
+              <label className="grid gap-1 text-sm">
+                <span>{tForm("fields.dispatchMaxDays")}</span>
+                <input
+                  className={dashInputClass}
+                  inputMode="numeric"
+                  min={0}
+                  type="number"
+                  {...register("dispatchMaxDays")}
+                />
+                {errors.dispatchMaxDays ? (
+                  <span className="text-dash-danger text-xs">
+                    {errors.dispatchMaxDays.message}
+                  </span>
+                ) : null}
+              </label>
+            </div>
+
+            <label className="flex items-center gap-2 text-sm">
               <input
-                className={dashInputClass}
-                inputMode="numeric"
-                min={0}
-                type="number"
-                {...register("dispatchMaxDays")}
+                className="border-dash-border text-dash-accent focus:ring-dash-accent/30 rounded"
+                type="checkbox"
+                {...register("active")}
               />
-              {errors.dispatchMaxDays ? (
-                <span className="text-xs text-dash-danger">
-                  {errors.dispatchMaxDays.message}
-                </span>
-              ) : null}
+              <span>{tForm("fields.active")}</span>
             </label>
+
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                className="border-dash-border text-dash-accent focus:ring-dash-accent/30 rounded"
+                type="checkbox"
+                {...register("featured")}
+              />
+              <span>{tForm("fields.featured")}</span>
+            </label>
+
+            <ProductCategoryPicker
+              enabled={open}
+              onChange={setSelectedCategoryIds}
+              selectedCategoryIds={selectedCategoryIds}
+            />
+
+            <ProductImageUpload onChange={setImageSlots} slots={imageSlots} />
           </div>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              className="rounded border-dash-border text-dash-accent focus:ring-dash-accent/30"
-              type="checkbox"
-              {...register("active")}
-            />
-            <span>{tForm("fields.active")}</span>
-          </label>
+          {submitError ? (
+            <p className="text-dash-danger mt-4 text-sm">{submitError}</p>
+          ) : null}
 
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              className="rounded border-dash-border text-dash-accent focus:ring-dash-accent/30"
-              type="checkbox"
-              {...register("featured")}
-            />
-            <span>{tForm("fields.featured")}</span>
-          </label>
+          {createProduct.error ? (
+            <p className="text-dash-danger mt-4 text-sm">
+              {createProduct.error.message ===
+              "Dispatch estimate max days must be at least min days."
+                ? tForm("validation.dispatchRangeInvalid")
+                : tForm("validation.generic")}
+            </p>
+          ) : null}
 
-          <ProductCategoryPicker
-            enabled={open}
-            onChange={setSelectedCategoryIds}
-            selectedCategoryIds={selectedCategoryIds}
-          />
-
-          <ProductImageUpload onChange={setImageSlots} slots={imageSlots} />
-        </div>
-
-        {submitError ? (
-          <p className="mt-4 text-sm text-dash-danger">{submitError}</p>
-        ) : null}
-
-        {createProduct.error ? (
-          <p className="mt-4 text-sm text-dash-danger">
-            {createProduct.error.message ===
-            "Dispatch estimate max days must be at least min days."
-              ? tForm("validation.dispatchRangeInvalid")
-              : tForm("validation.generic")}
-          </p>
-        ) : null}
-
-        <div className="mt-6 flex justify-end gap-3">
-          <DashboardButton
-            disabled={isBusy}
-            onClick={handleClose}
-            variant="secondary"
-          >
-            {tForm("cancel")}
-          </DashboardButton>
-          <DashboardButton disabled={isBusy} type="submit">
-            {isBusy
-              ? countFilledProductImageSlots(imageSlots) > 0 &&
-                !createProduct.isPending
-                ? tForm("uploadingImages")
-                : tForm("submitting")
-              : tForm("submit")}
-          </DashboardButton>
-        </div>
-      </form>
-    </dialog>
+          <div className="mt-6 flex justify-end gap-3">
+            <DashboardButton
+              disabled={isBusy}
+              onClick={handleClose}
+              variant="secondary"
+            >
+              {tForm("cancel")}
+            </DashboardButton>
+            <DashboardButton disabled={isBusy} type="submit">
+              {isBusy
+                ? countFilledProductImageSlots(imageSlots) > 0 &&
+                  !createProduct.isPending
+                  ? tForm("uploadingImages")
+                  : tForm("submitting")
+                : tForm("submit")}
+            </DashboardButton>
+          </div>
+        </form>
+      </dialog>
     </>
   );
 }

@@ -59,6 +59,84 @@ const baseCreateInput = {
   dispatchMaxDays: 3,
 };
 
+const productDescription = {
+  type: "doc",
+  content: [
+    {
+      type: "paragraph",
+      content: [{ type: "text", text: "Naturally sparkling mineral water." }],
+    },
+  ],
+};
+
+function createProductDb() {
+  const manufacturer = {
+    id: "manufacturer-1",
+    name: "Element Wasser",
+    slug: "element-wasser",
+  };
+
+  const db = {
+    product: {
+      findUnique: vi.fn(async ({ where }: { where: { id?: string } }) =>
+        where.id === "product-1" ? { id: "product-1" } : null,
+      ),
+      create: vi.fn(async ({ data, include }) => ({
+        id: "product-1",
+        createdAt: now,
+        updatedAt: now,
+        discountPercent: null,
+        stockReserved: 0,
+        _count: { categories: 0 },
+        manufacturer: { name: manufacturer.name },
+        ...data,
+        include,
+      })),
+      update: vi.fn(async ({ data, include }) => ({
+        id: "product-1",
+        createdAt: now,
+        updatedAt: now,
+        sku: "EW-ELE-MIN-00001",
+        slug: "mineral-water",
+        discountPercent: null,
+        stockReserved: 0,
+        _count: { categories: 0 },
+        manufacturer: { name: manufacturer.name },
+        ...data,
+        include,
+      })),
+    },
+    manufacturer: {
+      findUnique: vi.fn(async () => null),
+      findFirst: vi.fn(async () => manufacturer),
+      create: vi.fn(async () => manufacturer),
+    },
+    category: {
+      count: vi.fn(async () => 0),
+    },
+    productSkuSequence: {
+      upsert: vi.fn(async () => ({ nextValue: 1 })),
+    },
+    productCategory: {
+      deleteMany: vi.fn(async () => ({ count: 0 })),
+      createMany: vi.fn(async () => ({ count: 0 })),
+    },
+    $transaction: vi.fn(async (callback: (tx: typeof db) => Promise<unknown>) =>
+      callback(db),
+    ),
+  };
+
+  return db;
+}
+
+function createOwnerCallerWithDb(db: ReturnType<typeof createProductDb>) {
+  return createCaller({
+    db: db as never,
+    session: createOwnerSession(),
+    headers: new Headers(),
+  });
+}
+
 describe("product router image validation", () => {
   beforeEach(() => {
     vi.mocked(isS3Configured).mockReset();
@@ -132,5 +210,54 @@ describe("product router image validation", () => {
         return true;
       });
     });
+  });
+});
+
+describe("product router create", () => {
+  beforeEach(() => {
+    vi.mocked(isS3Configured).mockReset();
+  });
+
+  it("stores the Product Description as structured JSON", async () => {
+    const db = createProductDb();
+    const caller = createOwnerCallerWithDb(db);
+
+    await caller.create({
+      ...baseCreateInput,
+      description: productDescription,
+    });
+
+    expect(db.product.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          description: productDescription,
+        }),
+      }),
+    );
+  });
+});
+
+describe("product router update", () => {
+  beforeEach(() => {
+    vi.mocked(isS3Configured).mockReset();
+  });
+
+  it("updates the Product Description as structured JSON", async () => {
+    const db = createProductDb();
+    const caller = createOwnerCallerWithDb(db);
+
+    await caller.update({
+      id: "product-1",
+      ...baseCreateInput,
+      description: productDescription,
+    });
+
+    expect(db.product.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          description: productDescription,
+        }),
+      }),
+    );
   });
 });

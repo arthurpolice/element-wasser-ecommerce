@@ -8,7 +8,10 @@ import {
   type CategoryMoveInput,
 } from "~/lib/category-tree";
 import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc";
-import { replaceProductCategories } from "~/lib/product-categories";
+import {
+  assertCategoriesExist,
+  replaceProductCategories,
+} from "~/lib/product-categories";
 import { toSlug } from "~/lib/slug";
 
 const createInputSchema = z.object({
@@ -416,6 +419,8 @@ export const categoryRouter = createTRPCRouter({
           message: "Product not found.",
         });
       }
+
+      await assertCategoriesExist(ctx.db, input.categoryIds);
 
       await ctx.db.$transaction(async (tx) => {
         await replaceProductCategories(tx, input.productId, input.categoryIds);
