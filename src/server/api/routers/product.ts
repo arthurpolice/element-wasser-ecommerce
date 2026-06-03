@@ -4,7 +4,11 @@ import { z } from "zod";
 
 import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc";
 import { allocateProductSku } from "~/lib/product-sku";
-import { replaceProductCategories } from "~/lib/product-categories";
+import {
+  assertCategoriesExist,
+  productCategoryCreates,
+  replaceProductCategories,
+} from "~/lib/product-categories";
 import { toSlug } from "~/lib/slug";
 import {
   isValidProductImageKey,
@@ -44,6 +48,7 @@ const listInputSchema = z.object({
 const createInputSchema = z.object({
   name: z.string().trim().min(1),
   manufacturerName: z.string().trim().min(1),
+  description: z.custom<Prisma.InputJsonValue>().nullable().optional(),
   priceCents: z.number().int().min(0),
   costCents: z.number().int().min(0),
   stockOnHand: z.number().int().min(0).default(0),
@@ -56,7 +61,11 @@ const createInputSchema = z.object({
     .array(
       z.object({
         key: z.string().trim().min(1),
-        sortOrder: z.number().int().min(0).max(MAX_PRODUCT_IMAGES - 1),
+        sortOrder: z
+          .number()
+          .int()
+          .min(0)
+          .max(MAX_PRODUCT_IMAGES - 1),
         altText: z.string().trim().optional(),
       }),
     )
@@ -64,11 +73,9 @@ const createInputSchema = z.object({
     .optional(),
 });
 
-const updateInputSchema = createInputSchema
-  .omit({ images: true })
-  .extend({
-    id: z.string(),
-  });
+const updateInputSchema = createInputSchema.omit({ images: true }).extend({
+  id: z.string(),
+});
 
 const getForEditInputSchema = z.object({
   id: z.string(),
@@ -80,12 +87,12 @@ const createImageUploadUrlsInputSchema = z.object({
       z.object({
         fileName: z.string().trim().min(1).max(255),
         contentType: z.enum(PRODUCT_IMAGE_CONTENT_TYPES),
-        contentLength: z
+        contentLength: z.number().int().min(1).max(PRODUCT_IMAGE_MAX_BYTES),
+        slotIndex: z
           .number()
           .int()
-          .min(1)
-          .max(PRODUCT_IMAGE_MAX_BYTES),
-        slotIndex: z.number().int().min(0).max(MAX_PRODUCT_IMAGES - 1),
+          .min(0)
+          .max(MAX_PRODUCT_IMAGES - 1),
       }),
     )
     .min(1)
@@ -96,6 +103,8 @@ const listManufacturersInputSchema = z.object({
   search: z.string().trim().optional(),
   limit: z.number().int().min(1).max(20).default(10),
 });
+
+const PRODUCT_MUTATION_TX_OPTIONS = { timeout: 10_000 } as const;
 
 async function uniqueProductSlug(
   db: Prisma.TransactionClient,
@@ -183,7 +192,9 @@ function buildSearchFilter(
 function buildOrderBy(
   sortBy: z.infer<typeof listInputSchema>["sortBy"],
   sortDir: z.infer<typeof listInputSchema>["sortDir"],
-): Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] {
+):
+  | Prisma.ProductOrderByWithRelationInput
+  | Prisma.ProductOrderByWithRelationInput[] {
   switch (sortBy) {
     case "manufacturer":
       return { manufacturer: { name: sortDir } };
@@ -336,6 +347,8 @@ export const productRouter = createTRPCRouter({
         }
       }
 
+      await assertCategoriesExist(ctx.db, input.categoryIds);
+
       try {
         const product = await ctx.db.$transaction(async (tx) => {
           const manufacturer = await findOrCreateManufacturer(
@@ -346,13 +359,10 @@ export const productRouter = createTRPCRouter({
           const created = await tx.product.create({
             data: {
               name: input.name,
-              sku: await allocateProductSku(
-                tx,
-                manufacturer.name,
-                input.name,
-              ),
+              sku: await allocateProductSku(tx, manufacturer.name, input.name),
               slug: await uniqueProductSlug(tx, input.name),
               manufacturerId: manufacturer.id,
+              description: input.description ?? Prisma.JsonNull,
               priceCents: input.priceCents,
               costCents: input.costCents,
               stockOnHand: input.stockOnHand,
@@ -371,6 +381,13 @@ export const productRouter = createTRPCRouter({
                     },
                   }
                 : {}),
+              ...(input.categoryIds.length > 0
+                ? {
+                    categories: {
+                      create: productCategoryCreates(input.categoryIds),
+                    },
+                  }
+                : {}),
             },
             include: {
               manufacturer: { select: { name: true } },
@@ -378,10 +395,8 @@ export const productRouter = createTRPCRouter({
             },
           });
 
-          await replaceProductCategories(tx, created.id, input.categoryIds);
-
           return created;
-        });
+        }, PRODUCT_MUTATION_TX_OPTIONS);
 
         return mapProductRow(product);
       } catch (error) {
@@ -425,6 +440,7 @@ export const productRouter = createTRPCRouter({
         name: product.name,
         sku: product.sku,
         manufacturerName: product.manufacturer.name,
+        description: product.description,
         priceCents: product.priceCents,
         costCents: product.costCents,
         stockOnHand: product.stockOnHand,
@@ -458,6 +474,8 @@ export const productRouter = createTRPCRouter({
         });
       }
 
+      await assertCategoriesExist(ctx.db, input.categoryIds);
+
       try {
         const product = await ctx.db.$transaction(async (tx) => {
           const manufacturer = await findOrCreateManufacturer(
@@ -470,6 +488,9 @@ export const productRouter = createTRPCRouter({
             data: {
               name: input.name,
               manufacturerId: manufacturer.id,
+              ...(input.description !== undefined
+                ? { description: input.description ?? Prisma.JsonNull }
+                : {}),
               priceCents: input.priceCents,
               costCents: input.costCents,
               stockOnHand: input.stockOnHand,
@@ -487,7 +508,7 @@ export const productRouter = createTRPCRouter({
           await replaceProductCategories(tx, updated.id, input.categoryIds);
 
           return updated;
-        });
+        }, PRODUCT_MUTATION_TX_OPTIONS);
 
         return mapProductRow(product);
       } catch (error) {

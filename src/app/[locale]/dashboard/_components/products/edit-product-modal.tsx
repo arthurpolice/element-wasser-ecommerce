@@ -11,9 +11,11 @@ import {
   dashInputClass,
 } from "~/app/[locale]/dashboard/_components/dashboard-ui";
 import { ProductCategoryPicker } from "~/app/[locale]/dashboard/_components/products/product-category-picker";
+import { ProductDescriptionEditor } from "~/app/[locale]/dashboard/_components/products/product-description-editor";
 import {
   createProductFormSchema,
   mapCreateProductFormToInput,
+  type ProductDescriptionJson,
   type CreateProductFormValues,
 } from "~/lib/form-schemas";
 import { formatCentsToMoney } from "~/lib/form-parsers";
@@ -72,6 +74,7 @@ export function EditProductDialog({
     defaultValues: {
       name: "",
       manufacturerName: "",
+      description: null,
       price: "",
       cost: "",
       stockOnHand: "0",
@@ -83,6 +86,7 @@ export function EditProductDialog({
   });
 
   const manufacturerName = watch("manufacturerName");
+  const description = watch("description");
 
   const manufacturersQuery = api.product.listManufacturers.useQuery(
     {
@@ -113,6 +117,7 @@ export function EditProductDialog({
     reset({
       name: product.name,
       manufacturerName: product.manufacturerName,
+      description: product.description as ProductDescriptionJson | null,
       price: formatCentsToMoney(product.priceCents),
       cost: formatCentsToMoney(product.costCents),
       stockOnHand: String(product.stockOnHand),
@@ -202,7 +207,7 @@ export function EditProductDialog({
 
       <dialog
         ref={dialogRef}
-        className={`${dashDialogClass} max-w-lg`}
+        className={`${dashDialogClass} max-w-2xl`}
         onCancel={(event) => {
           event.preventDefault();
           handleClose();
@@ -218,13 +223,13 @@ export function EditProductDialog({
               <h2 className="font-display text-lg font-semibold">
                 {tForm("title")}
               </h2>
-              <p className="mt-1 text-sm text-dash-muted">
+              <p className="text-dash-muted mt-1 text-sm">
                 {tForm("description", { product: productName })}
               </p>
             </div>
             <button
               aria-label={tForm("cancel")}
-              className="rounded-lg px-2 py-1 text-dash-muted transition hover:bg-[#f6f9fc] hover:text-dash-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/30"
+              className="text-dash-muted hover:text-dash-ink focus-visible:ring-dash-accent/30 rounded-lg px-2 py-1 transition hover:bg-[#f6f9fc] focus-visible:ring-2 focus-visible:outline-none"
               onClick={handleClose}
               type="button"
             >
@@ -233,16 +238,16 @@ export function EditProductDialog({
           </div>
 
           {isLoadingForm ? (
-            <p className="mt-6 text-sm text-dash-muted">{tForm("loading")}</p>
+            <p className="text-dash-muted mt-6 text-sm">{tForm("loading")}</p>
           ) : productQuery.isError ? (
-            <p className="mt-6 text-sm text-dash-danger">{tForm("error")}</p>
+            <p className="text-dash-danger mt-6 text-sm">{tForm("error")}</p>
           ) : (
             <div className="mt-6 grid gap-4">
               {productQuery.data ? (
                 <label className="grid gap-1 text-sm">
                   <span>{tForm("fields.sku")}</span>
                   <input
-                    className={`${dashInputClass} bg-[#f6f9fc] text-dash-muted`}
+                    className={`${dashInputClass} text-dash-muted bg-[#f6f9fc]`}
                     readOnly
                     type="text"
                     value={productQuery.data.sku}
@@ -252,15 +257,22 @@ export function EditProductDialog({
 
               <label className="grid gap-1 text-sm">
                 <span>{tForm("fields.name")}</span>
-                <input className={dashInputClass} type="text" {...register("name")} />
+                <input
+                  className={dashInputClass}
+                  type="text"
+                  {...register("name")}
+                />
                 {errors.name ? (
-                  <span className="text-xs text-dash-danger">
+                  <span className="text-dash-danger text-xs">
                     {errors.name.message}
                   </span>
                 ) : null}
               </label>
 
-              <div className="relative grid gap-1 text-sm" ref={manufacturerListRef}>
+              <div
+                className="relative grid gap-1 text-sm"
+                ref={manufacturerListRef}
+              >
                 <span>{tForm("fields.manufacturer")}</span>
                 <input
                   autoComplete="off"
@@ -277,12 +289,12 @@ export function EditProductDialog({
                   value={manufacturerName}
                 />
                 {errors.manufacturerName ? (
-                  <span className="text-xs text-dash-danger">
+                  <span className="text-dash-danger text-xs">
                     {errors.manufacturerName.message}
                   </span>
                 ) : null}
                 {showManufacturerSuggestions && suggestions.length > 0 ? (
-                  <ul className="absolute top-full z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border border-dash-border bg-dash-surface shadow-lg">
+                  <ul className="border-dash-border bg-dash-surface absolute top-full z-10 mt-1 max-h-40 w-full overflow-y-auto rounded-lg border shadow-lg">
                     {suggestions.map((manufacturer) => (
                       <li key={manufacturer.id}>
                         <button
@@ -298,6 +310,15 @@ export function EditProductDialog({
                 ) : null}
               </div>
 
+              <ProductDescriptionEditor
+                label={tForm("fields.description")}
+                onChange={(value) =>
+                  setValue("description", value, { shouldDirty: true })
+                }
+                placeholder={tForm("fields.descriptionPlaceholder")}
+                value={description}
+              />
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm">
                   <span>{tForm("fields.price")}</span>
@@ -309,7 +330,7 @@ export function EditProductDialog({
                     {...register("price")}
                   />
                   {errors.price ? (
-                    <span className="text-xs text-dash-danger">
+                    <span className="text-dash-danger text-xs">
                       {errors.price.message}
                     </span>
                   ) : null}
@@ -325,7 +346,7 @@ export function EditProductDialog({
                     {...register("cost")}
                   />
                   {errors.cost ? (
-                    <span className="text-xs text-dash-danger">
+                    <span className="text-dash-danger text-xs">
                       {errors.cost.message}
                     </span>
                   ) : null}
@@ -342,7 +363,7 @@ export function EditProductDialog({
                   {...register("stockOnHand")}
                 />
                 {errors.stockOnHand ? (
-                  <span className="text-xs text-dash-danger">
+                  <span className="text-dash-danger text-xs">
                     {errors.stockOnHand.message}
                   </span>
                 ) : null}
@@ -359,7 +380,7 @@ export function EditProductDialog({
                     {...register("dispatchMinDays")}
                   />
                   {errors.dispatchMinDays ? (
-                    <span className="text-xs text-dash-danger">
+                    <span className="text-dash-danger text-xs">
                       {errors.dispatchMinDays.message}
                     </span>
                   ) : null}
@@ -375,7 +396,7 @@ export function EditProductDialog({
                     {...register("dispatchMaxDays")}
                   />
                   {errors.dispatchMaxDays ? (
-                    <span className="text-xs text-dash-danger">
+                    <span className="text-dash-danger text-xs">
                       {errors.dispatchMaxDays.message}
                     </span>
                   ) : null}
@@ -384,7 +405,7 @@ export function EditProductDialog({
 
               <label className="flex items-center gap-2 text-sm">
                 <input
-                  className="rounded border-dash-border text-dash-accent focus:ring-dash-accent/30"
+                  className="border-dash-border text-dash-accent focus:ring-dash-accent/30 rounded"
                   type="checkbox"
                   {...register("active")}
                 />
@@ -393,7 +414,7 @@ export function EditProductDialog({
 
               <label className="flex items-center gap-2 text-sm">
                 <input
-                  className="rounded border-dash-border text-dash-accent focus:ring-dash-accent/30"
+                  className="border-dash-border text-dash-accent focus:ring-dash-accent/30 rounded"
                   type="checkbox"
                   {...register("featured")}
                 />
@@ -409,11 +430,11 @@ export function EditProductDialog({
           )}
 
           {submitError ? (
-            <p className="mt-4 text-sm text-dash-danger">{submitError}</p>
+            <p className="text-dash-danger mt-4 text-sm">{submitError}</p>
           ) : null}
 
           {updateProduct.error ? (
-            <p className="mt-4 text-sm text-dash-danger">
+            <p className="text-dash-danger mt-4 text-sm">
               {updateProduct.error.message ===
               "Dispatch estimate max days must be at least min days."
                 ? tForm("validation.dispatchRangeInvalid")

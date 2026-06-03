@@ -10,6 +10,8 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 | **User** | An authenticated identity used for sign-in, sessions, and credentials. | Customer, account |
 | **Guest Customer** | A customer who checks out without a linked user. | Anonymous user |
 | **Registered Customer** | A customer linked to exactly one user; name and email stay synced with that user. | Account, user profile |
+| **Customer Area** | The self-service area where a registered customer can view their own customer information and orders. | Account area, user profile |
+| **Customer Onboarding** | The step where a signed-in user provides the missing customer information required to become a registered customer. | Account setup, profile completion |
 
 ## Catalog
 
@@ -71,6 +73,7 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 | Term | Definition | Aliases to avoid |
 | ---- | ---------- | ---------------- |
 | **Address Book Entry** | A reusable registered-customer address selected at checkout and copied into the order. | Address, saved address |
+| **Main Address Book Entry** | The registered customer's preferred address book entry, shown first and preselected during checkout. | Default address, primary address |
 | **Shipping Address** | The address snapshot stored on an order for fulfillment. | Registered address, address reference |
 | **Billing Address** | The address snapshot stored on an order for invoicing and payment records. | Payment address |
 
@@ -95,7 +98,7 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 - A **Customer** places zero or more **Orders**; each **Order** belongs to exactly one **Customer**.
 - An **Order** contains one or more **Order Lines**; each **Order Line** references one **Product** and stores checkout snapshots of name, SKU, prices, and cost.
 - An **Order** has exactly one **Shipping Address** snapshot and one **Billing Address** snapshot (billing may match shipping).
-- A **Registered Customer** has zero or more **Address Book Entries**; checkout copies a selected entry into the **Order** snapshots.
+- A **Registered Customer** has zero or more **Address Book Entries** and may have one **Main Address Book Entry**; checkout copies a selected entry into the **Order** snapshots.
 - Placing an **Order** creates a **Stock Reservation** on each line's quantity; **Payment Expiry** releases **Stock Reserved** if unpaid.
 - An **Order** may have multiple **Payment** records (retries or providers); **Order Payment Status** reflects the order-level outcome.
 - A **Review** belongs to exactly one **Order Line** and one **Product**; a **Review Invite** belongs to exactly one **Order Line**.
