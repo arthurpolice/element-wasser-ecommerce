@@ -16,6 +16,7 @@ import {
   PRODUCT_IMAGE_CONTENT_TYPES,
   PRODUCT_IMAGE_MAX_BYTES,
 } from "~/lib/product-images";
+import { productDescriptionJsonSchema } from "~/lib/form-schemas";
 import {
   createPresignedProductImageUpload,
   getProductImagePublicUrl,
@@ -440,7 +441,7 @@ export const productRouter = createTRPCRouter({
         name: product.name,
         sku: product.sku,
         manufacturerName: product.manufacturer.name,
-        description: product.description,
+        description: productDescriptionJsonSchema.parse(product.description),
         priceCents: product.priceCents,
         costCents: product.costCents,
         stockOnHand: product.stockOnHand,

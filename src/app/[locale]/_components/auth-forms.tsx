@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import {
@@ -19,6 +20,8 @@ const buttonClass =
   "rounded-full bg-store-accent px-10 py-3 font-semibold text-white transition hover:bg-store-accent/90";
 
 export function AuthForms() {
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get("returnTo") ?? undefined;
   const signInForm = useForm({
     resolver: zodResolver(signInFormSchema),
     defaultValues: { email: "", password: "" },
@@ -33,7 +36,9 @@ export function AuthForms() {
     <div className="flex w-full max-w-sm flex-col gap-6">
       <form
         className="flex flex-col gap-3"
-        onSubmit={signInForm.handleSubmit((data) => signInAction(data))}
+        onSubmit={signInForm.handleSubmit((data) =>
+          signInAction({ ...data, returnTo }),
+        )}
       >
         <p className="text-lg font-semibold">Sign in</p>
         <input
@@ -57,7 +62,9 @@ export function AuthForms() {
 
       <form
         className="flex flex-col gap-3 border-t border-store-border pt-6"
-        onSubmit={signUpForm.handleSubmit((data) => signUpAction(data))}
+        onSubmit={signUpForm.handleSubmit((data) =>
+          signUpAction({ ...data, returnTo }),
+        )}
       >
         <p className="text-lg font-semibold">Create account</p>
         <input

@@ -5,7 +5,7 @@ This context describes commerce language for Element Wasser: catalog, checkout, 
 ## Language
 
 **Customer**:
-A person who places or may place orders, either as a registered user or as a guest. Customer email and name are required for checkout; registered customer name and email stay synced with the linked user.
+A person who places or may place orders, either as a registered user or as a guest. Customer email and name are required for checkout; registered customer name stays synced with the linked user. Registered customer email is captured during Customer Onboarding and displayed in the Customer Area, but is not editable there.
 _Avoid_: User, account, buyer
 
 **User**:
@@ -21,7 +21,7 @@ A customer linked to exactly one authenticated user.
 _Avoid_: Account, user profile
 
 **Customer Area**:
-The self-service area where a registered customer can view their own customer information and orders.
+The self-service area where a registered customer can view their own customer information and orders. Customer Area contact editing allows salutation, first name, and last name changes; email remains read-only.
 _Avoid_: Account area, user profile
 
 **Customer Onboarding**:

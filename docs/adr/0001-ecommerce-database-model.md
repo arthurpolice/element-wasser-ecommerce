@@ -6,7 +6,7 @@ Status: accepted
 
 ## Decision
 
-Use Better Auth `User` only for authentication and link it optionally to a commerce `Customer`; guest checkout creates a separate customer per order. Registered customer name and email stay synced with the linked user, while orders store customer contact and address snapshots. A registered customer can mark one address book entry as their main address, which checkout preselects and shows before the other address book entries.
+Use Better Auth `User` only for authentication and link it optionally to a commerce `Customer`; guest checkout creates a separate customer per order. Registered customer name stays synced with the linked user, while registered customer email is captured during onboarding and remains read-only in the Customer Area. Email changes require a separate sign-in/support flow rather than Customer Area contact editing. Orders store customer contact and address snapshots. A registered customer can mark one address book entry as their main address, which checkout preselects and shows before the other address book entries.
 
 Use `Order` plus `OrderLine` instead of direct order-product references. Order lines store product name, SKU, quantity, list price, discount percentage, final unit price, unit cost, and line total in CHF cents so historical orders and margin reporting survive catalog changes.
 
@@ -20,4 +20,4 @@ Direct order-product many-to-many relations were rejected because they lose quan
 
 ## Consequences
 
-The schema has some duplicated snapshot fields by design. Reports can rely on order/order-line data without joining mutable catalog records, but application code must keep registered customer and user profile fields synced and must release reserved stock when unpaid orders expire.
+The schema has some duplicated snapshot fields by design. Reports can rely on order/order-line data without joining mutable catalog records, but application code must keep registered customer names and user display names synced, keep Customer Area email read-only, and release reserved stock when unpaid orders expire.

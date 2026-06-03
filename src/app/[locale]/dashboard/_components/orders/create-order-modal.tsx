@@ -20,6 +20,7 @@ import { api } from "~/trpc/react";
 const defaultValues: CreateOrderFormValues = {
   customerId: "",
   productId: "",
+  addressId: "",
   quantity: 1,
   shippingCents: 0,
   shippingSalutation: "",
@@ -99,6 +100,7 @@ export function CreateOrderDialog() {
   });
 
   const customerId = watch("customerId");
+  const addressId = watch("addressId");
   const productId = watch("productId");
   const quantity = watch("quantity");
   const shippingCents = watch("shippingCents");
@@ -168,7 +170,30 @@ export function CreateOrderDialog() {
     setValue("shippingSalutation", selectedCustomer.salutation ?? "");
     setValue("shippingFirstName", selectedCustomer.firstName);
     setValue("shippingLastName", selectedCustomer.lastName);
+    const mainAddress = selectedCustomer.addresses[0];
+    setValue("addressId", mainAddress?.id ?? "");
   }, [selectedCustomer, setValue]);
+
+  useEffect(() => {
+    const selectedAddress = selectedCustomer?.addresses.find(
+      (address) => address.id === addressId,
+    );
+
+    if (!selectedAddress) {
+      return;
+    }
+
+    setValue("shippingSalutation", selectedAddress.salutation ?? "");
+    setValue("shippingFirstName", selectedAddress.firstName);
+    setValue("shippingLastName", selectedAddress.lastName);
+    setValue("shippingCompany", selectedAddress.company ?? "");
+    setValue("shippingStreetLine1", selectedAddress.streetLine1);
+    setValue("shippingStreetLine2", selectedAddress.streetLine2 ?? "");
+    setValue("shippingPostalCode", selectedAddress.postalCode);
+    setValue("shippingCity", selectedAddress.city);
+    setValue("shippingCountryCode", selectedAddress.countryCode.toUpperCase());
+    setValue("shippingPhone", selectedAddress.phone ?? "");
+  }, [addressId, selectedCustomer, setValue]);
 
   function handleClose() {
     if (createOrder.isPending) {
@@ -258,6 +283,21 @@ export function CreateOrderDialog() {
                 </span>
               ) : null}
             </label>
+
+            {selectedCustomer?.addresses.length ? (
+              <label className="grid gap-1 text-sm">
+                <span>{tForm("fields.addressBookEntry")}</span>
+                <select className={dashInputClass} {...register("addressId")}>
+                  <option value="">{tForm("fields.manualAddress")}</option>
+                  {selectedCustomer.addresses.map((address) => (
+                    <option key={address.id} value={address.id}>
+                      {address.isMain ? `${tForm("fields.mainAddress")} · ` : ""}
+                      {address.streetLine1}, {address.postalCode} {address.city}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
 
             <label className="grid gap-1 text-sm">
               <span>{tForm("fields.product")}</span>

@@ -166,6 +166,7 @@ model Address {
   id          String      @id @default(cuid())
   customerId  String
   customer    Customer    @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  isMain      Boolean     @default(false)
   salutation  Salutation?
   firstName   String
   lastName    String
@@ -180,6 +181,7 @@ model Address {
   updatedAt   DateTime    @updatedAt
 
   @@index([customerId])
+  @@index([customerId, isMain])
 }
 
 model Manufacturer {

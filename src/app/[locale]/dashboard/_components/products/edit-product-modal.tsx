@@ -15,7 +15,6 @@ import { ProductDescriptionEditor } from "~/app/[locale]/dashboard/_components/p
 import {
   createProductFormSchema,
   mapCreateProductFormToInput,
-  type ProductDescriptionJson,
   type CreateProductFormValues,
 } from "~/lib/form-schemas";
 import { formatCentsToMoney } from "~/lib/form-parsers";
@@ -117,7 +116,7 @@ export function EditProductDialog({
     reset({
       name: product.name,
       manufacturerName: product.manufacturerName,
-      description: product.description as ProductDescriptionJson | null,
+      description: product.description,
       price: formatCentsToMoney(product.priceCents),
       cost: formatCentsToMoney(product.costCents),
       stockOnHand: String(product.stockOnHand),

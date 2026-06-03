@@ -146,6 +146,76 @@
       }
     }
   },
+  "CustomerArea": {
+    "title": "Customer Area",
+    "description": "View your Element Wasser customer information and return to your orders as your history grows.",
+    "onboarding": {
+      "eyebrow": "Customer Onboarding",
+      "title": "Create your Registered Customer details",
+      "description": "Add the minimal customer information required to use the Customer Area.",
+      "fields": {
+        "email": "Email",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "salutation": "Salutation",
+        "salutationNone": "No salutation"
+      },
+      "salutations": {
+        "HERR": "Mr",
+        "FRAU": "Ms"
+      },
+      "submit": "Create Registered Customer",
+      "submitting": "Creating…",
+      "validation": {
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Please enter a valid email address.",
+        "emailConflict": "A customer with this email already exists.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "generic": "Could not complete Customer Onboarding."
+      }
+    },
+    "registered": {
+      "eyebrow": "Registered Customer",
+      "name": "Name",
+      "email": "Email",
+      "orders": "Orders"
+    },
+    "contact": {
+      "title": "Customer information",
+      "emailReadOnly": "Email changes are handled through sign-in support, not the Customer Area.",
+      "save": "Save customer information",
+      "saving": "Saving…",
+      "error": "Could not save customer information."
+    },
+    "addresses": {
+      "title": "Address Book Entries",
+      "empty": "No Address Book Entries yet.",
+      "main": "Main Address Book Entry",
+      "edit": "Edit",
+      "editTitle": "Edit Address Book Entry",
+      "cancelEdit": "Cancel edit",
+      "makeMain": "Make main",
+      "delete": "Delete",
+      "create": "Add Address Book Entry",
+      "company": "Company",
+      "streetLine1": "Street line 1",
+      "streetLine2": "Street line 2",
+      "postalCode": "Postal code",
+      "city": "City",
+      "countryCode": "Country",
+      "phone": "Phone",
+      "setAsMain": "Use as Main Address Book Entry",
+      "save": "Save Address Book Entry",
+      "saving": "Saving…"
+    },
+    "orders": {
+      "title": "Orders",
+      "empty": "No Orders yet.",
+      "shipping": "Shipping Address",
+      "billing": "Billing Address"
+    }
+  },
   "Products": {
     "title": "Products",
     "description": "Manage catalog products, inventory, and manufacturers.",
@@ -318,6 +388,7 @@
   "Storefront": {
     "tagline": "Natural filtration for water and air.",
     "ownerSignIn": "Owner sign in",
+    "customerArea": "Customer Area",
     "openCategories": "Categories",
     "closeCategories": "Close",
     "categoriesTitle": "Browse categories",
@@ -397,6 +468,9 @@
       "fields": {
         "customer": "Customer",
         "customerPlaceholder": "Select a customer",
+        "addressBookEntry": "Address Book Entry",
+        "manualAddress": "Enter address manually",
+        "mainAddress": "Main Address Book Entry",
         "product": "Product",
         "productPlaceholder": "Select a product",
         "quantity": "Quantity",

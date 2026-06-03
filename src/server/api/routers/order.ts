@@ -49,6 +49,7 @@ const createInputSchema = z
     productId: z.string().min(1),
     quantity: z.number().int().min(1),
     shippingCents: z.number().int().min(0),
+    addressId: z.string().min(1).optional(),
   })
   .merge(shippingSnapshotSchema);
 
@@ -200,6 +201,23 @@ export const orderRouter = createTRPCRouter({
         firstName: true,
         lastName: true,
         salutation: true,
+        addresses: {
+          select: {
+            id: true,
+            isMain: true,
+            salutation: true,
+            firstName: true,
+            lastName: true,
+            company: true,
+            streetLine1: true,
+            streetLine2: true,
+            postalCode: true,
+            city: true,
+            countryCode: true,
+            phone: true,
+          },
+          orderBy: [{ isMain: "desc" }, { updatedAt: "desc" }],
+        },
       },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     });
@@ -275,6 +293,44 @@ export const orderRouter = createTRPCRouter({
           const discountCents = subtotalCents - lineTotalCents;
           const totalCents = lineTotalCents + input.shippingCents;
           const orderNumber = await allocateOrderNumber(tx);
+          const address = input.addressId
+            ? await tx.address.findFirst({
+                where: { id: input.addressId, customerId: customer.id },
+              })
+            : null;
+
+          if (input.addressId && !address) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Address Book Entry not found.",
+            });
+          }
+
+          const shippingSnapshot = address
+            ? {
+                salutation: address.salutation,
+                firstName: address.firstName,
+                lastName: address.lastName,
+                company: address.company,
+                streetLine1: address.streetLine1,
+                streetLine2: address.streetLine2,
+                postalCode: address.postalCode,
+                city: address.city,
+                countryCode: address.countryCode,
+                phone: address.phone,
+              }
+            : {
+                salutation: input.shippingSalutation,
+                firstName: input.shippingFirstName,
+                lastName: input.shippingLastName,
+                company: input.shippingCompany,
+                streetLine1: input.shippingStreetLine1,
+                streetLine2: input.shippingStreetLine2,
+                postalCode: input.shippingPostalCode,
+                city: input.shippingCity,
+                countryCode: input.shippingCountryCode,
+                phone: input.shippingPhone,
+              };
 
           const created = await tx.order.create({
             data: {
@@ -290,27 +346,27 @@ export const orderRouter = createTRPCRouter({
               discountCents,
               totalCents,
               currencyCode: "CHF",
-              shippingSalutation: input.shippingSalutation,
-              shippingFirstName: input.shippingFirstName,
-              shippingLastName: input.shippingLastName,
-              shippingCompany: input.shippingCompany,
-              shippingStreetLine1: input.shippingStreetLine1,
-              shippingStreetLine2: input.shippingStreetLine2,
-              shippingPostalCode: input.shippingPostalCode,
-              shippingCity: input.shippingCity,
-              shippingCountryCode: input.shippingCountryCode.toUpperCase(),
-              shippingPhone: input.shippingPhone,
+              shippingSalutation: shippingSnapshot.salutation,
+              shippingFirstName: shippingSnapshot.firstName,
+              shippingLastName: shippingSnapshot.lastName,
+              shippingCompany: shippingSnapshot.company,
+              shippingStreetLine1: shippingSnapshot.streetLine1,
+              shippingStreetLine2: shippingSnapshot.streetLine2,
+              shippingPostalCode: shippingSnapshot.postalCode,
+              shippingCity: shippingSnapshot.city,
+              shippingCountryCode: shippingSnapshot.countryCode.toUpperCase(),
+              shippingPhone: shippingSnapshot.phone,
               billingSameAsShipping: true,
-              billingSalutation: input.shippingSalutation,
-              billingFirstName: input.shippingFirstName,
-              billingLastName: input.shippingLastName,
-              billingCompany: input.shippingCompany,
-              billingStreetLine1: input.shippingStreetLine1,
-              billingStreetLine2: input.shippingStreetLine2,
-              billingPostalCode: input.shippingPostalCode,
-              billingCity: input.shippingCity,
-              billingCountryCode: input.shippingCountryCode.toUpperCase(),
-              billingPhone: input.shippingPhone,
+              billingSalutation: shippingSnapshot.salutation,
+              billingFirstName: shippingSnapshot.firstName,
+              billingLastName: shippingSnapshot.lastName,
+              billingCompany: shippingSnapshot.company,
+              billingStreetLine1: shippingSnapshot.streetLine1,
+              billingStreetLine2: shippingSnapshot.streetLine2,
+              billingPostalCode: shippingSnapshot.postalCode,
+              billingCity: shippingSnapshot.city,
+              billingCountryCode: shippingSnapshot.countryCode.toUpperCase(),
+              billingPhone: shippingSnapshot.phone,
               lines: {
                 create: {
                   productId: product.id,

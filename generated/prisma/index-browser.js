@@ -190,6 +190,7 @@ exports.Prisma.CustomerScalarFieldEnum = {
 exports.Prisma.AddressScalarFieldEnum = {
   id: 'id',
   customerId: 'customerId',
+  isMain: 'isMain',
   salutation: 'salutation',
   firstName: 'firstName',
   lastName: 'lastName',
