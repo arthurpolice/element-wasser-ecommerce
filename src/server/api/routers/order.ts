@@ -1,13 +1,14 @@
-import {
-  Prisma,
-  Salutation,
-} from "../../../../generated/prisma";
+import { Prisma, Salutation } from "../../../../generated/prisma";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc";
-
-const PAYMENT_RESERVATION_MINUTES = 15;
+import {
+  OrderPlacementError,
+  orderListInclude,
+  placeOrder,
+  type OrderListRow,
+} from "~/server/commerce/order-placement";
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -52,22 +53,6 @@ const createInputSchema = z
     addressId: z.string().min(1).optional(),
   })
   .merge(shippingSnapshotSchema);
-
-const orderListInclude = {
-  payments: {
-    orderBy: { createdAt: "desc" as const },
-    take: 1,
-    select: {
-      provider: true,
-      status: true,
-      createdAt: true,
-    },
-  },
-} satisfies Prisma.OrderInclude;
-
-type OrderListRow = Prisma.OrderGetPayload<{
-  include: typeof orderListInclude;
-}>;
 
 function buildSearchFilter(
   search: string | undefined,
@@ -138,33 +123,21 @@ function mapOrderRow(order: OrderListRow) {
   };
 }
 
-function calculateUnitPriceCents(
-  listPriceCents: number,
-  discountPercent: number | null,
-): number {
-  if (!discountPercent) {
-    return listPriceCents;
+function toOrderPlacementTrpcError(error: OrderPlacementError): TRPCError {
+  switch (error.code) {
+    case "CUSTOMER_NOT_FOUND":
+    case "PRODUCT_NOT_FOUND":
+    case "ADDRESS_NOT_FOUND":
+      return new TRPCError({
+        code: "NOT_FOUND",
+        message: error.message,
+      });
+    case "INSUFFICIENT_STOCK":
+      return new TRPCError({
+        code: "BAD_REQUEST",
+        message: error.message,
+      });
   }
-
-  return Math.round((listPriceCents * (100 - discountPercent)) / 100);
-}
-
-function formatOrderNumber(year: number, sequence: number): string {
-  return `EW-${year}-${String(sequence).padStart(5, "0")}`;
-}
-
-async function allocateOrderNumber(
-  tx: Prisma.TransactionClient,
-): Promise<string> {
-  const year = new Date().getFullYear();
-  const sequence = await tx.orderNumberSequence.upsert({
-    where: { year },
-    create: { year, nextNumber: 2 },
-    update: { nextNumber: { increment: 1 } },
-    select: { nextNumber: true },
-  });
-
-  return formatOrderNumber(year, sequence.nextNumber - 1);
 }
 
 export const orderRouter = createTRPCRouter({
@@ -247,157 +220,12 @@ export const orderRouter = createTRPCRouter({
   create: ownerProcedure
     .input(createInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const paymentExpiresAt = new Date(
-        Date.now() + PAYMENT_RESERVATION_MINUTES * 60 * 1000,
-      );
-
       try {
-        const order = await ctx.db.$transaction(async (tx) => {
-          const customer = await tx.customer.findUnique({
-            where: { id: input.customerId },
-          });
-
-          if (!customer) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Customer not found.",
-            });
-          }
-
-          const product = await tx.product.findUnique({
-            where: { id: input.productId },
-          });
-
-          if (!product) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Product not found.",
-            });
-          }
-
-          const availableStock = product.stockOnHand - product.stockReserved;
-          if (availableStock < input.quantity) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Insufficient stock available.",
-            });
-          }
-
-          const listPriceCents = product.priceCents;
-          const unitPriceCents = calculateUnitPriceCents(
-            listPriceCents,
-            product.discountPercent,
-          );
-          const lineTotalCents = unitPriceCents * input.quantity;
-          const subtotalCents = listPriceCents * input.quantity;
-          const discountCents = subtotalCents - lineTotalCents;
-          const totalCents = lineTotalCents + input.shippingCents;
-          const orderNumber = await allocateOrderNumber(tx);
-          const address = input.addressId
-            ? await tx.address.findFirst({
-                where: { id: input.addressId, customerId: customer.id },
-              })
-            : null;
-
-          if (input.addressId && !address) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Address Book Entry not found.",
-            });
-          }
-
-          const shippingSnapshot = address
-            ? {
-                salutation: address.salutation,
-                firstName: address.firstName,
-                lastName: address.lastName,
-                company: address.company,
-                streetLine1: address.streetLine1,
-                streetLine2: address.streetLine2,
-                postalCode: address.postalCode,
-                city: address.city,
-                countryCode: address.countryCode,
-                phone: address.phone,
-              }
-            : {
-                salutation: input.shippingSalutation,
-                firstName: input.shippingFirstName,
-                lastName: input.shippingLastName,
-                company: input.shippingCompany,
-                streetLine1: input.shippingStreetLine1,
-                streetLine2: input.shippingStreetLine2,
-                postalCode: input.shippingPostalCode,
-                city: input.shippingCity,
-                countryCode: input.shippingCountryCode,
-                phone: input.shippingPhone,
-              };
-
-          const created = await tx.order.create({
-            data: {
-              orderNumber,
-              customerId: customer.id,
-              customerSalutation: customer.salutation,
-              customerFirstName: customer.firstName,
-              customerLastName: customer.lastName,
-              customerEmail: customer.email,
-              paymentExpiresAt,
-              subtotalCents,
-              shippingCents: input.shippingCents,
-              discountCents,
-              totalCents,
-              currencyCode: "CHF",
-              shippingSalutation: shippingSnapshot.salutation,
-              shippingFirstName: shippingSnapshot.firstName,
-              shippingLastName: shippingSnapshot.lastName,
-              shippingCompany: shippingSnapshot.company,
-              shippingStreetLine1: shippingSnapshot.streetLine1,
-              shippingStreetLine2: shippingSnapshot.streetLine2,
-              shippingPostalCode: shippingSnapshot.postalCode,
-              shippingCity: shippingSnapshot.city,
-              shippingCountryCode: shippingSnapshot.countryCode.toUpperCase(),
-              shippingPhone: shippingSnapshot.phone,
-              billingSameAsShipping: true,
-              billingSalutation: shippingSnapshot.salutation,
-              billingFirstName: shippingSnapshot.firstName,
-              billingLastName: shippingSnapshot.lastName,
-              billingCompany: shippingSnapshot.company,
-              billingStreetLine1: shippingSnapshot.streetLine1,
-              billingStreetLine2: shippingSnapshot.streetLine2,
-              billingPostalCode: shippingSnapshot.postalCode,
-              billingCity: shippingSnapshot.city,
-              billingCountryCode: shippingSnapshot.countryCode.toUpperCase(),
-              billingPhone: shippingSnapshot.phone,
-              lines: {
-                create: {
-                  productId: product.id,
-                  productName: product.name,
-                  productSku: product.sku,
-                  quantity: input.quantity,
-                  listPriceCents,
-                  discountPercent: product.discountPercent,
-                  unitPriceCents,
-                  unitCostCents: product.costCents,
-                  lineTotalCents,
-                },
-              },
-            },
-            include: orderListInclude,
-          });
-
-          await tx.product.update({
-            where: { id: product.id },
-            data: {
-              stockReserved: { increment: input.quantity },
-            },
-          });
-
-          return created;
-        });
-
+        const order = await placeOrder(ctx.db, input);
         return mapOrderRow(order);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
+        if (error instanceof OrderPlacementError) {
+          throw toOrderPlacementTrpcError(error);
         }
 
         if (
