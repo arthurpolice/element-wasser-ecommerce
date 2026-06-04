@@ -392,6 +392,21 @@
     "openCategories": "Kategorien",
     "closeCategories": "Schließen",
     "categoriesTitle": "Kategorien durchsuchen",
+    "topNav": {
+      "searchLabel": "Suche",
+      "searchPlaceholder": "Filter, Ersatzteile, Luftpflege suchen",
+      "searchHint": "Katalog",
+      "userMenu": "Kundenmenü",
+      "signIn": "Anmelden",
+      "cart": "Warenkorb",
+      "hello": "Hallo {name}",
+      "orders": "Bestellungen",
+      "personalInformation": "Persönliche Informationen",
+      "addresses": "Adressen",
+      "signOut": "Abmelden",
+      "cartSummary": "Warenkorb",
+      "amount": "Menge"
+    },
     "navigation": {
       "label": "Shop-Kategorien",
       "loading": "Kategorien werden geladen…",

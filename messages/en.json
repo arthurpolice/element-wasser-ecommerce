@@ -392,6 +392,21 @@
     "openCategories": "Categories",
     "closeCategories": "Close",
     "categoriesTitle": "Browse categories",
+    "topNav": {
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search filters, refills, air care",
+      "searchHint": "Catalogue",
+      "userMenu": "Customer menu",
+      "signIn": "Sign in",
+      "cart": "Cart",
+      "hello": "Hello {name}",
+      "orders": "Orders",
+      "personalInformation": "Personal information",
+      "addresses": "Addresses",
+      "signOut": "Sign out",
+      "cartSummary": "Cart Summary",
+      "amount": "Amount"
+    },
     "navigation": {
       "label": "Store categories",
       "loading": "Loading categories…",
