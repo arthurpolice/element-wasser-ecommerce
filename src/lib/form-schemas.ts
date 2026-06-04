@@ -8,6 +8,8 @@ const salutationValues = ["", "HERR", "FRAU"] as const;
 export type SalutationFieldValue = (typeof salutationValues)[number];
 
 export type ProductDescriptionJson = JSONContent;
+export const productDescriptionJsonSchema =
+  z.custom<ProductDescriptionJson>().nullable();
 
 export const createCustomerFormSchema = (messages: {
   emailRequired: string;
@@ -44,7 +46,7 @@ export const createProductFormSchema = (messages: {
     .object({
       name: z.string().trim().min(1, messages.nameRequired),
       manufacturerName: z.string().trim().min(1, messages.manufacturerRequired),
-      description: z.custom<ProductDescriptionJson>().nullable(),
+      description: productDescriptionJsonSchema,
       price: z
         .string()
         .refine(
@@ -150,6 +152,7 @@ export const createOrderFormSchema = (
     .object({
       customerId: z.string().min(1, messages.customerRequired),
       productId: z.string().min(1, messages.productRequired),
+      addressId: z.string(),
       quantity: z.coerce.number().int().min(1, messages.quantityRequired),
       shippingCents: z.coerce
         .number()
@@ -202,6 +205,7 @@ export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
   return {
     customerId: values.customerId,
     productId: values.productId,
+    addressId: values.addressId || undefined,
     quantity: values.quantity,
     shippingCents: values.shippingCents,
     shippingSalutation:

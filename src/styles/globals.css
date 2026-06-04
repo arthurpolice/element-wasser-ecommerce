@@ -49,6 +49,39 @@
   }
 }
 
+@keyframes store-menu-down {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes store-dropdown-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes store-dropdown-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+}
+
 .dashboard-root {
   --dash-sidebar-width: 15.5rem;
   background-color: var(--color-dash-bg);
@@ -164,6 +197,17 @@
   animation-delay: 0.24s;
 }
 
+.storefront-dropdown-enter {
+  animation: store-dropdown-enter 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top right;
+}
+
+.storefront-dropdown-exit {
+  animation: store-dropdown-exit 0.15s ease-in both;
+  pointer-events: none;
+  transform-origin: top right;
+}
+
 .storefront-grain {
   background-image:
     radial-gradient(
@@ -184,6 +228,9 @@
   .storefront-enter-delay-1,
   .storefront-enter-delay-2,
   .storefront-enter-delay-3,
+  .animate-\[store-menu-down_0\.22s_ease-out_both\],
+  .storefront-dropdown-enter,
+  .storefront-dropdown-exit,
   .dashboard-enter,
   .dashboard-enter-delay-1,
   .dashboard-enter-delay-2,

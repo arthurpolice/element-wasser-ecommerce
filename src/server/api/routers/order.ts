@@ -1,13 +1,14 @@
-import {
-  Prisma,
-  Salutation,
-} from "../../../../generated/prisma";
+import { Prisma, Salutation } from "../../../../generated/prisma";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc";
-
-const PAYMENT_RESERVATION_MINUTES = 15;
+import {
+  OrderPlacementError,
+  orderListInclude,
+  placeOrder,
+  type OrderListRow,
+} from "~/server/commerce/order-placement";
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -49,24 +50,9 @@ const createInputSchema = z
     productId: z.string().min(1),
     quantity: z.number().int().min(1),
     shippingCents: z.number().int().min(0),
+    addressId: z.string().min(1).optional(),
   })
   .merge(shippingSnapshotSchema);
-
-const orderListInclude = {
-  payments: {
-    orderBy: { createdAt: "desc" as const },
-    take: 1,
-    select: {
-      provider: true,
-      status: true,
-      createdAt: true,
-    },
-  },
-} satisfies Prisma.OrderInclude;
-
-type OrderListRow = Prisma.OrderGetPayload<{
-  include: typeof orderListInclude;
-}>;
 
 function buildSearchFilter(
   search: string | undefined,
@@ -137,33 +123,21 @@ function mapOrderRow(order: OrderListRow) {
   };
 }
 
-function calculateUnitPriceCents(
-  listPriceCents: number,
-  discountPercent: number | null,
-): number {
-  if (!discountPercent) {
-    return listPriceCents;
+function toOrderPlacementTrpcError(error: OrderPlacementError): TRPCError {
+  switch (error.code) {
+    case "CUSTOMER_NOT_FOUND":
+    case "PRODUCT_NOT_FOUND":
+    case "ADDRESS_NOT_FOUND":
+      return new TRPCError({
+        code: "NOT_FOUND",
+        message: error.message,
+      });
+    case "INSUFFICIENT_STOCK":
+      return new TRPCError({
+        code: "BAD_REQUEST",
+        message: error.message,
+      });
   }
-
-  return Math.round((listPriceCents * (100 - discountPercent)) / 100);
-}
-
-function formatOrderNumber(year: number, sequence: number): string {
-  return `EW-${year}-${String(sequence).padStart(5, "0")}`;
-}
-
-async function allocateOrderNumber(
-  tx: Prisma.TransactionClient,
-): Promise<string> {
-  const year = new Date().getFullYear();
-  const sequence = await tx.orderNumberSequence.upsert({
-    where: { year },
-    create: { year, nextNumber: 2 },
-    update: { nextNumber: { increment: 1 } },
-    select: { nextNumber: true },
-  });
-
-  return formatOrderNumber(year, sequence.nextNumber - 1);
 }
 
 export const orderRouter = createTRPCRouter({
@@ -200,6 +174,23 @@ export const orderRouter = createTRPCRouter({
         firstName: true,
         lastName: true,
         salutation: true,
+        addresses: {
+          select: {
+            id: true,
+            isMain: true,
+            salutation: true,
+            firstName: true,
+            lastName: true,
+            company: true,
+            streetLine1: true,
+            streetLine2: true,
+            postalCode: true,
+            city: true,
+            countryCode: true,
+            phone: true,
+          },
+          orderBy: [{ isMain: "desc" }, { updatedAt: "desc" }],
+        },
       },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     });
@@ -229,119 +220,12 @@ export const orderRouter = createTRPCRouter({
   create: ownerProcedure
     .input(createInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const paymentExpiresAt = new Date(
-        Date.now() + PAYMENT_RESERVATION_MINUTES * 60 * 1000,
-      );
-
       try {
-        const order = await ctx.db.$transaction(async (tx) => {
-          const customer = await tx.customer.findUnique({
-            where: { id: input.customerId },
-          });
-
-          if (!customer) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Customer not found.",
-            });
-          }
-
-          const product = await tx.product.findUnique({
-            where: { id: input.productId },
-          });
-
-          if (!product) {
-            throw new TRPCError({
-              code: "NOT_FOUND",
-              message: "Product not found.",
-            });
-          }
-
-          const availableStock = product.stockOnHand - product.stockReserved;
-          if (availableStock < input.quantity) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Insufficient stock available.",
-            });
-          }
-
-          const listPriceCents = product.priceCents;
-          const unitPriceCents = calculateUnitPriceCents(
-            listPriceCents,
-            product.discountPercent,
-          );
-          const lineTotalCents = unitPriceCents * input.quantity;
-          const subtotalCents = listPriceCents * input.quantity;
-          const discountCents = subtotalCents - lineTotalCents;
-          const totalCents = lineTotalCents + input.shippingCents;
-          const orderNumber = await allocateOrderNumber(tx);
-
-          const created = await tx.order.create({
-            data: {
-              orderNumber,
-              customerId: customer.id,
-              customerSalutation: customer.salutation,
-              customerFirstName: customer.firstName,
-              customerLastName: customer.lastName,
-              customerEmail: customer.email,
-              paymentExpiresAt,
-              subtotalCents,
-              shippingCents: input.shippingCents,
-              discountCents,
-              totalCents,
-              currencyCode: "CHF",
-              shippingSalutation: input.shippingSalutation,
-              shippingFirstName: input.shippingFirstName,
-              shippingLastName: input.shippingLastName,
-              shippingCompany: input.shippingCompany,
-              shippingStreetLine1: input.shippingStreetLine1,
-              shippingStreetLine2: input.shippingStreetLine2,
-              shippingPostalCode: input.shippingPostalCode,
-              shippingCity: input.shippingCity,
-              shippingCountryCode: input.shippingCountryCode.toUpperCase(),
-              shippingPhone: input.shippingPhone,
-              billingSameAsShipping: true,
-              billingSalutation: input.shippingSalutation,
-              billingFirstName: input.shippingFirstName,
-              billingLastName: input.shippingLastName,
-              billingCompany: input.shippingCompany,
-              billingStreetLine1: input.shippingStreetLine1,
-              billingStreetLine2: input.shippingStreetLine2,
-              billingPostalCode: input.shippingPostalCode,
-              billingCity: input.shippingCity,
-              billingCountryCode: input.shippingCountryCode.toUpperCase(),
-              billingPhone: input.shippingPhone,
-              lines: {
-                create: {
-                  productId: product.id,
-                  productName: product.name,
-                  productSku: product.sku,
-                  quantity: input.quantity,
-                  listPriceCents,
-                  discountPercent: product.discountPercent,
-                  unitPriceCents,
-                  unitCostCents: product.costCents,
-                  lineTotalCents,
-                },
-              },
-            },
-            include: orderListInclude,
-          });
-
-          await tx.product.update({
-            where: { id: product.id },
-            data: {
-              stockReserved: { increment: input.quantity },
-            },
-          });
-
-          return created;
-        });
-
+        const order = await placeOrder(ctx.db, input);
         return mapOrderRow(order);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
+        if (error instanceof OrderPlacementError) {
+          throw toOrderPlacementTrpcError(error);
         }
 
         if (

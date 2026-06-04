@@ -146,6 +146,76 @@
       }
     }
   },
+  "CustomerArea": {
+    "title": "Kundenbereich",
+    "description": "Sehen Sie Ihre Element Wasser Kundendaten und kehren Sie zu Ihren Bestellungen zurück, sobald Ihre Historie wächst.",
+    "onboarding": {
+      "eyebrow": "Kunden-Onboarding",
+      "title": "Daten für den registrierten Kunden anlegen",
+      "description": "Ergänzen Sie die minimalen Kundendaten, die für den Kundenbereich erforderlich sind.",
+      "fields": {
+        "email": "E-Mail",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "salutation": "Anrede",
+        "salutationNone": "Keine Anrede"
+      },
+      "salutations": {
+        "HERR": "Herr",
+        "FRAU": "Frau"
+      },
+      "submit": "Registrierten Kunden anlegen",
+      "submitting": "Wird angelegt…",
+      "validation": {
+        "emailRequired": "E-Mail ist erforderlich.",
+        "emailInvalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+        "emailConflict": "Ein Kunde mit dieser E-Mail existiert bereits.",
+        "firstNameRequired": "Vorname ist erforderlich.",
+        "lastNameRequired": "Nachname ist erforderlich.",
+        "generic": "Das Kunden-Onboarding konnte nicht abgeschlossen werden."
+      }
+    },
+    "registered": {
+      "eyebrow": "Registrierter Kunde",
+      "name": "Name",
+      "email": "E-Mail",
+      "orders": "Bestellungen"
+    },
+    "contact": {
+      "title": "Kundendaten",
+      "emailReadOnly": "E-Mail-Änderungen laufen über den Anmelde-Support, nicht über den Kundenbereich.",
+      "save": "Kundendaten speichern",
+      "saving": "Speichern…",
+      "error": "Kundendaten konnten nicht gespeichert werden."
+    },
+    "addresses": {
+      "title": "Adressbucheinträge",
+      "empty": "Noch keine Adressbucheinträge vorhanden.",
+      "main": "Haupt-Adressbucheintrag",
+      "edit": "Bearbeiten",
+      "editTitle": "Adressbucheintrag bearbeiten",
+      "cancelEdit": "Bearbeiten abbrechen",
+      "makeMain": "Als Hauptadresse",
+      "delete": "Löschen",
+      "create": "Adressbucheintrag hinzufügen",
+      "company": "Firma",
+      "streetLine1": "Adresszeile 1",
+      "streetLine2": "Adresszeile 2",
+      "postalCode": "Postleitzahl",
+      "city": "Ort",
+      "countryCode": "Land",
+      "phone": "Telefon",
+      "setAsMain": "Als Haupt-Adressbucheintrag verwenden",
+      "save": "Adressbucheintrag speichern",
+      "saving": "Speichern…"
+    },
+    "orders": {
+      "title": "Bestellungen",
+      "empty": "Noch keine Bestellungen vorhanden.",
+      "shipping": "Lieferadresse",
+      "billing": "Rechnungsadresse"
+    }
+  },
   "Products": {
     "title": "Produkte",
     "description": "Verwalten Sie Katalogprodukte, Lagerbestand und Hersteller.",
@@ -318,9 +388,25 @@
   "Storefront": {
     "tagline": "Natürliche Filtration für Wasser und Luft.",
     "ownerSignIn": "Inhaber-Anmeldung",
+    "customerArea": "Kundenbereich",
     "openCategories": "Kategorien",
     "closeCategories": "Schließen",
     "categoriesTitle": "Kategorien durchsuchen",
+    "topNav": {
+      "searchLabel": "Suche",
+      "searchPlaceholder": "Filter, Ersatzteile, Luftpflege suchen",
+      "searchHint": "Katalog",
+      "userMenu": "Kundenmenü",
+      "signIn": "Anmelden",
+      "cart": "Warenkorb",
+      "hello": "Hallo {name}",
+      "orders": "Bestellungen",
+      "personalInformation": "Persönliche Informationen",
+      "addresses": "Adressen",
+      "signOut": "Abmelden",
+      "cartSummary": "Warenkorb",
+      "amount": "Menge"
+    },
     "navigation": {
       "label": "Shop-Kategorien",
       "loading": "Kategorien werden geladen…",
@@ -397,6 +483,9 @@
       "fields": {
         "customer": "Kunde",
         "customerPlaceholder": "Kunde auswählen",
+        "addressBookEntry": "Adressbucheintrag",
+        "manualAddress": "Adresse manuell eingeben",
+        "mainAddress": "Haupt-Adressbucheintrag",
         "product": "Produkt",
         "productPlaceholder": "Produkt auswählen",
         "quantity": "Menge",

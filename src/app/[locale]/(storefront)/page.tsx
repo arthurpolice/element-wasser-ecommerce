@@ -18,12 +18,8 @@ export default async function StorefrontHomePage() {
       <StorefrontShell>
         <div className="mx-auto max-w-6xl space-y-14">
           <RevealOnScroll>
-            <section className="border-store-border/80 bg-store-surface relative overflow-hidden rounded-2xl border px-8 py-12 shadow-[0_24px_80px_-40px_rgba(31,42,36,0.35)] sm:px-12 sm:py-16">
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(91,142,168,0.16),transparent_40%),linear-gradient(135deg,rgba(143,182,168,0.12),transparent_55%)]"
-              />
-              <div className="relative max-w-2xl space-y-5">
+            <section className="border-store-border/70 relative overflow-hidden border-b py-12 sm:py-16">
+              <div className="max-w-2xl space-y-5">
                 <p className="text-store-accent text-xs font-semibold tracking-[0.24em] uppercase">
                   {t("eyebrow")}
                 </p>

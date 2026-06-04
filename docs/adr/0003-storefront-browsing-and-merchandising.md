@@ -8,11 +8,17 @@ Status: accepted
 
 Use a light, minimal storefront direction: warm mineral-paper surfaces, charcoal text, muted moss and water-blue accents, restrained borders, fine natural line details, and subtle fade-up motion. Do not reuse the starter auth page colors or the admin dashboard visual system for customer-facing storefront pages.
 
+Refine customer-facing surfaces toward an open ledger style: use whitespace, typography, aligned columns, and thin rules for structure instead of wrapping page sections in cards. Product catalogue entries remain cards because they are repeated sellable objects that need image framing. Customer-facing action controls should be text-led and should not use colorful filled button backgrounds; use color for text emphasis and state rather than button surfaces.
+
 Model storefront browsing around nested Categories. Category URLs should express the Category tree, for example `/categories/water-filters/replacement-cartridges`. A root Category page acts as the root "All" view and includes Products assigned to that root Category and descendant Categories.
 
 Keep Category slugs globally unique for now. Nested storefront paths are generated from the Category tree, but individual slugs continue to follow the current schema constraint. Revisit sibling-scoped slugs only if duplicate child Category names become a real merchant need.
 
-Use expandable Category navigation: a desktop sidebar for root Categories and children, and a mobile Categories drawer so Product grids keep usable width. Each expanded root Category includes an "All" link at the top for the root Category aggregate view.
+Use expandable Category navigation: a desktop sidebar for root Categories and children, and a mobile full-screen Categories menu so Product grids keep usable width. Each expanded root Category includes an "All" link at the top for the root Category aggregate view. Category navigation remains left-aligned on desktop and sits on the same visual plane as the page, without a separate sidebar background. Active and expanded states use typography and rules rather than filled rows or pill backgrounds.
+
+Use a storefront top navigation for customer utilities: product search, customer sign-in or customer menu, and cart. Customer and cart controls can open floating dropdowns, while sign-in routes directly to authentication. The customer menu links to dedicated Customer Area pages for Orders, Personal Information, and Addresses rather than jumping to sections on one combined page.
+
+Constrain storefront layout content to a centered 1920px frame. Navigation and future footer background bands can extend edge-to-edge, but their children and the page content stay within the centered frame.
 
 Use Featured Products for merchandising in Category contexts. A Product can be marked as featured, and that featured status applies wherever the Product appears through Category membership, including ancestor Category views. If a section does not have enough Featured Products, the storefront fills the gap with automatically selected active Products from that Category context.
 
@@ -27,7 +33,7 @@ Maintain catalog content in the owner dashboard through two areas:
 
 Do not maintain Product Category membership through a separate assignment workflow.
 
-Owner authentication lives at `/sign-in`; the public homepage is the storefront, not the sign-in screen.
+Owner authentication lives at `/sign-in`; the public homepage is the storefront, not the sign-in screen. Storefront navigation does not surface an owner sign-in link.
 
 ## Considered Options
 

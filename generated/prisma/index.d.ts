@@ -9616,6 +9616,7 @@ export namespace Prisma {
   export type AddressMinAggregateOutputType = {
     id: string | null
     customerId: string | null
+    isMain: boolean | null
     salutation: $Enums.Salutation | null
     firstName: string | null
     lastName: string | null
@@ -9633,6 +9634,7 @@ export namespace Prisma {
   export type AddressMaxAggregateOutputType = {
     id: string | null
     customerId: string | null
+    isMain: boolean | null
     salutation: $Enums.Salutation | null
     firstName: string | null
     lastName: string | null
@@ -9650,6 +9652,7 @@ export namespace Prisma {
   export type AddressCountAggregateOutputType = {
     id: number
     customerId: number
+    isMain: number
     salutation: number
     firstName: number
     lastName: number
@@ -9669,6 +9672,7 @@ export namespace Prisma {
   export type AddressMinAggregateInputType = {
     id?: true
     customerId?: true
+    isMain?: true
     salutation?: true
     firstName?: true
     lastName?: true
@@ -9686,6 +9690,7 @@ export namespace Prisma {
   export type AddressMaxAggregateInputType = {
     id?: true
     customerId?: true
+    isMain?: true
     salutation?: true
     firstName?: true
     lastName?: true
@@ -9703,6 +9708,7 @@ export namespace Prisma {
   export type AddressCountAggregateInputType = {
     id?: true
     customerId?: true
+    isMain?: true
     salutation?: true
     firstName?: true
     lastName?: true
@@ -9793,6 +9799,7 @@ export namespace Prisma {
   export type AddressGroupByOutputType = {
     id: string
     customerId: string
+    isMain: boolean
     salutation: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -9827,6 +9834,7 @@ export namespace Prisma {
   export type AddressSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     customerId?: boolean
+    isMain?: boolean
     salutation?: boolean
     firstName?: boolean
     lastName?: boolean
@@ -9845,6 +9853,7 @@ export namespace Prisma {
   export type AddressSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     customerId?: boolean
+    isMain?: boolean
     salutation?: boolean
     firstName?: boolean
     lastName?: boolean
@@ -9863,6 +9872,7 @@ export namespace Prisma {
   export type AddressSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     customerId?: boolean
+    isMain?: boolean
     salutation?: boolean
     firstName?: boolean
     lastName?: boolean
@@ -9881,6 +9891,7 @@ export namespace Prisma {
   export type AddressSelectScalar = {
     id?: boolean
     customerId?: boolean
+    isMain?: boolean
     salutation?: boolean
     firstName?: boolean
     lastName?: boolean
@@ -9895,7 +9906,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type AddressOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "salutation" | "firstName" | "lastName" | "company" | "streetLine1" | "streetLine2" | "postalCode" | "city" | "countryCode" | "phone" | "createdAt" | "updatedAt", ExtArgs["result"]["address"]>
+  export type AddressOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "customerId" | "isMain" | "salutation" | "firstName" | "lastName" | "company" | "streetLine1" | "streetLine2" | "postalCode" | "city" | "countryCode" | "phone" | "createdAt" | "updatedAt", ExtArgs["result"]["address"]>
   export type AddressInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
   }
@@ -9914,6 +9925,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       customerId: string
+      isMain: boolean
       salutation: $Enums.Salutation | null
       firstName: string
       lastName: string
@@ -10352,6 +10364,7 @@ export namespace Prisma {
   interface AddressFieldRefs {
     readonly id: FieldRef<"Address", 'String'>
     readonly customerId: FieldRef<"Address", 'String'>
+    readonly isMain: FieldRef<"Address", 'Boolean'>
     readonly salutation: FieldRef<"Address", 'Salutation'>
     readonly firstName: FieldRef<"Address", 'String'>
     readonly lastName: FieldRef<"Address", 'String'>
@@ -25146,6 +25159,7 @@ export namespace Prisma {
   export const AddressScalarFieldEnum: {
     id: 'id',
     customerId: 'customerId',
+    isMain: 'isMain',
     salutation: 'salutation',
     firstName: 'firstName',
     lastName: 'lastName',
@@ -26062,6 +26076,7 @@ export namespace Prisma {
     NOT?: AddressWhereInput | AddressWhereInput[]
     id?: StringFilter<"Address"> | string
     customerId?: StringFilter<"Address"> | string
+    isMain?: BoolFilter<"Address"> | boolean
     salutation?: EnumSalutationNullableFilter<"Address"> | $Enums.Salutation | null
     firstName?: StringFilter<"Address"> | string
     lastName?: StringFilter<"Address"> | string
@@ -26080,6 +26095,7 @@ export namespace Prisma {
   export type AddressOrderByWithRelationInput = {
     id?: SortOrder
     customerId?: SortOrder
+    isMain?: SortOrder
     salutation?: SortOrderInput | SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
@@ -26101,6 +26117,7 @@ export namespace Prisma {
     OR?: AddressWhereInput[]
     NOT?: AddressWhereInput | AddressWhereInput[]
     customerId?: StringFilter<"Address"> | string
+    isMain?: BoolFilter<"Address"> | boolean
     salutation?: EnumSalutationNullableFilter<"Address"> | $Enums.Salutation | null
     firstName?: StringFilter<"Address"> | string
     lastName?: StringFilter<"Address"> | string
@@ -26119,6 +26136,7 @@ export namespace Prisma {
   export type AddressOrderByWithAggregationInput = {
     id?: SortOrder
     customerId?: SortOrder
+    isMain?: SortOrder
     salutation?: SortOrderInput | SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
@@ -26142,6 +26160,7 @@ export namespace Prisma {
     NOT?: AddressScalarWhereWithAggregatesInput | AddressScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Address"> | string
     customerId?: StringWithAggregatesFilter<"Address"> | string
+    isMain?: BoolWithAggregatesFilter<"Address"> | boolean
     salutation?: EnumSalutationNullableWithAggregatesFilter<"Address"> | $Enums.Salutation | null
     firstName?: StringWithAggregatesFilter<"Address"> | string
     lastName?: StringWithAggregatesFilter<"Address"> | string
@@ -27731,6 +27750,7 @@ export namespace Prisma {
 
   export type AddressCreateInput = {
     id?: string
+    isMain?: boolean
     salutation?: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -27749,6 +27769,7 @@ export namespace Prisma {
   export type AddressUncheckedCreateInput = {
     id?: string
     customerId: string
+    isMain?: boolean
     salutation?: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -27765,6 +27786,7 @@ export namespace Prisma {
 
   export type AddressUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -27783,6 +27805,7 @@ export namespace Prisma {
   export type AddressUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -27800,6 +27823,7 @@ export namespace Prisma {
   export type AddressCreateManyInput = {
     id?: string
     customerId: string
+    isMain?: boolean
     salutation?: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -27816,6 +27840,7 @@ export namespace Prisma {
 
   export type AddressUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -27833,6 +27858,7 @@ export namespace Prisma {
   export type AddressUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     customerId?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -29517,6 +29543,7 @@ export namespace Prisma {
   export type AddressCountOrderByAggregateInput = {
     id?: SortOrder
     customerId?: SortOrder
+    isMain?: SortOrder
     salutation?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
@@ -29534,6 +29561,7 @@ export namespace Prisma {
   export type AddressMaxOrderByAggregateInput = {
     id?: SortOrder
     customerId?: SortOrder
+    isMain?: SortOrder
     salutation?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
@@ -29551,6 +29579,7 @@ export namespace Prisma {
   export type AddressMinOrderByAggregateInput = {
     id?: SortOrder
     customerId?: SortOrder
+    isMain?: SortOrder
     salutation?: SortOrder
     firstName?: SortOrder
     lastName?: SortOrder
@@ -32446,6 +32475,7 @@ export namespace Prisma {
 
   export type AddressCreateWithoutCustomerInput = {
     id?: string
+    isMain?: boolean
     salutation?: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -32462,6 +32492,7 @@ export namespace Prisma {
 
   export type AddressUncheckedCreateWithoutCustomerInput = {
     id?: string
+    isMain?: boolean
     salutation?: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -32685,6 +32716,7 @@ export namespace Prisma {
     NOT?: AddressScalarWhereInput | AddressScalarWhereInput[]
     id?: StringFilter<"Address"> | string
     customerId?: StringFilter<"Address"> | string
+    isMain?: BoolFilter<"Address"> | boolean
     salutation?: EnumSalutationNullableFilter<"Address"> | $Enums.Salutation | null
     firstName?: StringFilter<"Address"> | string
     lastName?: StringFilter<"Address"> | string
@@ -35002,6 +35034,7 @@ export namespace Prisma {
 
   export type AddressCreateManyCustomerInput = {
     id?: string
+    isMain?: boolean
     salutation?: $Enums.Salutation | null
     firstName: string
     lastName: string
@@ -35075,6 +35108,7 @@ export namespace Prisma {
 
   export type AddressUpdateWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -35091,6 +35125,7 @@ export namespace Prisma {
 
   export type AddressUncheckedUpdateWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
@@ -35107,6 +35142,7 @@ export namespace Prisma {
 
   export type AddressUncheckedUpdateManyWithoutCustomerInput = {
     id?: StringFieldUpdateOperationsInput | string
+    isMain?: BoolFieldUpdateOperationsInput | boolean
     salutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
     firstName?: StringFieldUpdateOperationsInput | string
     lastName?: StringFieldUpdateOperationsInput | string
