@@ -1,24 +1,24 @@
-import { Prisma } from "../../../../generated/prisma";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import { Prisma } from '../../../../generated/prisma'
+import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
 
-import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, ownerProcedure } from '~/server/api/trpc'
 import {
   MAX_PRODUCT_IMAGES,
   PRODUCT_IMAGE_CONTENT_TYPES,
-  PRODUCT_IMAGE_MAX_BYTES,
-} from "~/lib/product-images";
-import { productDescriptionJsonSchema } from "~/lib/form-schemas";
+  PRODUCT_IMAGE_MAX_BYTES
+} from '~/lib/product-images'
+import { productDescriptionJsonSchema } from '~/lib/form-schemas'
 import {
   createPresignedProductImageUpload,
-  isS3Configured,
-} from "~/server/storage/s3";
+  isS3Configured
+} from '~/server/storage/s3'
 import {
   createProduct,
   ProductMaintenanceError,
   updateProduct,
-  type ProductMaintenanceRow,
-} from "~/server/commerce/product-maintenance";
+  type ProductMaintenanceRow
+} from '~/server/commerce/product-maintenance'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -26,22 +26,22 @@ const listInputSchema = z.object({
   search: z.string().trim().optional(),
   sortBy: z
     .enum([
-      "name",
-      "sku",
-      "manufacturer",
-      "active",
-      "priceCents",
-      "costCents",
-      "discountPercent",
-      "stockOnHand",
-      "stockReserved",
-      "dispatchMinDays",
-      "categoryCount",
-      "createdAt",
+      'name',
+      'sku',
+      'manufacturer',
+      'active',
+      'priceCents',
+      'costCents',
+      'discountPercent',
+      'stockOnHand',
+      'stockReserved',
+      'dispatchMinDays',
+      'categoryCount',
+      'createdAt'
     ])
-    .default("createdAt"),
-  sortDir: z.enum(["asc", "desc"]).default("desc"),
-});
+    .default('createdAt'),
+  sortDir: z.enum(['asc', 'desc']).default('desc')
+})
 
 const createInputSchema = z.object({
   name: z.string().trim().min(1),
@@ -64,20 +64,20 @@ const createInputSchema = z.object({
           .int()
           .min(0)
           .max(MAX_PRODUCT_IMAGES - 1),
-        altText: z.string().trim().optional(),
-      }),
+        altText: z.string().trim().optional()
+      })
     )
     .max(MAX_PRODUCT_IMAGES)
-    .optional(),
-});
+    .optional()
+})
 
 const updateInputSchema = createInputSchema.omit({ images: true }).extend({
-  id: z.string(),
-});
+  id: z.string()
+})
 
 const getForEditInputSchema = z.object({
-  id: z.string(),
-});
+  id: z.string()
+})
 
 const createImageUploadUrlsInputSchema = z.object({
   files: z
@@ -90,61 +90,61 @@ const createImageUploadUrlsInputSchema = z.object({
           .number()
           .int()
           .min(0)
-          .max(MAX_PRODUCT_IMAGES - 1),
-      }),
+          .max(MAX_PRODUCT_IMAGES - 1)
+      })
     )
     .min(1)
-    .max(MAX_PRODUCT_IMAGES),
-});
+    .max(MAX_PRODUCT_IMAGES)
+})
 
 const listManufacturersInputSchema = z.object({
   search: z.string().trim().optional(),
-  limit: z.number().int().min(1).max(20).default(10),
-});
+  limit: z.number().int().min(1).max(20).default(10)
+})
 
 function buildSearchFilter(
-  search: string | undefined,
+  search: string | undefined
 ): Prisma.ProductWhereInput | undefined {
   if (!search) {
-    return undefined;
+    return undefined
   }
 
   return {
     OR: [
-      { name: { contains: search, mode: "insensitive" } },
+      { name: { contains: search, mode: 'insensitive' } },
       {
         manufacturer: {
-          name: { contains: search, mode: "insensitive" },
-        },
-      },
-    ],
-  };
+          name: { contains: search, mode: 'insensitive' }
+        }
+      }
+    ]
+  }
 }
 
 function buildOrderBy(
-  sortBy: z.infer<typeof listInputSchema>["sortBy"],
-  sortDir: z.infer<typeof listInputSchema>["sortDir"],
+  sortBy: z.infer<typeof listInputSchema>['sortBy'],
+  sortDir: z.infer<typeof listInputSchema>['sortDir']
 ):
   | Prisma.ProductOrderByWithRelationInput
   | Prisma.ProductOrderByWithRelationInput[] {
   switch (sortBy) {
-    case "manufacturer":
-      return { manufacturer: { name: sortDir } };
-    case "categoryCount":
-      return { categories: { _count: sortDir } };
-    case "name":
-    case "sku":
-    case "active":
-    case "priceCents":
-    case "costCents":
-    case "discountPercent":
-    case "stockOnHand":
-    case "stockReserved":
-    case "dispatchMinDays":
-      return { [sortBy]: sortDir };
-    case "createdAt":
+    case 'manufacturer':
+      return { manufacturer: { name: sortDir } }
+    case 'categoryCount':
+      return { categories: { _count: sortDir } }
+    case 'name':
+    case 'sku':
+    case 'active':
+    case 'priceCents':
+    case 'costCents':
+    case 'discountPercent':
+    case 'stockOnHand':
+    case 'stockReserved':
+    case 'dispatchMinDays':
+      return { [sortBy]: sortDir }
+    case 'createdAt':
     default:
-      return { createdAt: sortDir };
+      return { createdAt: sortDir }
   }
 }
 
@@ -164,37 +164,39 @@ function mapProductRow(product: ProductMaintenanceRow) {
     dispatchMinDays: product.dispatchMinDays,
     dispatchMaxDays: product.dispatchMaxDays,
     categoryCount: product._count.categories,
-    createdAt: product.createdAt,
-  };
+    createdAt: product.createdAt
+  }
 }
 
-function toProductMaintenanceTrpcError(error: ProductMaintenanceError): TRPCError {
+function toProductMaintenanceTrpcError(
+  error: ProductMaintenanceError
+): TRPCError {
   switch (error.code) {
-    case "PRODUCT_NOT_FOUND":
+    case 'PRODUCT_NOT_FOUND':
       return new TRPCError({
-        code: "NOT_FOUND",
-        message: error.message,
-      });
-    case "INVALID_DISPATCH_ESTIMATE":
-    case "INVALID_PRODUCT_IMAGE_KEY":
-    case "CATEGORY_NOT_FOUND":
+        code: 'NOT_FOUND',
+        message: error.message
+      })
+    case 'INVALID_DISPATCH_ESTIMATE':
+    case 'INVALID_PRODUCT_IMAGE_KEY':
+    case 'CATEGORY_NOT_FOUND':
       return new TRPCError({
-        code: "BAD_REQUEST",
-        message: error.message,
-      });
-    case "IMAGE_UPLOADS_NOT_CONFIGURED":
+        code: 'BAD_REQUEST',
+        message: error.message
+      })
+    case 'IMAGE_UPLOADS_NOT_CONFIGURED':
       return new TRPCError({
-        code: "PRECONDITION_FAILED",
-        message: error.message,
-      });
+        code: 'PRECONDITION_FAILED',
+        message: error.message
+      })
   }
 }
 
 export const productRouter = createTRPCRouter({
   list: ownerProcedure.input(listInputSchema).query(async ({ ctx, input }) => {
-    const where = buildSearchFilter(input.search);
-    const orderBy = buildOrderBy(input.sortBy, input.sortDir);
-    const skip = (input.page - 1) * input.pageSize;
+    const where = buildSearchFilter(input.search)
+    const orderBy = buildOrderBy(input.sortBy, input.sortDir)
+    const skip = (input.page - 1) * input.pageSize
 
     const [totalCount, products] = await ctx.db.$transaction([
       ctx.db.product.count({ where }),
@@ -202,21 +204,21 @@ export const productRouter = createTRPCRouter({
         where,
         include: {
           manufacturer: { select: { name: true } },
-          _count: { select: { categories: true } },
+          _count: { select: { categories: true } }
         },
         orderBy,
         skip,
-        take: input.pageSize,
-      }),
-    ]);
+        take: input.pageSize
+      })
+    ])
 
     return {
       items: products.map(mapProductRow),
       page: input.page,
       pageSize: input.pageSize,
       totalCount,
-      totalPages: Math.max(1, Math.ceil(totalCount / input.pageSize)),
-    };
+      totalPages: Math.max(1, Math.ceil(totalCount / input.pageSize))
+    }
   }),
 
   listManufacturers: ownerProcedure
@@ -224,18 +226,18 @@ export const productRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const where = input.search
         ? {
-            name: { contains: input.search, mode: "insensitive" as const },
+            name: { contains: input.search, mode: 'insensitive' as const }
           }
-        : undefined;
+        : undefined
 
       const manufacturers = await ctx.db.manufacturer.findMany({
         where,
         select: { id: true, name: true },
-        orderBy: { name: "asc" },
-        take: input.limit,
-      });
+        orderBy: { name: 'asc' },
+        take: input.limit
+      })
 
-      return manufacturers;
+      return manufacturers
     }),
 
   createImageUploadUrls: ownerProcedure
@@ -243,51 +245,51 @@ export const productRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       if (!isS3Configured()) {
         throw new TRPCError({
-          code: "PRECONDITION_FAILED",
-          message: "Image uploads are not configured.",
-        });
+          code: 'PRECONDITION_FAILED',
+          message: 'Image uploads are not configured.'
+        })
       }
 
-      const uploadId = crypto.randomUUID();
+      const uploadId = crypto.randomUUID()
       const uploads = await Promise.all(
         input.files.map((file) =>
           createPresignedProductImageUpload({
             uploadId,
             index: file.slotIndex,
             contentType: file.contentType,
-            contentLength: file.contentLength,
+            contentLength: file.contentLength
           }).then((upload) => ({
             ...upload,
-            slotIndex: file.slotIndex,
-          })),
-        ),
-      );
+            slotIndex: file.slotIndex
+          }))
+        )
+      )
 
-      return { uploadId, uploads };
+      return { uploadId, uploads }
     }),
 
   create: ownerProcedure
     .input(createInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const product = await createProduct(ctx.db, input);
-        return mapProductRow(product);
+        const product = await createProduct(ctx.db, input)
+        return mapProductRow(product)
       } catch (error) {
         if (error instanceof ProductMaintenanceError) {
-          throw toProductMaintenanceTrpcError(error);
+          throw toProductMaintenanceTrpcError(error)
         }
 
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === 'P2002'
         ) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "Could not create the product.",
-          });
+            code: 'CONFLICT',
+            message: 'Could not create the product.'
+          })
         }
 
-        throw error;
+        throw error
       }
     }),
 
@@ -300,16 +302,16 @@ export const productRouter = createTRPCRouter({
           manufacturer: { select: { name: true } },
           categories: {
             select: { categoryId: true },
-            orderBy: { sortOrder: "asc" },
-          },
-        },
-      });
+            orderBy: { sortOrder: 'asc' }
+          }
+        }
+      })
 
       if (!product) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Product not found.",
-        });
+          code: 'NOT_FOUND',
+          message: 'Product not found.'
+        })
       }
 
       return {
@@ -325,32 +327,32 @@ export const productRouter = createTRPCRouter({
         dispatchMaxDays: product.dispatchMaxDays,
         active: product.active,
         featured: product.featured,
-        categoryIds: product.categories.map((entry) => entry.categoryId),
-      };
+        categoryIds: product.categories.map((entry) => entry.categoryId)
+      }
     }),
 
   update: ownerProcedure
     .input(updateInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const product = await updateProduct(ctx.db, input);
-        return mapProductRow(product);
+        const product = await updateProduct(ctx.db, input)
+        return mapProductRow(product)
       } catch (error) {
         if (error instanceof ProductMaintenanceError) {
-          throw toProductMaintenanceTrpcError(error);
+          throw toProductMaintenanceTrpcError(error)
         }
 
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === 'P2002'
         ) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "Could not update the product.",
-          });
+            code: 'CONFLICT',
+            message: 'Could not update the product.'
+          })
         }
 
-        throw error;
+        throw error
       }
-    }),
-});
+    })
+})

@@ -1,42 +1,42 @@
-import { z } from "zod";
+import { z } from "zod"
 
 import {
   collectDescendantCategoryIds,
   resolveCategoryPath,
-} from "~/lib/category-path";
+} from "~/lib/category-path"
 import {
   mapStorefrontProduct,
   mapStorefrontProductDetail,
   storefrontProductInclude,
-} from "~/lib/catalog-product";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+} from "~/lib/catalog-product"
+import { createTRPCRouter, publicProcedure } from "~/server/api/trpc"
 
 const listProductsInputSchema = z.object({
   slugPath: z.string().trim().min(1),
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(48).default(12),
-});
+})
 
 const resolveCategoryInputSchema = z.object({
   slugPath: z.string().trim().min(1),
-});
+})
 
 type NavigationCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  slugPath: string;
-  sortOrder: number;
-  children: NavigationCategory[];
-};
+  id: string
+  name: string
+  slug: string
+  slugPath: string
+  sortOrder: number
+  children: NavigationCategory[]
+}
 
 function buildNavigationTree(
   categories: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    parentId: string | null;
-    sortOrder: number;
+    id: string
+    name: string
+    slug: string
+    parentId: string | null
+    sortOrder: number
   }>,
   parentId: string | null,
   parentSlugPath = "",
@@ -45,14 +45,14 @@ function buildNavigationTree(
     .filter((category) => category.parentId === parentId)
     .sort((left, right) => {
       if (left.sortOrder !== right.sortOrder) {
-        return left.sortOrder - right.sortOrder;
+        return left.sortOrder - right.sortOrder
       }
-      return left.name.localeCompare(right.name);
+      return left.name.localeCompare(right.name)
     })
     .map((category) => {
       const slugPath = parentSlugPath
         ? `${parentSlugPath}/${category.slug}`
-        : category.slug;
+        : category.slug
 
       return {
         id: category.id,
@@ -61,8 +61,8 @@ function buildNavigationTree(
         slugPath,
         sortOrder: category.sortOrder,
         children: buildNavigationTree(categories, category.id, slugPath),
-      };
-    });
+      }
+    })
 }
 
 export const catalogRouter = createTRPCRouter({
@@ -77,27 +77,17 @@ export const catalogRouter = createTRPCRouter({
         sortOrder: true,
       },
       orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    });
+    })
 
-    return buildNavigationTree(categories, null);
+    return buildNavigationTree(categories, null)
   }),
 
   resolveCategory: publicProcedure
     .input(resolveCategoryInputSchema)
     .query(async ({ ctx, input }) => {
-      const slugSegments = input.slugPath.split("/").filter(Boolean);
+      const slugSegments = input.slugPath.split("/").filter(Boolean)
       const categories = await ctx.db.category.findMany({
         where: { active: true },
-        select: { id: true, slug: true, parentId: true },
-      });
-
-      const resolved = resolveCategoryPath(categories, slugSegments);
-      if (!resolved) {
-        return null;
-      }
-
-      const category = await ctx.db.category.findFirst({
-        where: { id: resolved.categoryId, active: true },
         select: {
           id: true,
           name: true,
@@ -105,37 +95,46 @@ export const catalogRouter = createTRPCRouter({
           parentId: true,
           sortOrder: true,
         },
-      });
+      })
+
+      const resolved = resolveCategoryPath(categories, slugSegments)
+      if (!resolved) {
+        return null
+      }
+
+      const category = categories.find(
+        (entry) => entry.id === resolved.categoryId,
+      )
 
       if (!category) {
-        return null;
+        return null
       }
 
       return {
         ...category,
         slugPath: resolved.slugPath,
-      };
+      }
     }),
 
   listCategoryProducts: publicProcedure
     .input(listProductsInputSchema)
     .query(async ({ ctx, input }) => {
-      const slugSegments = input.slugPath.split("/").filter(Boolean);
+      const slugSegments = input.slugPath.split("/").filter(Boolean)
       const categories = await ctx.db.category.findMany({
         where: { active: true },
         select: { id: true, slug: true, parentId: true },
-      });
+      })
 
-      const resolved = resolveCategoryPath(categories, slugSegments);
+      const resolved = resolveCategoryPath(categories, slugSegments)
       if (!resolved) {
-        return null;
+        return null
       }
 
       const categoryIds = collectDescendantCategoryIds(
         categories,
         resolved.categoryId,
-      );
-      const skip = (input.page - 1) * input.pageSize;
+      )
+      const skip = (input.page - 1) * input.pageSize
 
       const where = {
         active: true,
@@ -144,7 +143,7 @@ export const catalogRouter = createTRPCRouter({
             categoryId: { in: categoryIds },
           },
         },
-      };
+      }
 
       const [totalCount, products] = await ctx.db.$transaction([
         ctx.db.product.count({ where }),
@@ -155,7 +154,7 @@ export const catalogRouter = createTRPCRouter({
           skip,
           take: input.pageSize,
         }),
-      ]);
+      ])
 
       return {
         slugPath: resolved.slugPath,
@@ -165,7 +164,7 @@ export const catalogRouter = createTRPCRouter({
         pageSize: input.pageSize,
         totalCount,
         totalPages: Math.max(1, Math.ceil(totalCount / input.pageSize)),
-      };
+      }
     }),
 
   getProductBySlug: publicProcedure
@@ -174,13 +173,13 @@ export const catalogRouter = createTRPCRouter({
       const product = await ctx.db.product.findFirst({
         where: { slug: input.slug, active: true },
         include: storefrontProductInclude,
-      });
+      })
 
       if (!product) {
-        return null;
+        return null
       }
 
-      return mapStorefrontProductDetail(product);
+      return mapStorefrontProductDetail(product)
     }),
 
   homepageSections: publicProcedure.query(async ({ ctx }) => {
@@ -193,18 +192,19 @@ export const catalogRouter = createTRPCRouter({
         slug: true,
         sortOrder: true,
       },
-    });
+    })
+
+    const allCategories = await ctx.db.category.findMany({
+      where: { active: true },
+      select: { id: true, slug: true, parentId: true },
+    })
 
     const sections = await Promise.all(
       rootCategories.map(async (category) => {
-        const allCategories = await ctx.db.category.findMany({
-          where: { active: true },
-          select: { id: true, slug: true, parentId: true },
-        });
         const categoryIds = collectDescendantCategoryIds(
           allCategories,
           category.id,
-        );
+        )
 
         const featuredProducts = await ctx.db.product.findMany({
           where: {
@@ -219,15 +219,15 @@ export const catalogRouter = createTRPCRouter({
           include: storefrontProductInclude,
           orderBy: [{ name: "asc" }],
           take: 4,
-        });
+        })
 
-        const mappedFeatured = featuredProducts.map(mapStorefrontProduct);
-        const missingCount = Math.max(0, 4 - mappedFeatured.length);
+        const mappedFeatured = featuredProducts.map(mapStorefrontProduct)
+        const missingCount = Math.max(0, 4 - mappedFeatured.length)
 
-        let fallbackProducts: ReturnType<typeof mapStorefrontProduct>[] = [];
+        let fallbackProducts: ReturnType<typeof mapStorefrontProduct>[] = []
 
         if (missingCount > 0) {
-          const featuredIds = mappedFeatured.map((product) => product.id);
+          const featuredIds = mappedFeatured.map((product) => product.id)
 
           const products = await ctx.db.product.findMany({
             where: {
@@ -243,19 +243,19 @@ export const catalogRouter = createTRPCRouter({
             include: storefrontProductInclude,
             orderBy: [{ name: "asc" }],
             take: missingCount,
-          });
+          })
 
-          fallbackProducts = products.map(mapStorefrontProduct);
+          fallbackProducts = products.map(mapStorefrontProduct)
         }
 
         return {
           category,
           slugPath: category.slug,
           products: [...mappedFeatured, ...fallbackProducts],
-        };
+        }
       }),
-    );
+    )
 
-    return sections.filter((section) => section.products.length > 0);
+    return sections.filter((section) => section.products.length > 0)
   }),
-});
+})

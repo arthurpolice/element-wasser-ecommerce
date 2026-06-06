@@ -181,12 +181,6 @@ function SearchBar() {
         placeholder={t("searchPlaceholder")}
         type="search"
       />
-      <span
-        aria-hidden="true"
-        className="border-store-border text-store-muted hidden border-l pl-4 text-xs tracking-[0.16em] uppercase sm:block"
-      >
-        {t("searchHint")}
-      </span>
     </label>
   );
 }

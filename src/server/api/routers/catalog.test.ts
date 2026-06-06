@@ -6,8 +6,20 @@ import { catalogRouter } from "~/server/api/routers/catalog";
 const createCaller = createCallerFactory(catalogRouter);
 
 const categories = [
-  { id: "root", slug: "water-filters", parentId: null },
-  { id: "child", slug: "replacement-cartridges", parentId: "root" },
+  {
+    id: "root",
+    name: "Water Filters",
+    slug: "water-filters",
+    parentId: null,
+    sortOrder: 0,
+  },
+  {
+    id: "child",
+    name: "Replacement Cartridges",
+    slug: "replacement-cartridges",
+    parentId: "root",
+    sortOrder: 0,
+  },
 ];
 
 const product = {
@@ -44,17 +56,7 @@ function createMockDb() {
         return categories;
       }),
       findFirst: vi.fn(async ({ where }: { where: { id: string; active?: boolean } }) => {
-        const match = categories.find((category) => category.id === where.id);
-        if (!match) {
-          return null;
-        }
-        return {
-          id: match.id,
-          name: "Water Filters",
-          slug: match.slug,
-          parentId: match.parentId,
-          sortOrder: 0,
-        };
+        return categories.find((category) => category.id === where.id) ?? null;
       }),
     },
     product: {
