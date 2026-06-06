@@ -464,9 +464,17 @@
         "total": "Total",
         "latestPayment": "Latest payment",
         "shipping": "Shipping",
-        "placedAt": "Placed"
+        "placedAt": "Placed",
+        "actions": "Actions"
       },
-      "noPayment": "No payment"
+      "noPayment": "No payment",
+      "noActions": "No actions",
+      "actions": {
+        "cancel": "Cancel",
+        "cancelPending": "Cancelling...",
+        "fulfill": "Mark fulfilled",
+        "fulfillPending": "Marking..."
+      }
     },
     "pagination": {
       "summary": "{count, plural, =0 {No orders} one {# order} other {# orders}} · Page {page} of {totalPages}",

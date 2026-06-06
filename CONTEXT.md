@@ -92,6 +92,10 @@ _Avoid_: Inventory
 The quantity committed to placed orders that has not yet left inventory.
 _Avoid_: Held inventory
 
+**Stock Reservation**:
+A commitment of stock to a placed order while payment or fulfillment is still pending. A payment-pending reservation can expire; a paid reservation remains committed until fulfillment or cancellation.
+_Avoid_: Cart hold, lock
+
 **Product Image**:
 An optional image attached to a product for catalog presentation.
 _Avoid_: Picture, media asset

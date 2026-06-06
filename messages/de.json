@@ -464,9 +464,17 @@
         "total": "Total",
         "latestPayment": "Letzte Zahlung",
         "shipping": "Versand",
-        "placedAt": "Aufgegeben"
+        "placedAt": "Aufgegeben",
+        "actions": "Aktionen"
       },
-      "noPayment": "Keine Zahlung"
+      "noPayment": "Keine Zahlung",
+      "noActions": "Keine Aktionen",
+      "actions": {
+        "cancel": "Stornieren",
+        "cancelPending": "Wird storniert...",
+        "fulfill": "Als erfüllt markieren",
+        "fulfillPending": "Wird markiert..."
+      }
     },
     "pagination": {
       "summary": "{count, plural, =0 {Keine Bestellungen} one {# Bestellung} other {# Bestellungen}} · Seite {page} von {totalPages}",
