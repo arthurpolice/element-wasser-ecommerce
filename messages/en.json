@@ -405,6 +405,10 @@
       "addresses": "Addresses",
       "signOut": "Sign out",
       "cartSummary": "Cart Summary",
+      "cartEmpty": "Your cart is empty.",
+      "addedToCart": "Added to cart",
+      "checkout": "Checkout",
+      "openCart": "Open cart",
       "amount": "Amount"
     },
     "navigation": {
@@ -437,10 +441,28 @@
     },
     "productPage": {
       "noImage": "No image available",
-      "dispatchEstimate": "Dispatch estimate: {range}",
+      "thumbnailAlt": "Product image {index}",
+      "currentPriceLabel": "Current price",
+      "listPriceLabel": "List price",
+      "saleBadge": "{percent}% off",
+      "overviewEyebrow": "Product detail",
+      "descriptionTitle": "Product Description",
+      "viewCategory": "View {category}",
+      "categoryBreadcrumbLabel": "Product category",
+      "details": {
+        "dispatchEstimate": "Dispatch Estimate",
+        "reviews": "Reviews"
+      },
+      "purchase": {
+        "amount": "Amount",
+        "decreaseAmount": "Decrease amount",
+        "increaseAmount": "Increase amount",
+        "addToCart": "Add to cart",
+        "unavailableTag": "Unavailable",
+        "notifyWhenBack": "Notify me when back in stock"
+      },
       "reviewsSummary": "{rating} average · {count, plural, one {# review} other {# reviews}}",
       "noReviews": "No approved reviews yet.",
-      "descriptionPlaceholder": "Detailed product description content will appear here.",
       "noDescription": "No product description yet."
     }
   },

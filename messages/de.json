@@ -405,6 +405,10 @@
       "addresses": "Adressen",
       "signOut": "Abmelden",
       "cartSummary": "Warenkorb",
+      "cartEmpty": "Ihr Warenkorb ist leer.",
+      "addedToCart": "Zum Warenkorb hinzugefügt",
+      "checkout": "Zur Kasse",
+      "openCart": "Warenkorb öffnen",
       "amount": "Menge"
     },
     "navigation": {
@@ -437,10 +441,28 @@
     },
     "productPage": {
       "noImage": "Kein Bild verfügbar",
-      "dispatchEstimate": "Versandzeit: {range}",
+      "thumbnailAlt": "Produktbild {index}",
+      "currentPriceLabel": "Aktueller Preis",
+      "listPriceLabel": "Listenpreis",
+      "saleBadge": "{percent} % Rabatt",
+      "overviewEyebrow": "Produktdetail",
+      "descriptionTitle": "Produktbeschreibung",
+      "viewCategory": "{category} anzeigen",
+      "categoryBreadcrumbLabel": "Produktkategorie",
+      "details": {
+        "dispatchEstimate": "Versandzeit",
+        "reviews": "Bewertungen"
+      },
+      "purchase": {
+        "amount": "Menge",
+        "decreaseAmount": "Menge verringern",
+        "increaseAmount": "Menge erhöhen",
+        "addToCart": "In den Warenkorb",
+        "unavailableTag": "Nicht verfügbar",
+        "notifyWhenBack": "Benachrichtigen, wenn wieder verfügbar"
+      },
       "reviewsSummary": "{rating} Durchschnitt · {count, plural, one {# Bewertung} other {# Bewertungen}}",
       "noReviews": "Noch keine freigegebenen Bewertungen.",
-      "descriptionPlaceholder": "Ausführliche Produktbeschreibung erscheint hier.",
       "noDescription": "Noch keine Produktbeschreibung vorhanden."
     }
   },

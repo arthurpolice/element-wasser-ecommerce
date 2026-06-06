@@ -1,25 +1,25 @@
-import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
+import Image from 'next/image'
+import { useLocale, useTranslations } from 'next-intl'
 
-import { RevealOnScroll } from "~/app/[locale]/(storefront)/_components/reveal-on-scroll";
-import { formatDispatchEstimate, formatPriceCents } from "~/lib/format-catalog";
-import { Link } from "~/i18n/navigation";
-import type { StorefrontProduct } from "~/lib/catalog-product";
+import { RevealOnScroll } from '~/app/[locale]/(storefront)/_components/reveal-on-scroll'
+import { formatDispatchEstimate, formatPriceCents } from '~/lib/format-catalog'
+import { Link } from '~/i18n/navigation'
+import type { StorefrontProduct } from '~/lib/catalog-product'
 
 type ProductCardProps = {
-  product: StorefrontProduct;
-  revealDelayClassName?: string;
-};
+  product: StorefrontProduct
+  revealDelayClassName?: string
+}
 
 export function ProductCard({
   product,
-  revealDelayClassName = "",
+  revealDelayClassName = ''
 }: ProductCardProps) {
-  const locale = useLocale();
-  const t = useTranslations("Storefront.productCard");
+  const locale = useLocale()
+  const t = useTranslations('Storefront.productCard')
   const unitPriceCents = product.discountPercent
     ? Math.round(product.priceCents * (1 - product.discountPercent / 100))
-    : product.priceCents;
+    : product.priceCents
 
   return (
     <RevealOnScroll delayClassName={revealDelayClassName}>
@@ -38,7 +38,7 @@ export function ProductCard({
             />
           ) : (
             <div className="text-store-muted flex h-full items-center justify-center text-sm">
-              {t("noImage")}
+              {t('noImage')}
             </div>
           )}
         </div>
@@ -65,19 +65,20 @@ export function ProductCard({
               {formatDispatchEstimate(
                 product.dispatchMinDays,
                 product.dispatchMaxDays,
+                locale
               )}
             </p>
           </div>
           {product.reviewCount > 0 && product.averageRating ? (
             <p className="text-store-accent text-xs">
-              {t("reviewsSummary", {
+              {t('reviewsSummary', {
                 rating: product.averageRating.toFixed(1),
-                count: product.reviewCount,
+                count: product.reviewCount
               })}
             </p>
           ) : null}
         </div>
       </Link>
     </RevealOnScroll>
-  );
+  )
 }

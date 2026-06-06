@@ -37,6 +37,22 @@ export const env = createEnv({
       .enum(["true", "false"])
       .optional()
       .transform((value) => value === "true"),
+    QSTASH_TOKEN:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    QSTASH_CURRENT_SIGNING_KEY:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    QSTASH_NEXT_SIGNING_KEY:
+      process.env.NODE_ENV === "production"
+        ? z.string()
+        : z.string().optional(),
+    QSTASH_PUBLISH_BASE_URL:
+      process.env.NODE_ENV === "production"
+        ? z.string().url()
+        : z.string().url().optional(),
   },
 
   /**
@@ -63,6 +79,10 @@ export const env = createEnv({
     S3_ENDPOINT: process.env.S3_ENDPOINT,
     S3_PUBLIC_URL_BASE: process.env.S3_PUBLIC_URL_BASE,
     S3_FORCE_PATH_STYLE: process.env.S3_FORCE_PATH_STYLE,
+    QSTASH_TOKEN: process.env.QSTASH_TOKEN,
+    QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
+    QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
+    QSTASH_PUBLISH_BASE_URL: process.env.QSTASH_PUBLISH_BASE_URL,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

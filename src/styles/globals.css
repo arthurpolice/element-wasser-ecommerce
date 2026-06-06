@@ -1,9 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --font-sans:
     var(--font-figtree), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-display:
     var(--font-sora), var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
 
@@ -80,6 +80,17 @@
     opacity: 0;
     transform: translateY(0.4rem);
   }
+}
+
+input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
 }
 
 .dashboard-root {
@@ -163,7 +174,7 @@
   background-color: #f6f9fc;
 }
 
-.product-description-toolbar-button[data-active="true"] {
+.product-description-toolbar-button[data-active='true'] {
   border-color: color-mix(in srgb, var(--color-dash-accent) 55%, transparent);
   background-color: color-mix(
     in srgb,
@@ -221,6 +232,62 @@
       transparent 35%
     ),
     url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.store-product-description {
+  max-width: 54rem;
+  color: var(--color-store-muted);
+  font-size: 0.96rem;
+  line-height: 1.85;
+}
+
+.store-product-description h2 {
+  margin: 0 0 0.75rem;
+  color: var(--color-store-ink);
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+.store-product-description h3 {
+  margin: 1.35rem 0 0.45rem;
+  color: var(--color-store-ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.35;
+}
+
+.store-product-description p {
+  margin: 0.65rem 0;
+}
+
+.store-product-description ul,
+.store-product-description ol {
+  margin: 0.8rem 0;
+  padding-left: 1.35rem;
+}
+
+.store-product-description ul {
+  list-style: disc;
+}
+
+.store-product-description ol {
+  list-style: decimal;
+}
+
+.store-product-description li {
+  padding-left: 0.25rem;
+}
+
+.store-product-description a {
+  color: var(--color-store-accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
 }
 
 @media (prefers-reduced-motion: reduce) {
