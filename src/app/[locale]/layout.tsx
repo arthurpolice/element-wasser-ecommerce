@@ -1,21 +1,10 @@
 import "~/styles/globals.css";
 
-import { Figtree, Sora } from "next/font/google";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { routing } from "~/i18n/routing";
-
-const figtree = Figtree({
-  subsets: ["latin"],
-  variable: "--font-figtree",
-});
-
-const sora = Sora({
-  subsets: ["latin"],
-  variable: "--font-sora",
-});
 
 type LocaleLayoutProps = {
   children: React.ReactNode;
@@ -40,7 +29,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={`${figtree.variable} ${sora.variable}`}>
+    <html lang={locale}>
       <body className="font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}

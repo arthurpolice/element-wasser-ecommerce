@@ -28,9 +28,25 @@ _Avoid_: Account area, user profile
 The step where a signed-in user provides the missing customer information required to become a registered customer.
 _Avoid_: Account setup, profile completion
 
+**Checkout**:
+The customer-facing step where a customer provides or selects the information needed to place an order. Checkout supports both guest customers and registered customers; only registered customers use address book entries during checkout.
+_Avoid_: Kasse
+
+**Cart**:
+A customer's pre-checkout selection of products and quantities intended to become one order.
+_Avoid_: Basket
+
 **Order**:
 A customer commitment to buy one or more products at recorded purchase terms. Cancellations apply to whole orders, and customer contact details are stored as order snapshots.
 _Avoid_: Purchase, transaction
+
+**Order Lifecycle Status**:
+Whether the order as a whole is open, cancelled, or closed. This is distinct from payment outcome and fulfillment progress.
+_Avoid_: Order Status, state
+
+**Order Confirmation**:
+The customer-facing page for one placed order after checkout, showing the order summary and current payment outcome.
+_Avoid_: Receipt, thank-you page
 
 **Order Line**:
 One product entry inside an order, including purchase-time quantity, price, and cost.
@@ -48,12 +64,16 @@ _Avoid_: Expense
 The process of completing an order after it is placed.
 _Avoid_: Delivery
 
+**Fulfillment Status**:
+Whether the merchant's operational completion of an order is unfulfilled, fulfilled, or cancelled.
+_Avoid_: Delivery status, Order Lifecycle Status
+
 **Address Book Entry**:
-A reusable registered-customer address selected during checkout and copied into the order.
+A reusable registered-customer address selected or created during checkout and copied into the order.
 _Avoid_: Order address
 
 **Main Address Book Entry**:
-The registered customer's preferred address book entry, shown first and preselected during checkout.
+The registered customer's preferred address book entry, shown first and preselected during checkout. When a registered customer has any address book entries, exactly one is main.
 _Avoid_: Default address, primary address
 
 **Shipping Address**:
@@ -67,6 +87,10 @@ _Avoid_: Payment address
 **Product**:
 A sellable catalog item with current price, current cost, inventory, manufacturer, slug, and SKU.
 _Avoid_: Item, article
+
+**Orderable Product**:
+A product that can currently be placed into an order because it is active, exists in the catalog, and has enough available stock for the requested quantity.
+_Avoid_: Available item
 
 **Featured Product**:
 A product deliberately promoted wherever it appears in storefront Category views. Category membership determines which Category views can feature the Product, including ancestor views.
@@ -91,6 +115,10 @@ _Avoid_: Inventory
 **Stock Reserved**:
 The quantity committed to placed orders that has not yet left inventory.
 _Avoid_: Held inventory
+
+**Available Stock**:
+The quantity a customer can currently place into an order, calculated as Stock On Hand minus Stock Reserved.
+_Avoid_: Available to user, free stock
 
 **Stock Reservation**:
 A commitment of stock to a placed order while payment or fulfillment is still pending. A payment-pending reservation can expire; a paid reservation remains committed until fulfillment or cancellation.
@@ -137,5 +165,17 @@ A product-level percentage reduction used for clearance sales and stored on orde
 _Avoid_: Coupon
 
 **Payment**:
-A payment attempt or money movement associated with an order.
+A payment attempt or money movement associated with an order. Checkout creates a pending payment for the selected payment method when the order is placed.
 _Avoid_: Transaction
+
+**Payment Provider**:
+The external processor for a payment. Stripe is the provider for both card and TWINT payments.
+_Avoid_: Payment method, gateway
+
+**Payment Method**:
+The customer's checkout choice for how they intend to pay, such as card or TWINT.
+_Avoid_: Payment provider
+
+**Order Payment Status**:
+Whether an order has been paid, is awaiting payment, has only failed payment attempts, has been refunded, or can no longer be paid. A failed payment status does not by itself prevent retry while the order remains open and unexpired.
+_Avoid_: Payment state

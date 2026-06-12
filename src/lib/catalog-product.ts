@@ -33,6 +33,7 @@ export type StorefrontProduct = {
 }
 
 export type StorefrontProductDetail = StorefrontProduct & {
+  availableStock: number
   availableToSell: boolean
   description: Prisma.JsonValue | null
   images: StorefrontProductImage[]
@@ -161,11 +162,12 @@ export function mapStorefrontProductDetail(
   const categoriesById = new Map(
     allActiveCategories.map((category) => [category.id, category])
   )
-  const availableToSell = product.stockOnHand - product.stockReserved > 0
+  const availableStock = product.stockOnHand - product.stockReserved
 
   return {
     ...mapStorefrontProduct(product),
-    availableToSell,
+    availableStock,
+    availableToSell: availableStock > 0,
     description: product.description,
     images: product.images,
     categories: product.categories.map(({ category }) => {

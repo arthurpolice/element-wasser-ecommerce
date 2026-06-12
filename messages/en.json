@@ -409,7 +409,9 @@
       "addedToCart": "Added to cart",
       "checkout": "Checkout",
       "openCart": "Open cart",
-      "amount": "Amount"
+      "amount": "Amount",
+      "remove": "Remove",
+      "removeItem": "Remove {name} from cart"
     },
     "navigation": {
       "label": "Store categories",
@@ -455,6 +457,8 @@
       },
       "purchase": {
         "amount": "Amount",
+        "availableAmount": "{count, plural, one {# available} other {# available}}",
+        "amountInCart": "{count, plural, one {# in cart} other {# in cart}}",
         "decreaseAmount": "Decrease amount",
         "increaseAmount": "Increase amount",
         "addToCart": "Add to cart",
@@ -464,6 +468,89 @@
       "reviewsSummary": "{rating} average · {count, plural, one {# review} other {# reviews}}",
       "noReviews": "No approved reviews yet.",
       "noDescription": "No product description yet."
+    },
+    "checkout": {
+      "eyebrow": "Checkout",
+      "title": "Checkout",
+      "description": "Enter your shipping details, choose a payment method, and review current product prices.",
+      "signInHint": "Sign in for saved addresses",
+      "emptyTitle": "Your cart is empty.",
+      "emptyDescription": "Add products to your cart and return here to review the order.",
+      "continueShopping": "Continue shopping",
+      "loading": "Loading current prices…",
+      "error": "Could not load checkout preview.",
+      "stepsLabel": "Checkout steps",
+      "steps": {
+        "address": "Address",
+        "payment": "Payment",
+        "overview": "Overview"
+      },
+      "stepStates": {
+        "current": "Current",
+        "complete": "Complete"
+      },
+      "addressTitle": "Guest Customer",
+      "paymentTitle": "Payment Method",
+      "overviewTitle": "Order Overview",
+      "requiredHint": "Fields marked with * are required.",
+      "paymentLocked": "Complete the address step to choose a payment method.",
+      "loadingCheckout": "Loading checkout…",
+      "onboarding": {
+        "title": "Complete your Customer Onboarding to continue.",
+        "description": "Signed-in customers use saved checkout details. Complete your customer information, then return to checkout.",
+        "action": "Complete customer information"
+      },
+      "addressBook": {
+        "main": "Main",
+        "empty": "Add an Address Book Entry to continue checkout.",
+        "addNew": "Add new address",
+        "cancelNew": "Cancel new address",
+        "save": "Save address",
+        "saving": "Saving…"
+      },
+      "fields": {
+        "email": "Email",
+        "salutation": "Salutation",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "company": "Company",
+        "streetLine1": "Street line 1",
+        "streetLine2": "Street line 2",
+        "postalCode": "Postal code",
+        "city": "City",
+        "countryCode": "Country code",
+        "phone": "Phone"
+      },
+      "salutations": {
+        "none": "None",
+        "HERR": "Mr",
+        "FRAU": "Ms"
+      },
+      "payment": {
+        "card": "Card",
+        "cardDescription": "Dummy card payment for this checkout slice.",
+        "twint": "TWINT",
+        "twintDescription": "Dummy TWINT selection for this checkout slice."
+      },
+      "items": "Products",
+      "quantity": "Quantity",
+      "decreaseQuantity": "Decrease quantity for {name}",
+      "increaseQuantity": "Increase quantity for {name}",
+      "remove": "Remove",
+      "removeItem": "Remove {name}",
+      "notPayable": "Not payable",
+      "problems": {
+        "MISSING_PRODUCT": "This product is no longer in the catalog.",
+        "INACTIVE_PRODUCT": "This product is not currently orderable.",
+        "INSUFFICIENT_STOCK": "The requested quantity is not available. {availableStock, plural, one {# unit is in stock.} other {# units are in stock.}}"
+      },
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "shipping": "Shipping",
+      "total": "Total",
+      "updating": "Updating",
+      "placeOrder": "Place order",
+      "unavailable": "One or more products need attention before this order can be placed."
     }
   },
   "Orders": {

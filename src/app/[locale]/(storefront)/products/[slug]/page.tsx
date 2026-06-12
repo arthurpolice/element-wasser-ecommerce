@@ -70,7 +70,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 ) : null}
 
                 <div className="space-y-3">
-                  <div className="border-store-border/80 bg-store-surface relative aspect-[5/6] overflow-hidden rounded-lg border shadow-[0_26px_70px_-48px_rgba(31,42,36,0.65)]">
+                  <div className="border-store-border/80 bg-store-surface relative aspect-5/6 overflow-hidden rounded-lg border shadow-[0_26px_70px_-48px_rgba(31,42,36,0.65)]">
                     {primaryImage ? (
                       <Image
                         alt={primaryImage.altText ?? product.name}
@@ -179,6 +179,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     slug: product.slug,
                     imageUrl: primaryImage?.url ?? null,
                     imageAlt: primaryImage?.altText ?? product.name,
+                    availableStock: product.availableStock,
                     availableToSell: product.availableToSell
                   }}
                 />

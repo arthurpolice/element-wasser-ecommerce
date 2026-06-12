@@ -1,5 +1,12 @@
 @import 'tailwindcss';
 
+:root {
+  --font-figtree:
+    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sora: ui-sans-serif, system-ui, sans-serif;
+}
+
 @theme {
   --font-sans:
     var(--font-figtree), ui-sans-serif, system-ui, sans-serif,

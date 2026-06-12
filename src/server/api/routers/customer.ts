@@ -1,28 +1,28 @@
-import { Prisma, Salutation } from "../../../../generated/prisma"
-import { TRPCError } from "@trpc/server"
-import { z } from "zod"
+import { Prisma, Salutation } from '../../../../generated/prisma'
+import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
 
 import {
   createTRPCRouter,
   ownerProcedure,
-  protectedProcedure,
-} from "~/server/api/trpc"
+  protectedProcedure
+} from '~/server/api/trpc'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
   pageSize: z.number().int().min(1).max(100).default(10),
   search: z.string().trim().optional(),
   sortBy: z
-    .enum(["name", "email", "createdAt", "orderCount"])
-    .default("createdAt"),
-  sortDir: z.enum(["asc", "desc"]).default("desc"),
+    .enum(['name', 'email', 'createdAt', 'orderCount'])
+    .default('createdAt'),
+  sortDir: z.enum(['asc', 'desc']).default('desc')
 })
 
 const createInputSchema = z.object({
   email: z.string().trim().email(),
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
-  salutation: z.nativeEnum(Salutation).optional(),
+  salutation: z.nativeEnum(Salutation).optional()
 })
 
 const completeOnboardingInputSchema = createInputSchema
@@ -30,7 +30,7 @@ const completeOnboardingInputSchema = createInputSchema
 const updateContactInputSchema = z.object({
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
-  salutation: z.nativeEnum(Salutation).optional(),
+  salutation: z.nativeEnum(Salutation).optional()
 })
 
 const addressInputSchema = z.object({
@@ -44,19 +44,19 @@ const addressInputSchema = z.object({
   city: z.string().trim().min(1),
   countryCode: z.string().trim().min(2).max(2),
   phone: z.string().trim().optional(),
-  isMain: z.boolean().default(false),
+  isMain: z.boolean().default(false)
 })
 
 const updateAddressInputSchema = addressInputSchema.extend({
-  id: z.string().min(1),
+  id: z.string().min(1)
 })
 
 const addressIdInputSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().min(1)
 })
 
 function buildSearchFilter(
-  search: string | undefined,
+  search: string | undefined
 ): Prisma.CustomerWhereInput | undefined {
   if (!search) {
     return undefined
@@ -64,25 +64,27 @@ function buildSearchFilter(
 
   return {
     OR: [
-      { email: { contains: search, mode: "insensitive" } },
-      { firstName: { contains: search, mode: "insensitive" } },
-      { lastName: { contains: search, mode: "insensitive" } },
-    ],
+      { email: { contains: search, mode: 'insensitive' } },
+      { firstName: { contains: search, mode: 'insensitive' } },
+      { lastName: { contains: search, mode: 'insensitive' } }
+    ]
   }
 }
 
 function buildOrderBy(
-  sortBy: z.infer<typeof listInputSchema>["sortBy"],
-  sortDir: z.infer<typeof listInputSchema>["sortDir"],
-): Prisma.CustomerOrderByWithRelationInput | Prisma.CustomerOrderByWithRelationInput[] {
+  sortBy: z.infer<typeof listInputSchema>['sortBy'],
+  sortDir: z.infer<typeof listInputSchema>['sortDir']
+):
+  | Prisma.CustomerOrderByWithRelationInput
+  | Prisma.CustomerOrderByWithRelationInput[] {
   switch (sortBy) {
-    case "name":
+    case 'name':
       return [{ lastName: sortDir }, { firstName: sortDir }]
-    case "email":
+    case 'email':
       return { email: sortDir }
-    case "orderCount":
+    case 'orderCount':
       return { orders: { _count: sortDir } }
-    case "createdAt":
+    case 'createdAt':
     default:
       return { createdAt: sortDir }
   }
@@ -97,14 +99,14 @@ function mapCustomerRow(
         select: { totalCents: true; placedAt: true; status: true }
       }
     }
-  }>,
+  }>
 ) {
   const activeOrders = customer.orders.filter(
-    (order) => order.status !== "CANCELLED",
+    (order) => order.status !== 'CANCELLED'
   )
   const totalSpentCents = activeOrders.reduce(
     (sum, order) => sum + order.totalCents,
-    0,
+    0
   )
   const latestOrderAt = activeOrders.reduce<Date | null>((latest, order) => {
     if (!latest || order.placedAt > latest) {
@@ -124,7 +126,7 @@ function mapCustomerRow(
     hasLinkedUser: customer.user !== null,
     orderCount: customer._count.orders,
     totalSpentCents,
-    latestOrderAt,
+    latestOrderAt
   }
 }
 
@@ -174,45 +176,33 @@ const customerAreaOrderSelect = {
       listPriceCents: true,
       discountPercent: true,
       unitPriceCents: true,
-      lineTotalCents: true,
+      lineTotalCents: true
     },
-    orderBy: { createdAt: "asc" as const },
-  },
+    orderBy: { createdAt: 'asc' as const }
+  }
 } satisfies Prisma.OrderSelect
 
 async function getRegisteredCustomerOrThrow(
   db: Prisma.TransactionClient,
-  userId: string,
+  userId: string
 ) {
   const customer = await db.customer.findUnique({
     where: { userId },
-    select: { id: true },
+    select: { id: true }
   })
 
   if (!customer) {
     throw new TRPCError({
-      code: "PRECONDITION_FAILED",
-      message: "Customer Onboarding is required.",
+      code: 'PRECONDITION_FAILED',
+      message: 'Customer Onboarding is required.'
     })
   }
 
   return customer
 }
 
-function normalizeAddressInput(input: z.infer<typeof addressInputSchema>) {
-  return {
-    salutation: input.salutation,
-    firstName: input.firstName,
-    lastName: input.lastName,
-    company: input.company,
-    streetLine1: input.streetLine1,
-    streetLine2: input.streetLine2,
-    postalCode: input.postalCode,
-    city: input.city,
-    countryCode: input.countryCode.toUpperCase(),
-    phone: input.phone,
-    isMain: input.isMain,
-  }
+function normalizeCountryCode(countryCode: string) {
+  return countryCode.toUpperCase()
 }
 
 export const customerRouter = createTRPCRouter({
@@ -238,31 +228,31 @@ export const customerRouter = createTRPCRouter({
             postalCode: true,
             city: true,
             countryCode: true,
-            phone: true,
+            phone: true
           },
-          orderBy: [{ isMain: "desc" }, { updatedAt: "desc" }],
+          orderBy: [{ isMain: 'desc' }, { updatedAt: 'desc' }]
         },
         orders: {
           select: customerAreaOrderSelect,
-          orderBy: { placedAt: "desc" },
-        },
-      },
+          orderBy: { placedAt: 'desc' }
+        }
+      }
     })
 
     if (!customer) {
       return {
-        status: "needs-onboarding" as const,
+        status: 'needs-onboarding' as const,
         user: {
           id: ctx.session.user.id,
           email: ctx.session.user.email,
-          name: ctx.session.user.name,
-        },
+          name: ctx.session.user.name
+        }
       }
     }
 
     return {
-      status: "registered" as const,
-      customer,
+      status: 'registered' as const,
+      customer
     }
   }),
 
@@ -276,7 +266,7 @@ export const customerRouter = createTRPCRouter({
             firstName: input.firstName,
             lastName: input.lastName,
             salutation: input.salutation,
-            user: { connect: { id: ctx.session.user.id } },
+            user: { connect: { id: ctx.session.user.id } }
           },
           select: {
             id: true,
@@ -284,17 +274,17 @@ export const customerRouter = createTRPCRouter({
             salutation: true,
             firstName: true,
             lastName: true,
-            userId: true,
-          },
+            userId: true
+          }
         })
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === 'P2002'
         ) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "A customer with this email already exists.",
+            code: 'CONFLICT',
+            message: 'A customer with this email already exists.'
           })
         }
 
@@ -309,14 +299,14 @@ export const customerRouter = createTRPCRouter({
         return await ctx.db.$transaction(async (tx) => {
           const customer = await getRegisteredCustomerOrThrow(
             tx,
-            ctx.session.user.id,
+            ctx.session.user.id
           )
 
           await tx.user.update({
             where: { id: ctx.session.user.id },
             data: {
-              name: `${input.firstName} ${input.lastName}`,
-            },
+              name: `${input.firstName} ${input.lastName}`
+            }
           })
 
           return tx.customer.update({
@@ -324,25 +314,25 @@ export const customerRouter = createTRPCRouter({
             data: {
               firstName: input.firstName,
               lastName: input.lastName,
-              salutation: input.salutation,
+              salutation: input.salutation
             },
             select: {
               id: true,
               email: true,
               salutation: true,
               firstName: true,
-              lastName: true,
-            },
+              lastName: true
+            }
           })
         })
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === 'P2002'
         ) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "A customer with this email already exists.",
+            code: 'CONFLICT',
+            message: 'A customer with this email already exists.'
           })
         }
 
@@ -356,23 +346,33 @@ export const customerRouter = createTRPCRouter({
       ctx.db.$transaction(async (tx) => {
         const customer = await getRegisteredCustomerOrThrow(
           tx,
-          ctx.session.user.id,
+          ctx.session.user.id
         )
 
         if (input.isMain) {
           await tx.address.updateMany({
             where: { customerId: customer.id, isMain: true },
-            data: { isMain: false },
+            data: { isMain: false }
           })
         }
 
         return tx.address.create({
           data: {
-            ...normalizeAddressInput(input),
-            customerId: customer.id,
-          },
+            salutation: input.salutation,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            company: input.company,
+            streetLine1: input.streetLine1,
+            streetLine2: input.streetLine2,
+            postalCode: input.postalCode,
+            city: input.city,
+            countryCode: normalizeCountryCode(input.countryCode),
+            phone: input.phone,
+            isMain: input.isMain,
+            customerId: customer.id
+          }
         })
-      }),
+      })
     ),
 
   updateAddress: protectedProcedure
@@ -381,15 +381,15 @@ export const customerRouter = createTRPCRouter({
       ctx.db.$transaction(async (tx) => {
         const customer = await getRegisteredCustomerOrThrow(
           tx,
-          ctx.session.user.id,
+          ctx.session.user.id
         )
         const existing = await tx.address.findFirst({
           where: { id: input.id, customerId: customer.id },
-          select: { id: true },
+          select: { id: true }
         })
 
         if (!existing) {
-          throw new TRPCError({ code: "NOT_FOUND" })
+          throw new TRPCError({ code: 'NOT_FOUND' })
         }
 
         if (input.isMain) {
@@ -397,17 +397,29 @@ export const customerRouter = createTRPCRouter({
             where: {
               customerId: customer.id,
               isMain: true,
-              id: { not: input.id },
+              id: { not: input.id }
             },
-            data: { isMain: false },
+            data: { isMain: false }
           })
         }
 
         return tx.address.update({
           where: { id: input.id },
-          data: normalizeAddressInput(input),
+          data: {
+            salutation: input.salutation,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            company: input.company,
+            streetLine1: input.streetLine1,
+            streetLine2: input.streetLine2,
+            postalCode: input.postalCode,
+            city: input.city,
+            countryCode: normalizeCountryCode(input.countryCode),
+            phone: input.phone,
+            isMain: input.isMain
+          }
         })
-      }),
+      })
     ),
 
   deleteAddress: protectedProcedure
@@ -415,15 +427,15 @@ export const customerRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const customer = await getRegisteredCustomerOrThrow(
         ctx.db,
-        ctx.session.user.id,
+        ctx.session.user.id
       )
 
       const deleted = await ctx.db.address.deleteMany({
-        where: { id: input.id, customerId: customer.id },
+        where: { id: input.id, customerId: customer.id }
       })
 
       if (deleted.count === 0) {
-        throw new TRPCError({ code: "NOT_FOUND" })
+        throw new TRPCError({ code: 'NOT_FOUND' })
       }
 
       return { id: input.id }
@@ -437,18 +449,18 @@ export const customerRouter = createTRPCRouter({
           const updated = await tx.address.update({
             where: {
               id: input.id,
-              customer: { is: { userId: ctx.session.user.id } },
+              customer: { is: { userId: ctx.session.user.id } }
             },
-            data: { isMain: true },
+            data: { isMain: true }
           })
 
           await tx.address.updateMany({
             where: {
               id: { not: input.id },
               customer: { is: { userId: ctx.session.user.id } },
-              isMain: true,
+              isMain: true
             },
-            data: { isMain: false },
+            data: { isMain: false }
           })
 
           return updated
@@ -456,13 +468,13 @@ export const customerRouter = createTRPCRouter({
         .catch((error) => {
           if (
             error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === "P2025"
+            error.code === 'P2025'
           ) {
-            throw new TRPCError({ code: "NOT_FOUND" })
+            throw new TRPCError({ code: 'NOT_FOUND' })
           }
 
           throw error
-        }),
+        })
     ),
 
   list: ownerProcedure.input(listInputSchema).query(async ({ ctx, input }) => {
@@ -481,14 +493,14 @@ export const customerRouter = createTRPCRouter({
             select: {
               totalCents: true,
               placedAt: true,
-              status: true,
-            },
-          },
+              status: true
+            }
+          }
         },
         orderBy,
         skip,
-        take: input.pageSize,
-      }),
+        take: input.pageSize
+      })
     ])
 
     return {
@@ -496,7 +508,7 @@ export const customerRouter = createTRPCRouter({
       page: input.page,
       pageSize: input.pageSize,
       totalCount,
-      totalPages: Math.max(1, Math.ceil(totalCount / input.pageSize)),
+      totalPages: Math.max(1, Math.ceil(totalCount / input.pageSize))
     }
   }),
 
@@ -509,7 +521,7 @@ export const customerRouter = createTRPCRouter({
             email: input.email,
             firstName: input.firstName,
             lastName: input.lastName,
-            salutation: input.salutation,
+            salutation: input.salutation
           },
           include: {
             user: { select: { id: true } },
@@ -518,25 +530,25 @@ export const customerRouter = createTRPCRouter({
               select: {
                 totalCents: true,
                 placedAt: true,
-                status: true,
-              },
-            },
-          },
+                status: true
+              }
+            }
+          }
         })
 
         return mapCustomerRow(customer)
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === 'P2002'
         ) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "A customer with this email already exists.",
+            code: 'CONFLICT',
+            message: 'A customer with this email already exists.'
           })
         }
 
         throw error
       }
-    }),
+    })
 })

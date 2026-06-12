@@ -48,6 +48,7 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 | Term | Definition | Aliases to avoid |
 | ---- | ---------- | ---------------- |
 | **Order** | A customer commitment to buy one or more products at recorded purchase terms. | Purchase, transaction |
+| **Order Confirmation** | The customer-facing page for one placed order after checkout, showing the order summary and current payment outcome. | Receipt, thank-you page |
 | **Order Line** | One product entry inside an order with purchase-time quantity, price, cost, and discount. | Order product, line item |
 | **Order Number** | A human-readable unique order identifier from the yearly Element Wasser sequence. | Order ID |
 | **Order Number Sequence** | The yearly counter that generates order numbers without races. | Order count |
@@ -63,9 +64,9 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 
 | Term | Definition | Aliases to avoid |
 | ---- | ---------- | ---------------- |
-| **Order Status** | Whether the order as a whole is placed, cancelled, or completed. | State |
-| **Order Payment Status** | Whether the order has been paid, is pending, failed, refunded, or cancelled for payment. | Payment state |
-| **Fulfillment Status** | Whether the order is unfulfilled, fulfilled, or cancelled for fulfillment. | Delivery status, shipping status |
+| **Order Lifecycle Status** | Whether the order as a whole is open, cancelled, or closed. This is distinct from payment outcome and fulfillment progress. | Order Status, state |
+| **Order Payment Status** | Whether an order has been paid, is awaiting payment, has only failed payment attempts, has been refunded, or can no longer be paid. A failed payment status does not by itself prevent retry while the order remains open and unexpired. | Payment state |
+| **Fulfillment Status** | Whether the merchant's operational completion of an order is unfulfilled, fulfilled, or cancelled. | Delivery status, Order Lifecycle Status |
 | **Fulfillment** | The process of completing an order after it is placed. | Delivery, shipment |
 
 ## Addresses
@@ -82,7 +83,8 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 | Term | Definition | Aliases to avoid |
 | ---- | ---------- | ---------------- |
 | **Payment** | A single payment attempt or money movement (charge or refund) linked to an order. | Transaction |
-| **Payment Provider** | The external processor for a payment attempt (Stripe or TWINT). | Gateway, processor |
+| **Payment Provider** | The external processor for a payment. Stripe is the provider for both card and TWINT payments. | Payment method, gateway |
+| **Payment Method** | The customer's checkout choice for how they intend to pay, such as card or TWINT. | Payment provider |
 | **Payment Expiry** | The deadline after which an unpaid order's stock reservation is released. | Timeout |
 
 ## Reviews
@@ -100,7 +102,7 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 - An **Order** has exactly one **Shipping Address** snapshot and one **Billing Address** snapshot (billing may match shipping).
 - A **Registered Customer** has zero or more **Address Book Entries** and may have one **Main Address Book Entry**; checkout copies a selected entry into the **Order** snapshots.
 - Placing an **Order** creates a **Stock Reservation** on each line's quantity; **Payment Expiry** releases **Stock Reserved** if unpaid.
-- An **Order** may have multiple **Payment** records (retries or providers); **Order Payment Status** reflects the order-level outcome.
+- An **Order** may have multiple **Payment** records (retries or money movements); **Order Payment Status** reflects the order-level outcome.
 - A **Review** belongs to exactly one **Order Line** and one **Product**; a **Review Invite** belongs to exactly one **Order Line**.
 - A **Featured Product** is always a **Product**.
 - A **Product** belongs to exactly one **Manufacturer** and may appear in multiple **Categories**.
@@ -117,7 +119,7 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 >
 > **Domain expert:** "Exactly. **Stock Reserved** increases until **Payment Expiry** or successful **Payment**. Each **Order Line** keeps its own **List Price**, **Unit Price**, and **Cost** — changing the **Catalog** later must not rewrite old orders."
 >
-> **Dev:** "If they pay with TWINT after a failed Stripe attempt, are those two **Payments**?"
+> **Dev:** "If they retry with TWINT after a failed card attempt, are those two **Payments**?"
 >
 > **Domain expert:** "Yes — separate **Payment** records, same **Order**. **Order Payment Status** moves to paid when one succeeds. **Fulfillment** only starts once the order is paid and **Fulfillment Status** is still unfulfilled."
 
@@ -132,4 +134,5 @@ Element Wasser ecommerce — catalog, checkout, orders, payments, and customers.
 - **"Address" in code vs domain"**: the reusable customer record is an **Address Book Entry**; fields copied onto an **Order** are **Shipping Address** or **Billing Address** snapshots — not live links to the book entry.
 - **"Discount" vs coupon"**: clearance pricing is a product-level percentage reflected as cent snapshots on the **Order**; there are no coupon codes in the current model.
 - **"Payment" vs transaction"**: a **Payment** is one provider attempt or refund; **Order Payment Status** summarizes whether the **Order** is paid overall.
+- **"Order Status" vs Order Lifecycle Status"**: use **Order Lifecycle Status** in domain language, tests, and issues; the database field may remain `status`.
 - **"Highlight" vs Featured Product"**: "highlight" may be used as a UI action label, but the domain term is **Featured Product**.

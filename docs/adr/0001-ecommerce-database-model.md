@@ -10,7 +10,7 @@ Use Better Auth `User` only for authentication and link it optionally to a comme
 
 Use `Order` plus `OrderLine` instead of direct order-product references. Order lines store product name, SKU, quantity, list price, discount percentage, final unit price, unit cost, and line total in CHF cents so historical orders and margin reporting survive catalog changes.
 
-Keep carts outside the database for now. Create an order only when checkout is placed, reserve stock for 15 minutes while payment is pending, and allow multiple Stripe or TWINT payment attempts through a separate `Payment` table. Release expired payment-pending stock reservations through a reusable backend operation first; wire that same operation to a scheduled job once the deployment/runtime scheduler is decided.
+Keep carts outside the database for now. Create an order only when checkout is placed, reserve stock for 15 minutes while payment is pending, and allow multiple Stripe-backed card or TWINT payment attempts through a separate `Payment` table. Release expired payment-pending stock reservations through a reusable backend operation first; wire that same operation to a scheduled job once the deployment/runtime scheduler is decided.
 
 Use product-level percentage discounts for clearance sales, flat shipping stored as an order snapshot, product-owned images, nested categories with global slugs, and verified-purchase reviews tied to order lines. Guest reviews use expiring secure review invites.
 

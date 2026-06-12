@@ -1,4 +1,6 @@
 import type {
+  PaymentProvider,
+  PaymentType,
   Prisma,
   PrismaClient,
   Salutation
@@ -24,8 +26,10 @@ export type OrderListRow = Prisma.OrderGetPayload<{
 
 export type PlaceOrderInput = {
   customerId: string
-  productId: string
-  quantity: number
+  lines?: PlaceOrderLineInput[]
+  productId?: string
+  quantity?: number
+  paymentMethod?: CheckoutPaymentMethod
   shippingCents: number
   addressId?: string
   shippingSalutation?: Salutation
@@ -40,11 +44,20 @@ export type PlaceOrderInput = {
   shippingPhone?: string
 }
 
+export type PlaceOrderLineInput = {
+  productId: string
+  quantity: number
+}
+
+export type CheckoutPaymentMethod = 'CARD' | 'TWINT'
+
 export type OrderPlacementErrorCode =
   | 'CUSTOMER_NOT_FOUND'
   | 'PRODUCT_NOT_FOUND'
+  | 'PRODUCT_INACTIVE'
   | 'INSUFFICIENT_STOCK'
   | 'ADDRESS_NOT_FOUND'
+  | 'EMPTY_CART'
 
 export class OrderPlacementError extends Error {
   constructor(
@@ -62,6 +75,7 @@ type OrderPlacementDeps = {
 
 type ProductSnapshot = Prisma.ProductGetPayload<object>
 type AddressSnapshot = Prisma.AddressGetPayload<object>
+type OrderLineSnapshot = ReturnType<typeof buildOrderLineSnapshot>
 
 type ShippingSnapshot = {
   salutation: AddressSnapshot['salutation'] | undefined
@@ -114,6 +128,38 @@ function assertStockAvailable(product: ProductSnapshot, quantity: number) {
       'Insufficient stock available.'
     )
   }
+}
+
+function normalizeOrderLines(input: PlaceOrderInput): PlaceOrderLineInput[] {
+  const rawLines =
+    input.lines ??
+    (input.productId && input.quantity
+      ? [{ productId: input.productId, quantity: input.quantity }]
+      : [])
+  const quantitiesByProductId = new Map<string, number>()
+
+  for (const line of rawLines) {
+    const productId = line.productId.trim()
+
+    if (!productId || line.quantity < 1) {
+      continue
+    }
+
+    quantitiesByProductId.set(
+      productId,
+      (quantitiesByProductId.get(productId) ?? 0) + line.quantity
+    )
+  }
+
+  const lines = Array.from(quantitiesByProductId.entries()).map(
+    ([productId, quantity]) => ({ productId, quantity })
+  )
+
+  if (lines.length === 0) {
+    throw new OrderPlacementError('EMPTY_CART', 'Cart is empty.')
+  }
+
+  return lines
 }
 
 function snapshotAddressBookEntry(address: AddressSnapshot): ShippingSnapshot {
@@ -189,19 +235,46 @@ function buildOrderLineSnapshot(product: ProductSnapshot, quantity: number) {
   }
 }
 
-function buildOrderTotals(
-  line: ReturnType<typeof buildOrderLineSnapshot>,
-  shippingCents: number
-) {
-  const subtotalCents = line.listPriceCents * line.quantity
-  const discountCents = subtotalCents - line.lineTotalCents
-  const totalCents = line.lineTotalCents + shippingCents
+function buildOrderTotals(lines: OrderLineSnapshot[], shippingCents: number) {
+  const subtotalCents = lines.reduce(
+    (sum, line) => sum + line.listPriceCents * line.quantity,
+    0
+  )
+  const lineTotalCents = lines.reduce(
+    (sum, line) => sum + line.lineTotalCents,
+    0
+  )
+  const discountCents = subtotalCents - lineTotalCents
+  const totalCents = lineTotalCents + shippingCents
 
   return { subtotalCents, discountCents, totalCents }
 }
 
 function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000)
+}
+
+function mapPaymentProvider(
+  paymentMethod: CheckoutPaymentMethod
+): PaymentProvider {
+  return paymentMethod === 'CARD' ? 'STRIPE' : 'TWINT'
+}
+
+function buildPendingPayment(
+  paymentMethod: CheckoutPaymentMethod,
+  amountCents: number
+): {
+  type: PaymentType
+  provider: PaymentProvider
+  amountCents: number
+  currencyCode: string
+} {
+  return {
+    type: 'CHARGE',
+    provider: mapPaymentProvider(paymentMethod),
+    amountCents,
+    currencyCode: 'CHF'
+  }
 }
 
 export async function placeOrder(
@@ -213,6 +286,7 @@ export async function placeOrder(
   const paymentExpiresAt = addMinutes(now, PAYMENT_RESERVATION_MINUTES)
 
   return db.$transaction(async (tx) => {
+    const requestedLines = normalizeOrderLines(input)
     const customer = await tx.customer.findUnique({
       where: { id: input.customerId }
     })
@@ -221,32 +295,54 @@ export async function placeOrder(
       throw new OrderPlacementError('CUSTOMER_NOT_FOUND', 'Customer not found.')
     }
 
-    const product = await tx.product.findUnique({
-      where: { id: input.productId }
+    const products = await tx.product.findMany({
+      where: { id: { in: requestedLines.map((line) => line.productId) } }
     })
+    const productsById = new Map(
+      products.map((product) => [product.id, product])
+    )
 
-    if (!product) {
-      throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
+    for (const line of requestedLines) {
+      const product = productsById.get(line.productId)
+
+      if (!product) {
+        throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
+      }
+
+      if (!product.active) {
+        throw new OrderPlacementError(
+          'PRODUCT_INACTIVE',
+          'Product is not active.'
+        )
+      }
+
+      assertStockAvailable(product, line.quantity)
     }
 
-    assertStockAvailable(product, input.quantity)
+    for (const line of requestedLines) {
+      const product = productsById.get(line.productId)
 
-    const reservation = await tx.product.updateMany({
-      where: {
-        id: product.id,
-        stockOnHand: { gte: input.quantity },
-        stockReserved: { lte: product.stockOnHand - input.quantity }
-      },
-      data: {
-        stockReserved: { increment: input.quantity }
+      if (!product) {
+        throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
       }
-    })
 
-    if (reservation.count !== 1) {
-      throw new OrderPlacementError(
-        'INSUFFICIENT_STOCK',
-        'Insufficient stock available.'
-      )
+      const reservation = await tx.product.updateMany({
+        where: {
+          id: product.id,
+          stockOnHand: { gte: line.quantity },
+          stockReserved: { lte: product.stockOnHand - line.quantity }
+        },
+        data: {
+          stockReserved: { increment: line.quantity }
+        }
+      })
+
+      if (reservation.count !== 1) {
+        throw new OrderPlacementError(
+          'INSUFFICIENT_STOCK',
+          'Insufficient stock available.'
+        )
+      }
     }
 
     const orderNumber = await allocateOrderNumber(tx, now)
@@ -255,9 +351,20 @@ export async function placeOrder(
       input,
       customer.id
     )
-    const orderLine = buildOrderLineSnapshot(product, input.quantity)
-    const totals = buildOrderTotals(orderLine, input.shippingCents)
+    const orderLines = requestedLines.map((line) => {
+      const product = productsById.get(line.productId)
+
+      if (!product) {
+        throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
+      }
+
+      return buildOrderLineSnapshot(product, line.quantity)
+    })
+    const totals = buildOrderTotals(orderLines, input.shippingCents)
     const snapshotCountryCode = shippingSnapshot.countryCode.toUpperCase()
+    const pendingPayment = input.paymentMethod
+      ? buildPendingPayment(input.paymentMethod, totals.totalCents)
+      : undefined
 
     const created = await tx.order.create({
       data: {
@@ -295,8 +402,15 @@ export async function placeOrder(
         billingCountryCode: snapshotCountryCode,
         billingPhone: shippingSnapshot.phone,
         lines: {
-          create: orderLine
-        }
+          create: orderLines
+        },
+        ...(pendingPayment
+          ? {
+              payments: {
+                create: pendingPayment
+              }
+            }
+          : {})
       },
       include: orderListInclude
     })

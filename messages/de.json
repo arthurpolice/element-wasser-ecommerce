@@ -409,7 +409,9 @@
       "addedToCart": "Zum Warenkorb hinzugefügt",
       "checkout": "Zur Kasse",
       "openCart": "Warenkorb öffnen",
-      "amount": "Menge"
+      "amount": "Menge",
+      "remove": "Entfernen",
+      "removeItem": "{name} aus dem Warenkorb entfernen"
     },
     "navigation": {
       "label": "Shop-Kategorien",
@@ -455,6 +457,8 @@
       },
       "purchase": {
         "amount": "Menge",
+        "availableAmount": "{count, plural, one {# verfügbar} other {# verfügbar}}",
+        "amountInCart": "{count, plural, one {# im Warenkorb} other {# im Warenkorb}}",
         "decreaseAmount": "Menge verringern",
         "increaseAmount": "Menge erhöhen",
         "addToCart": "In den Warenkorb",
@@ -464,6 +468,89 @@
       "reviewsSummary": "{rating} Durchschnitt · {count, plural, one {# Bewertung} other {# Bewertungen}}",
       "noReviews": "Noch keine freigegebenen Bewertungen.",
       "noDescription": "Noch keine Produktbeschreibung vorhanden."
+    },
+    "checkout": {
+      "eyebrow": "Checkout",
+      "title": "Checkout",
+      "description": "Geben Sie Ihre Lieferdaten ein, wählen Sie eine Zahlungsart und prüfen Sie aktuelle Produktpreise.",
+      "signInHint": "Für gespeicherte Adressen anmelden",
+      "emptyTitle": "Ihr Warenkorb ist leer.",
+      "emptyDescription": "Legen Sie Produkte in den Warenkorb und kehren Sie zur Übersicht zurück.",
+      "continueShopping": "Weiter einkaufen",
+      "loading": "Aktuelle Preise werden geladen…",
+      "error": "Checkout-Vorschau konnte nicht geladen werden.",
+      "stepsLabel": "Checkout-Schritte",
+      "steps": {
+        "address": "Adresse",
+        "payment": "Zahlung",
+        "overview": "Übersicht"
+      },
+      "stepStates": {
+        "current": "Aktuell",
+        "complete": "Abgeschlossen"
+      },
+      "addressTitle": "Gastkunde",
+      "paymentTitle": "Zahlungsart",
+      "overviewTitle": "Bestellübersicht",
+      "requiredHint": "Mit * markierte Felder sind erforderlich.",
+      "paymentLocked": "Schließen Sie die Adresse ab, um eine Zahlungsart zu wählen.",
+      "loadingCheckout": "Checkout wird geladen…",
+      "onboarding": {
+        "title": "Schließen Sie Ihr Customer Onboarding ab.",
+        "description": "Angemeldete Kunden verwenden gespeicherte Checkout-Daten. Vervollständigen Sie Ihre Kundeninformationen und kehren Sie danach zum Checkout zurück.",
+        "action": "Kundeninformationen vervollständigen"
+      },
+      "addressBook": {
+        "main": "Hauptadresse",
+        "empty": "Fügen Sie einen Adressbucheintrag hinzu, um fortzufahren.",
+        "addNew": "Neue Adresse hinzufügen",
+        "cancelNew": "Neue Adresse abbrechen",
+        "save": "Adresse speichern",
+        "saving": "Wird gespeichert…"
+      },
+      "fields": {
+        "email": "E-Mail",
+        "salutation": "Anrede",
+        "firstName": "Vorname",
+        "lastName": "Nachname",
+        "company": "Firma",
+        "streetLine1": "Strasse Zeile 1",
+        "streetLine2": "Strasse Zeile 2",
+        "postalCode": "PLZ",
+        "city": "Ort",
+        "countryCode": "Ländercode",
+        "phone": "Telefon"
+      },
+      "salutations": {
+        "none": "Keine",
+        "HERR": "Herr",
+        "FRAU": "Frau"
+      },
+      "payment": {
+        "card": "Karte",
+        "cardDescription": "Dummy-Kartenzahlung für diesen Checkout-Slice.",
+        "twint": "TWINT",
+        "twintDescription": "Dummy-TWINT-Auswahl für diesen Checkout-Slice."
+      },
+      "items": "Produkte",
+      "quantity": "Menge",
+      "decreaseQuantity": "Menge für {name} verringern",
+      "increaseQuantity": "Menge für {name} erhöhen",
+      "remove": "Entfernen",
+      "removeItem": "{name} entfernen",
+      "notPayable": "Nicht zahlbar",
+      "problems": {
+        "MISSING_PRODUCT": "Dieses Produkt ist nicht mehr im Katalog.",
+        "INACTIVE_PRODUCT": "Dieses Produkt ist derzeit nicht bestellbar.",
+        "INSUFFICIENT_STOCK": "Die gewünschte Menge ist nicht verfügbar. {availableStock, plural, one {# Stück ist auf Lager.} other {# Stück sind auf Lager.}}"
+      },
+      "subtotal": "Zwischensumme",
+      "discount": "Rabatt",
+      "shipping": "Versand",
+      "total": "Total",
+      "updating": "Wird aktualisiert",
+      "placeOrder": "Bestellung aufgeben",
+      "unavailable": "Ein oder mehrere Produkte benötigen Aufmerksamkeit, bevor die Bestellung aufgegeben werden kann."
     }
   },
   "Orders": {

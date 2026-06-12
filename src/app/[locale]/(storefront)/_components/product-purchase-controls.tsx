@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslations } from 'next-intl'
 import { FaMinus, FaPlus, FaShoppingBag } from 'react-icons/fa'
 
@@ -16,6 +16,7 @@ type ProductPurchaseControlsProps = {
     slug: string
     imageUrl: string | null
     imageAlt: string | null
+    availableStock: number
     availableToSell: boolean
   }
 }
@@ -29,15 +30,29 @@ export function ProductPurchaseControls({
   const t = useTranslations('Storefront.productPage.purchase')
   const [amount, setAmount] = useState(1)
   const addItem = useStorefrontCart((state) => state.addItem)
+  const amountInCart = useStorefrontCart(
+    (state) =>
+      state.items.find((item) => item.productId === product.id)?.amount ?? 0
+  )
+  const maxAddableAmount = Math.max(0, product.availableStock - amountInCart)
+  const canAddToCart = product.availableToSell && maxAddableAmount > 0
+  const amountInCartAtMax =
+    product.availableStock > 0 && amountInCart >= product.availableStock
+
+  useEffect(() => {
+    setAmount((currentAmount) =>
+      Math.min(Math.max(1, currentAmount), Math.max(1, maxAddableAmount))
+    )
+  }, [maxAddableAmount])
 
   function updateAmount(nextAmount: number) {
-    setAmount(Math.min(99, Math.max(1, nextAmount)))
+    setAmount(Math.min(Math.max(1, maxAddableAmount), Math.max(1, nextAmount)))
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!product.availableToSell) {
+    if (!canAddToCart) {
       return
     }
 
@@ -47,7 +62,7 @@ export function ProductPurchaseControls({
       slug: product.slug,
       imageUrl: product.imageUrl,
       imageAlt: product.imageAlt,
-      amount
+      amount: Math.min(amount, maxAddableAmount)
     })
 
     dispatchStorefrontCartItemAdded(addedItem)
@@ -77,11 +92,25 @@ export function ProductPurchaseControls({
           <span className="text-store-muted text-xs tracking-[0.16em] uppercase">
             {t('amount')}
           </span>
+          <span className="text-store-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+            <span>
+              {t('availableAmount', { count: product.availableStock })}
+            </span>
+            {amountInCart > 0 ? (
+              <span
+                className={
+                  amountInCartAtMax ? 'font-semibold text-red-700' : undefined
+                }
+              >
+                {t('amountInCart', { count: amountInCart })}
+              </span>
+            ) : null}
+          </span>
           <span className="flex items-center">
             <button
               aria-label={t('decreaseAmount')}
               className={amountButtonClass}
-              disabled={amount <= 1}
+              disabled={amount <= 1 || !canAddToCart}
               onClick={() => updateAmount(amount - 1)}
               type="button"
             >
@@ -91,17 +120,18 @@ export function ProductPurchaseControls({
               className="border-store-border bg-store-surface text-store-ink focus:ring-store-accent/25 h-10 w-16 border-y text-center text-sm font-semibold outline-none focus:ring-2"
               inputMode="numeric"
               min={1}
-              max={99}
+              max={Math.max(1, maxAddableAmount)}
               onChange={(event) =>
                 updateAmount(Number.parseInt(event.target.value, 10) || 1)
               }
+              disabled={!canAddToCart}
               type="number"
               value={amount}
             />
             <button
               aria-label={t('increaseAmount')}
               className={amountButtonClass}
-              disabled={amount >= 99}
+              disabled={amount >= maxAddableAmount || !canAddToCart}
               onClick={() => updateAmount(amount + 1)}
               type="button"
             >
@@ -112,7 +142,7 @@ export function ProductPurchaseControls({
 
         <button
           className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex h-10 items-center justify-center gap-2 border px-5 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-45"
-          disabled={!product.availableToSell}
+          disabled={!canAddToCart}
           type="submit"
         >
           <FaShoppingBag aria-hidden="true" className="size-4" />

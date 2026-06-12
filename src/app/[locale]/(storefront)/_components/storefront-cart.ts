@@ -17,15 +17,24 @@ export type StorefrontAddedCartItem = StorefrontCartItem
 type StorefrontCartState = {
   items: StorefrontCartItem[]
   addItem: (item: StorefrontCartItem) => StorefrontCartItem
+  clear: () => void
+  removeItem: (productId: string) => void
   updateAmount: (productId: string, amount: number) => void
 }
 
-function normalizeAmount(amount: number) {
+export function normalizeStorefrontCartAmount(amount: number) {
   if (!Number.isFinite(amount)) {
     return 1
   }
 
   return Math.min(99, Math.max(1, Math.trunc(amount)))
+}
+
+export function removeStorefrontCartItem(
+  items: StorefrontCartItem[],
+  productId: string
+) {
+  return items.filter((item) => item.productId !== productId)
 }
 
 export const storefrontCartItemAddedEventName = 'storefront-cart-item-added'
@@ -43,12 +52,15 @@ export const useStorefrontCart = create<StorefrontCartState>()(
     (set, get) => ({
       items: [],
       addItem: (item) => {
-        const amount = normalizeAmount(item.amount)
+        const amount = normalizeStorefrontCartAmount(item.amount)
         const existing = get().items.find(
           (cartItem) => cartItem.productId === item.productId
         )
         const addedItem = existing
-          ? { ...existing, amount: normalizeAmount(existing.amount + amount) }
+          ? {
+              ...existing,
+              amount: normalizeStorefrontCartAmount(existing.amount + amount)
+            }
           : { ...item, amount }
 
         set((state) => ({
@@ -61,11 +73,17 @@ export const useStorefrontCart = create<StorefrontCartState>()(
 
         return addedItem
       },
+      clear: () => set({ items: [] }),
+      removeItem: (productId) => {
+        set((state) => ({
+          items: removeStorefrontCartItem(state.items, productId)
+        }))
+      },
       updateAmount: (productId, amount) => {
         set((state) => ({
           items: state.items.map((item) =>
             item.productId === productId
-              ? { ...item, amount: normalizeAmount(amount) }
+              ? { ...item, amount: normalizeStorefrontCartAmount(amount) }
               : item
           )
         }))

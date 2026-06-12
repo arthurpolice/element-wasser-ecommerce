@@ -1,14 +1,60 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { Mock } from 'vitest'
 
 import {
   placeOrder,
   type OrderPlacementError
 } from '~/server/commerce/order-placement'
+import { firstMockCall } from '~/test/mock-calls'
 
 const now = new Date('2026-05-15T10:00:00Z')
 
-function createMockDb() {
-  const db = {
+type MockRecord = Record<string, unknown>
+
+type MockProduct = {
+  id: string
+  name: string
+  sku: string
+  active: boolean
+  priceCents: number
+  costCents: number
+  discountPercent: number | null
+  stockOnHand: number
+  stockReserved: number
+}
+
+type OrderCreateArgs = {
+  data: MockRecord
+  include?: unknown
+}
+
+type MockDb = {
+  customer: {
+    findUnique: Mock<() => Promise<MockRecord>>
+  }
+  product: {
+    findMany: Mock<
+      (args: { where: { id: { in: string[] } } }) => Promise<MockProduct[]>
+    >
+    updateMany: Mock<() => Promise<{ count: number }>>
+    update: Mock<() => Promise<null>>
+  }
+  address: {
+    findFirst: Mock<() => Promise<MockRecord>>
+  }
+  orderNumberSequence: {
+    upsert: Mock<() => Promise<{ nextNumber: number }>>
+  }
+  order: {
+    create: Mock<(args: OrderCreateArgs) => Promise<MockRecord>>
+  }
+  $transaction: Mock<
+    (callback: (tx: MockDb) => Promise<unknown>) => Promise<unknown>
+  >
+}
+
+function createMockDb(): MockDb {
+  const db: MockDb = {
     customer: {
       findUnique: vi.fn(async () => ({
         id: 'customer-1',
@@ -19,16 +65,21 @@ function createMockDb() {
       }))
     },
     product: {
-      findUnique: vi.fn(async () => ({
-        id: 'product-1',
-        name: 'Filter',
-        sku: 'EW-FIL-00001',
-        priceCents: 2000,
-        costCents: 900,
-        discountPercent: null as number | null,
-        stockOnHand: 10,
-        stockReserved: 0
-      })),
+      findMany: vi.fn(async ({ where }) =>
+        [
+          {
+            id: 'product-1',
+            name: 'Filter',
+            sku: 'EW-FIL-00001',
+            active: true,
+            priceCents: 2000,
+            costCents: 900,
+            discountPercent: null as number | null,
+            stockOnHand: 10,
+            stockReserved: 0
+          }
+        ].filter((product) => where.id.in.includes(product.id))
+      ),
       updateMany: vi.fn(async () => ({ count: 1 })),
       update: vi.fn(async () => null)
     },
@@ -91,24 +142,21 @@ describe('placeOrder', () => {
       { now: () => now }
     )
 
-    expect(db.order.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          orderNumber: 'EW-2026-00001',
-          paymentExpiresAt: new Date('2026-05-15T10:15:00Z'),
-          shippingFirstName: 'River',
-          shippingLastName: 'Stone',
-          shippingStreetLine1: 'Snapshotstrasse 7',
-          shippingStreetLine2: 'Atelier',
-          shippingPostalCode: '8000',
-          shippingCity: 'Zurich',
-          shippingCountryCode: 'CH',
-          billingFirstName: 'River',
-          billingStreetLine1: 'Snapshotstrasse 7',
-          billingCountryCode: 'CH'
-        })
-      })
-    )
+    const [orderCreateArgs] = firstMockCall(db.order.create)
+    expect(orderCreateArgs.data).toMatchObject({
+      orderNumber: 'EW-2026-00001',
+      paymentExpiresAt: new Date('2026-05-15T10:15:00Z'),
+      shippingFirstName: 'River',
+      shippingLastName: 'Stone',
+      shippingStreetLine1: 'Snapshotstrasse 7',
+      shippingStreetLine2: 'Atelier',
+      shippingPostalCode: '8000',
+      shippingCity: 'Zurich',
+      shippingCountryCode: 'CH',
+      billingFirstName: 'River',
+      billingStreetLine1: 'Snapshotstrasse 7',
+      billingCountryCode: 'CH'
+    })
   })
 
   it('uses manual Shipping Address input when no Address Book Entry is selected', async () => {
@@ -117,32 +165,32 @@ describe('placeOrder', () => {
     await placeOrder(db as never, baseInput, { now: () => now })
 
     expect(db.address.findFirst).not.toHaveBeenCalled()
-    expect(db.order.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          shippingFirstName: 'Manual',
-          shippingStreetLine1: 'Manualstrasse 1',
-          shippingCountryCode: 'DE',
-          billingFirstName: 'Manual',
-          billingStreetLine1: 'Manualstrasse 1',
-          billingCountryCode: 'DE'
-        })
-      })
-    )
+    const [orderCreateArgs] = firstMockCall(db.order.create)
+    expect(orderCreateArgs.data).toMatchObject({
+      shippingFirstName: 'Manual',
+      shippingStreetLine1: 'Manualstrasse 1',
+      shippingCountryCode: 'DE',
+      billingFirstName: 'Manual',
+      billingStreetLine1: 'Manualstrasse 1',
+      billingCountryCode: 'DE'
+    })
   })
 
   it('captures discounted Order Line terms and reserves stock', async () => {
     const db = createMockDb()
-    db.product.findUnique = vi.fn(async () => ({
-      id: 'product-1',
-      name: 'Filter',
-      sku: 'EW-FIL-00001',
-      priceCents: 2000,
-      costCents: 900,
-      discountPercent: 25,
-      stockOnHand: 10,
-      stockReserved: 0
-    }))
+    db.product.findMany = vi.fn(async () => [
+      {
+        id: 'product-1',
+        name: 'Filter',
+        sku: 'EW-FIL-00001',
+        active: true,
+        priceCents: 2000,
+        costCents: 900,
+        discountPercent: 25,
+        stockOnHand: 10,
+        stockReserved: 0
+      }
+    ])
 
     await placeOrder(
       db as never,
@@ -153,27 +201,26 @@ describe('placeOrder', () => {
       { now: () => now }
     )
 
-    expect(db.order.create).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          subtotalCents: 4000,
-          discountCents: 1000,
-          totalCents: 3900,
-          lines: {
-            create: expect.objectContaining({
-              productName: 'Filter',
-              productSku: 'EW-FIL-00001',
-              quantity: 2,
-              listPriceCents: 2000,
-              discountPercent: 25,
-              unitPriceCents: 1500,
-              unitCostCents: 900,
-              lineTotalCents: 3000
-            })
+    const [orderCreateArgs] = firstMockCall(db.order.create)
+    expect(orderCreateArgs.data).toMatchObject({
+      subtotalCents: 4000,
+      discountCents: 1000,
+      totalCents: 3900,
+      lines: {
+        create: [
+          {
+            productName: 'Filter',
+            productSku: 'EW-FIL-00001',
+            quantity: 2,
+            listPriceCents: 2000,
+            discountPercent: 25,
+            unitPriceCents: 1500,
+            unitCostCents: 900,
+            lineTotalCents: 3000
           }
-        })
-      })
-    )
+        ]
+      }
+    })
     expect(db.product.updateMany).toHaveBeenCalledWith({
       where: {
         id: 'product-1',
@@ -182,23 +229,29 @@ describe('placeOrder', () => {
       },
       data: { stockReserved: { increment: 2 } }
     })
-    expect(db.product.updateMany.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(
+      db.product.updateMany.mock.invocationCallOrder[0] ??
+        Number.MAX_SAFE_INTEGER
+    ).toBeLessThan(
       db.order.create.mock.invocationCallOrder[0] ?? Number.MAX_SAFE_INTEGER
     )
   })
 
   it('rejects insufficient stock before creating an Order', async () => {
     const db = createMockDb()
-    db.product.findUnique = vi.fn(async () => ({
-      id: 'product-1',
-      name: 'Filter',
-      sku: 'EW-FIL-00001',
-      priceCents: 2000,
-      costCents: 900,
-      discountPercent: null,
-      stockOnHand: 1,
-      stockReserved: 1
-    }))
+    db.product.findMany = vi.fn(async () => [
+      {
+        id: 'product-1',
+        name: 'Filter',
+        sku: 'EW-FIL-00001',
+        active: true,
+        priceCents: 2000,
+        costCents: 900,
+        discountPercent: null,
+        stockOnHand: 1,
+        stockReserved: 1
+      }
+    ])
 
     await expect(
       placeOrder(
@@ -216,6 +269,138 @@ describe('placeOrder', () => {
 
     expect(db.order.create).not.toHaveBeenCalled()
     expect(db.product.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('creates one Order with multiple Order Lines and a pending Payment', async () => {
+    const db = createMockDb()
+    db.product.findMany = vi.fn(async () => [
+      {
+        id: 'product-1',
+        name: 'Filter',
+        sku: 'EW-FIL-00001',
+        active: true,
+        priceCents: 2000,
+        costCents: 900,
+        discountPercent: 25,
+        stockOnHand: 10,
+        stockReserved: 0
+      },
+      {
+        id: 'product-2',
+        name: 'Refill Pack',
+        sku: 'EW-REF-00002',
+        active: true,
+        priceCents: 500,
+        costCents: 200,
+        discountPercent: null,
+        stockOnHand: 6,
+        stockReserved: 1
+      }
+    ])
+
+    await placeOrder(
+      db as never,
+      {
+        ...baseInput,
+        productId: undefined,
+        quantity: undefined,
+        lines: [
+          { productId: 'product-1', quantity: 2 },
+          { productId: 'product-2', quantity: 3 }
+        ],
+        paymentMethod: 'CARD'
+      },
+      { now: () => now }
+    )
+
+    const [orderCreateArgs] = firstMockCall(db.order.create)
+    expect(orderCreateArgs.data).toMatchObject({
+      subtotalCents: 5500,
+      discountCents: 1000,
+      totalCents: 5400,
+      lines: {
+        create: [
+          expect.objectContaining({
+            productId: 'product-1',
+            productName: 'Filter',
+            quantity: 2,
+            lineTotalCents: 3000
+          }),
+          expect.objectContaining({
+            productId: 'product-2',
+            productName: 'Refill Pack',
+            quantity: 3,
+            lineTotalCents: 1500
+          })
+        ]
+      },
+      payments: {
+        create: {
+          type: 'CHARGE',
+          provider: 'STRIPE',
+          amountCents: 5400,
+          currencyCode: 'CHF'
+        }
+      }
+    })
+    expect(db.product.updateMany).toHaveBeenCalledTimes(2)
+    expect(db.product.updateMany).toHaveBeenNthCalledWith(2, {
+      where: {
+        id: 'product-2',
+        stockOnHand: { gte: 3 },
+        stockReserved: { lte: 3 }
+      },
+      data: { stockReserved: { increment: 3 } }
+    })
+  })
+
+  it('rejects the whole Cart when any line is missing or inactive', async () => {
+    const db = createMockDb()
+    db.product.findMany = vi.fn(async () => [
+      {
+        id: 'product-1',
+        name: 'Filter',
+        sku: 'EW-FIL-00001',
+        active: true,
+        priceCents: 2000,
+        costCents: 900,
+        discountPercent: null,
+        stockOnHand: 10,
+        stockReserved: 0
+      },
+      {
+        id: 'product-2',
+        name: 'Inactive Refill',
+        sku: 'EW-REF-00002',
+        active: false,
+        priceCents: 500,
+        costCents: 200,
+        discountPercent: null,
+        stockOnHand: 6,
+        stockReserved: 1
+      }
+    ])
+
+    await expect(
+      placeOrder(
+        db as never,
+        {
+          ...baseInput,
+          lines: [
+            { productId: 'product-1', quantity: 1 },
+            { productId: 'product-2', quantity: 1 }
+          ],
+          paymentMethod: 'TWINT'
+        },
+        { now: () => now }
+      )
+    ).rejects.toMatchObject({
+      code: 'PRODUCT_INACTIVE',
+      message: 'Product is not active.'
+    } satisfies Partial<OrderPlacementError>)
+
+    expect(db.product.updateMany).not.toHaveBeenCalled()
+    expect(db.order.create).not.toHaveBeenCalled()
   })
 
   it('leaves no Order behind when the atomic Stock Reservation fails', async () => {

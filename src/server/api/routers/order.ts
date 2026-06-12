@@ -144,6 +144,8 @@ function toOrderPlacementTrpcError(error: OrderPlacementError): TRPCError {
         code: 'NOT_FOUND',
         message: error.message
       })
+    case 'EMPTY_CART':
+    case 'PRODUCT_INACTIVE':
     case 'INSUFFICIENT_STOCK':
       return new TRPCError({
         code: 'BAD_REQUEST',

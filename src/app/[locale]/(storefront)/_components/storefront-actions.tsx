@@ -2,7 +2,12 @@
 
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import { FaRegUserCircle, FaShoppingBag, FaSignOutAlt } from 'react-icons/fa'
+import {
+  FaRegTrashAlt,
+  FaRegUserCircle,
+  FaShoppingBag,
+  FaSignOutAlt
+} from 'react-icons/fa'
 
 import { signOutAction } from '~/app/[locale]/_components/auth-actions'
 import {
@@ -106,7 +111,6 @@ export function TopNavActions({
         <AddedCartItemDropdown
           animationClass={dropdownAnimationClass}
           item={addedCartItem}
-          openCart={() => setOpenDropdown('cart')}
         />
       ) : null}
     </div>
@@ -167,11 +171,19 @@ function CartDropdown({ animationClass }: { animationClass: string }) {
         {t('cartSummary')}
       </h2>
       {items.length > 0 ? (
-        <div className="border-store-border/70 divide-store-border/70 mt-4 divide-y border-t">
-          {items.map((item) => (
-            <CartDropdownItem key={item.productId} item={item} />
-          ))}
-        </div>
+        <>
+          <div className="border-store-border/70 divide-store-border/70 mt-4 divide-y border-t">
+            {items.map((item) => (
+              <CartDropdownItem key={item.productId} item={item} />
+            ))}
+          </div>
+          <Link
+            className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink focus-visible:ring-store-accent/25 mt-5 inline-flex h-10 w-full items-center justify-center border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
+            href="/checkout"
+          >
+            {t('checkout')}
+          </Link>
+        </>
       ) : (
         <p className="text-store-muted border-store-border/70 mt-4 border-t pt-4 text-sm">
           {t('cartEmpty')}
@@ -183,6 +195,7 @@ function CartDropdown({ animationClass }: { animationClass: string }) {
 
 function CartDropdownItem({ item }: { item: StorefrontCartItem }) {
   const t = useTranslations('Storefront.topNav')
+  const removeItem = useStorefrontCart((state) => state.removeItem)
   const updateAmount = useStorefrontCart((state) => state.updateAmount)
 
   return (
@@ -228,6 +241,15 @@ function CartDropdownItem({ item }: { item: StorefrontCartItem }) {
             )}
           </select>
         </label>
+        <button
+          aria-label={t('removeItem', { name: item.name })}
+          className="text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 mt-3 inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
+          onClick={() => removeItem(item.productId)}
+          type="button"
+        >
+          <FaRegTrashAlt aria-hidden="true" className="size-3" />
+          {t('remove')}
+        </button>
       </div>
     </div>
   )
@@ -235,12 +257,10 @@ function CartDropdownItem({ item }: { item: StorefrontCartItem }) {
 
 function AddedCartItemDropdown({
   animationClass,
-  item,
-  openCart
+  item
 }: {
   animationClass: string
   item: StorefrontAddedCartItem
-  openCart: () => void
 }) {
   const t = useTranslations('Storefront.topNav')
 
@@ -274,21 +294,6 @@ function AddedCartItemDropdown({
             {t('amount')}: {item.amount}
           </p>
         </div>
-      </div>
-      <div className="mt-5 grid grid-cols-2 gap-3">
-        <Link
-          className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex h-10 items-center justify-center border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
-          href="/checkout"
-        >
-          {t('checkout')}
-        </Link>
-        <button
-          className="border-store-border text-store-ink hover:border-store-accent/45 hover:text-store-accent focus-visible:ring-store-accent/25 inline-flex h-10 items-center justify-center border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
-          onClick={openCart}
-          type="button"
-        >
-          {t('openCart')}
-        </button>
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { Mock } from 'vitest'
 
 import {
   cancelOrder,
@@ -6,10 +7,47 @@ import {
   fulfillOrder,
   type OrderLifecycleError
 } from '~/server/commerce/order-lifecycle'
+import { firstMockCall } from '~/test/mock-calls'
 
 const now = new Date('2026-05-15T10:00:00Z')
 
-function createOrder(overrides: Record<string, unknown> = {}) {
+type MockOrder = {
+  id: string
+  status: string
+  paymentStatus: string
+  fulfillmentStatus: string
+  paymentExpiresAt: Date
+  lines: Array<{ productId: string; quantity: number }>
+}
+
+type OrderUpdateArgs = {
+  where: { id: string }
+  data: Record<string, unknown>
+  include?: unknown
+}
+
+type OrderFindManyArgs = {
+  where: Record<string, unknown>
+  include?: unknown
+}
+
+type MockDb = {
+  order: {
+    findUnique: Mock<() => Promise<MockOrder>>
+    findMany: Mock<(args: OrderFindManyArgs) => Promise<MockOrder[]>>
+    update: Mock<
+      (args: OrderUpdateArgs) => Promise<MockOrder & Record<string, unknown>>
+    >
+  }
+  product: {
+    update: Mock<() => Promise<null>>
+  }
+  $transaction: Mock<
+    (callback: (tx: MockDb) => Promise<unknown>) => Promise<unknown>
+  >
+}
+
+function createOrder(overrides: Partial<MockOrder> = {}): MockOrder {
   return {
     id: 'order-1',
     status: 'PLACED',
@@ -21,8 +59,8 @@ function createOrder(overrides: Record<string, unknown> = {}) {
   }
 }
 
-function createMockDb(order = createOrder()) {
-  const db = {
+function createMockDb(order = createOrder()): MockDb {
+  const db: MockDb = {
     order: {
       findUnique: vi.fn(async () => order),
       findMany: vi.fn(async () => [order]),
@@ -47,16 +85,17 @@ describe('cancelOrder', () => {
       where: { id: 'product-1' },
       data: { stockReserved: { decrement: 2 } }
     })
-    expect(db.order.update).toHaveBeenCalledWith({
+    const [orderUpdateArgs] = firstMockCall(db.order.update)
+    expect(orderUpdateArgs).toMatchObject({
       where: { id: 'order-1' },
       data: {
         status: 'CANCELLED',
         paymentStatus: 'CANCELLED',
         fulfillmentStatus: 'CANCELLED',
         cancelledAt: now
-      },
-      include: expect.any(Object)
+      }
     })
+    expect(orderUpdateArgs.include).toBeDefined()
   })
 
   it('cancels a paid unfulfilled Order without changing its paid payment status', async () => {
@@ -64,15 +103,12 @@ describe('cancelOrder', () => {
 
     await cancelOrder(db as never, { orderId: 'order-1' }, { now: () => now })
 
-    expect(db.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: expect.objectContaining({
-          status: 'CANCELLED',
-          paymentStatus: 'PAID',
-          fulfillmentStatus: 'CANCELLED'
-        })
-      })
-    )
+    const [orderUpdateArgs] = firstMockCall(db.order.update)
+    expect(orderUpdateArgs.data).toMatchObject({
+      status: 'CANCELLED',
+      paymentStatus: 'PAID',
+      fulfillmentStatus: 'CANCELLED'
+    })
   })
 
   it('does not release stock again for an already-cancelled Order', async () => {
@@ -114,15 +150,16 @@ describe('fulfillOrder', () => {
         stockReserved: { decrement: 2 }
       }
     })
-    expect(db.order.update).toHaveBeenCalledWith({
+    const [orderUpdateArgs] = firstMockCall(db.order.update)
+    expect(orderUpdateArgs).toMatchObject({
       where: { id: 'order-1' },
       data: {
         status: 'COMPLETED',
         fulfillmentStatus: 'FULFILLED',
         completedAt: now
-      },
-      include: expect.any(Object)
+      }
     })
+    expect(orderUpdateArgs.include).toBeDefined()
   })
 
   it('rejects pending-payment Orders', async () => {
@@ -157,27 +194,29 @@ describe('expirePendingPaymentOrders', () => {
 
     await expirePendingPaymentOrders(db as never, { now: () => now })
 
-    expect(db.order.findMany).toHaveBeenCalledWith({
+    const [orderFindManyArgs] = firstMockCall(db.order.findMany)
+    expect(orderFindManyArgs).toMatchObject({
       where: {
         paymentStatus: 'PENDING',
         fulfillmentStatus: 'UNFULFILLED',
         paymentExpiresAt: { lte: now }
-      },
-      include: expect.any(Object)
+      }
     })
+    expect(orderFindManyArgs.include).toBeDefined()
     expect(db.product.update).toHaveBeenCalledWith({
       where: { id: 'product-1' },
       data: { stockReserved: { decrement: 2 } }
     })
-    expect(db.order.update).toHaveBeenCalledWith({
+    const [orderUpdateArgs] = firstMockCall(db.order.update)
+    expect(orderUpdateArgs).toMatchObject({
       where: { id: 'order-1' },
       data: {
         status: 'CANCELLED',
         paymentStatus: 'CANCELLED',
         fulfillmentStatus: 'CANCELLED',
         cancelledAt: now
-      },
-      include: expect.any(Object)
+      }
     })
+    expect(orderUpdateArgs.include).toBeDefined()
   })
 })
