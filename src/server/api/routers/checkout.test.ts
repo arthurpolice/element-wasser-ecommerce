@@ -1,8 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 
+vi.mock('~/server/better-auth', () => ({
+  auth: {
+    api: {
+      getSession: vi.fn(async () => null)
+    }
+  }
+}))
+
+vi.mock('~/server/db', () => ({
+  db: {}
+}))
+
+vi.mock('~/server/payments/stripe-checkout', () => ({
+  createStripeCheckoutSession: vi.fn(async () => ({
+    id: 'cs_test_registered',
+    url: 'https://checkout.stripe.test/session'
+  }))
+}))
+
 import { checkoutRouter } from '~/server/api/routers/checkout'
 import { createCallerFactory } from '~/server/api/trpc'
+import { createStripeCheckoutSession } from '~/server/payments/stripe-checkout'
 import { firstMockCall } from '~/test/mock-calls'
 import type { Salutation } from '../../../../generated/prisma'
 
@@ -108,6 +128,11 @@ type MockDb = {
   order: {
     create: Mock<(args: { data: MockRecord }) => Promise<MockRecord>>
   }
+  payment: {
+    update: Mock<
+      (args: { where: MockRecord; data: MockRecord }) => Promise<MockRecord>
+    >
+  }
   $transaction: Mock<
     (callback: (tx: MockDb) => Promise<unknown>) => Promise<unknown>
   >
@@ -140,10 +165,31 @@ function createMockDb(): MockDb {
     order: {
       create: vi.fn(async ({ data }) => ({
         id: 'order-1',
+        orderNumber: 'EW-2026-00001',
         ...data,
         placedAt: new Date('2026-05-15T10:00:00Z'),
-        payments: []
+        payments: data.payments
+          ? [
+              {
+                id: 'payment-1',
+                status: 'PENDING',
+                provider: (data.payments as { create: { provider: string } })
+                  .create.provider,
+                amountCents: (
+                  data.payments as { create: { amountCents: number } }
+                ).create.amountCents,
+                currencyCode: (
+                  data.payments as { create: { currencyCode: string } }
+                ).create.currencyCode,
+                providerReference: null,
+                createdAt: new Date('2026-05-15T10:00:00Z')
+              }
+            ]
+          : []
       }))
+    },
+    payment: {
+      update: vi.fn(async ({ where, data }) => ({ id: where.id, ...data }))
     },
     $transaction: vi.fn(async (callback) => callback(db))
   }
@@ -182,6 +228,7 @@ describe('checkout router', () => {
 
   beforeEach(() => {
     db = createMockDb()
+    vi.mocked(createStripeCheckoutSession).mockClear()
   })
 
   it('previews a multi-line cart with server-authoritative totals and flat shipping', async () => {
@@ -474,12 +521,13 @@ describe('checkout router', () => {
     ])
     const { caller } = createRegisteredCaller(db)
 
-    await caller.placeOrder({
+    const result = await caller.placeOrder({
       lines: [
         { productId: filter.id, quantity: 1 },
         { productId: refill.id, quantity: 2 }
       ],
       paymentMethod: 'TWINT',
+      locale: 'en',
       firstName: 'River',
       lastName: 'Stone',
       streetLine1: 'Springstrasse 1',
@@ -514,11 +562,38 @@ describe('checkout router', () => {
       payments: {
         create: {
           type: 'CHARGE',
-          provider: 'TWINT',
+          provider: 'STRIPE',
           amountCents: 16700,
           currencyCode: 'CHF'
         }
       }
+    })
+    expect(createStripeCheckoutSession).toHaveBeenCalledWith({
+      order: expect.objectContaining({
+        id: 'order-1',
+        orderNumber: 'EW-2026-00001',
+        totalCents: 16700,
+        currencyCode: 'CHF',
+        payments: [
+          expect.objectContaining({
+            id: 'payment-1',
+            provider: 'STRIPE'
+          })
+        ]
+      }),
+      paymentMethod: 'TWINT',
+      locale: 'en'
+    })
+    expect(db.payment.update).toHaveBeenCalledWith({
+      where: { id: 'payment-1' },
+      data: { providerReference: 'cs_test_registered' }
+    })
+    expect(result).toMatchObject({
+      orderId: 'order-1',
+      orderNumber: 'EW-2026-00001',
+      paymentId: 'payment-1',
+      stripeSessionId: 'cs_test_registered',
+      checkoutUrl: 'https://checkout.stripe.test/session'
     })
   })
 })

@@ -528,9 +528,9 @@
       },
       "payment": {
         "card": "Karte",
-        "cardDescription": "Dummy-Kartenzahlung für diesen Checkout-Slice.",
+        "cardDescription": "Sicher mit Stripe Checkout bezahlen.",
         "twint": "TWINT",
-        "twintDescription": "Dummy-TWINT-Auswahl für diesen Checkout-Slice."
+        "twintDescription": "Mit TWINT über Stripe Checkout bezahlen."
       },
       "items": "Produkte",
       "quantity": "Menge",
@@ -550,6 +550,7 @@
       "total": "Total",
       "updating": "Wird aktualisiert",
       "placeOrder": "Bestellung aufgeben",
+      "redirectingToPayment": "Weiterleitung zur Zahlung...",
       "unavailable": "Ein oder mehrere Produkte benötigen Aufmerksamkeit, bevor die Bestellung aufgegeben werden kann."
     }
   },

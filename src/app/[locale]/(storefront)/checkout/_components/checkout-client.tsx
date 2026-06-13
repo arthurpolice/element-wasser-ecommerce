@@ -99,6 +99,11 @@ export function CheckoutClient() {
       await utils.checkout.bootstrap.invalidate()
     }
   })
+  const placeOrder = api.checkout.placeOrder.useMutation({
+    onSuccess: (result) => {
+      window.location.assign(result.checkoutUrl)
+    }
+  })
   const previewLines = useMemo(
     () =>
       items.map((item) => ({
@@ -231,6 +236,55 @@ export function CheckoutClient() {
     })
   }
 
+  function handlePlaceOrder() {
+    if (!paymentMethod || previewLines.length === 0) {
+      return
+    }
+
+    if (registeredCustomer) {
+      if (!selectedAddress) {
+        return
+      }
+
+      placeOrder.mutate({
+        lines: previewLines,
+        paymentMethod,
+        locale: locale === 'en' ? 'en' : 'de',
+        addressId: selectedAddress.id,
+        salutation: selectedAddress.salutation ?? undefined,
+        firstName: selectedAddress.firstName,
+        lastName: selectedAddress.lastName,
+        company: selectedAddress.company ?? undefined,
+        streetLine1: selectedAddress.streetLine1,
+        streetLine2: selectedAddress.streetLine2 ?? undefined,
+        postalCode: selectedAddress.postalCode,
+        city: selectedAddress.city,
+        countryCode: selectedAddress.countryCode,
+        phone: selectedAddress.phone ?? undefined
+      })
+      return
+    }
+
+    placeOrder.mutate({
+      lines: previewLines,
+      paymentMethod,
+      locale: locale === 'en' ? 'en' : 'de',
+      salutation:
+        address.salutation === 'HERR' || address.salutation === 'FRAU'
+          ? address.salutation
+          : undefined,
+      firstName: address.firstName,
+      lastName: address.lastName,
+      company: address.company || undefined,
+      streetLine1: address.streetLine1,
+      streetLine2: address.streetLine2 || undefined,
+      postalCode: address.postalCode,
+      city: address.city,
+      countryCode: address.countryCode,
+      phone: address.phone || undefined
+    })
+  }
+
   return (
     <main className="mx-auto w-full max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-16">
       <div className="border-store-border/80 border-b pb-8">
@@ -322,9 +376,16 @@ export function CheckoutClient() {
                 </p>
               ) : previewQuery.data ? (
                 <OrderOverview
-                  canUseFinalAction={progression.canUseFinalAction}
+                  canUseFinalAction={
+                    progression.canUseFinalAction && !placeOrder.isPending
+                  }
                   cartItems={items}
+                  errorMessage={
+                    placeOrder.isError ? placeOrder.error.message : null
+                  }
                   locale={locale}
+                  onPlaceOrder={handlePlaceOrder}
+                  placing={placeOrder.isPending}
                   preview={previewQuery.data}
                   updating={previewUpdating}
                 />
@@ -941,13 +1002,19 @@ function PaymentOption({
 function OrderOverview({
   canUseFinalAction,
   cartItems,
+  errorMessage,
   locale,
+  onPlaceOrder,
+  placing,
   preview,
   updating
 }: {
   canUseFinalAction: boolean
   cartItems: StorefrontCartItem[]
+  errorMessage: string | null
   locale: string
+  onPlaceOrder: () => void
+  placing: boolean
   preview: CheckoutPreview
   updating: boolean
 }) {
@@ -961,7 +1028,10 @@ function OrderOverview({
       />
       <CheckoutTotals
         canUseFinalAction={canUseFinalAction}
+        errorMessage={errorMessage}
         locale={locale}
+        onPlaceOrder={onPlaceOrder}
+        placing={placing}
         preview={preview}
         updating={updating}
       />
@@ -1148,12 +1218,18 @@ function CheckoutItemRow({
 
 function CheckoutTotals({
   canUseFinalAction,
+  errorMessage,
   locale,
+  onPlaceOrder,
+  placing,
   preview,
   updating
 }: {
   canUseFinalAction: boolean
+  errorMessage: string | null
   locale: string
+  onPlaceOrder: () => void
+  placing: boolean
   preview: CheckoutPreview
   updating: boolean
 }) {
@@ -1190,10 +1266,20 @@ function CheckoutTotals({
       <button
         className="bg-store-ink text-store-surface hover:bg-store-accent disabled:bg-store-muted/35 focus-visible:ring-store-accent/25 mt-6 inline-flex h-12 w-full items-center justify-center px-5 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed"
         disabled={!canUseFinalAction}
+        onClick={onPlaceOrder}
         type="button"
       >
-        {t('placeOrder')}
+        {placing ? t('redirectingToPayment') : t('placeOrder')}
       </button>
+      {errorMessage ? (
+        <p className="mt-3 flex items-start gap-2 text-sm font-medium text-red-700">
+          <FaExclamationCircle
+            aria-hidden="true"
+            className="mt-0.5 size-3.5 shrink-0"
+          />
+          {errorMessage}
+        </p>
+      ) : null}
     </div>
   )
 }

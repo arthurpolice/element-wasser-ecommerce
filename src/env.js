@@ -53,6 +53,18 @@ export const env = createEnv({
       process.env.NODE_ENV === "production"
         ? z.string().url()
         : z.string().url().optional(),
+    APP_BASE_URL:
+      process.env.NODE_ENV === "production"
+        ? z.string().url()
+        : z.string().url().optional(),
+    STRIPE_SECRET_KEY:
+      process.env.NODE_ENV === "production"
+        ? z.string().min(1)
+        : z.string().optional(),
+    STRIPE_WEBHOOK_SECRET:
+      process.env.NODE_ENV === "production"
+        ? z.string().min(1)
+        : z.string().optional(),
   },
 
   /**
@@ -83,6 +95,9 @@ export const env = createEnv({
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     QSTASH_PUBLISH_BASE_URL: process.env.QSTASH_PUBLISH_BASE_URL,
+    APP_BASE_URL: process.env.APP_BASE_URL,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

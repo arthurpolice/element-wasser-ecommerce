@@ -13,8 +13,12 @@ export const orderListInclude = {
     orderBy: { createdAt: 'desc' as const },
     take: 1,
     select: {
+      id: true,
       provider: true,
       status: true,
+      amountCents: true,
+      currencyCode: true,
+      providerReference: true,
       createdAt: true
     }
   }
@@ -255,9 +259,9 @@ function addMinutes(date: Date, minutes: number) {
 }
 
 function mapPaymentProvider(
-  paymentMethod: CheckoutPaymentMethod
+  _paymentMethod: CheckoutPaymentMethod
 ): PaymentProvider {
-  return paymentMethod === 'CARD' ? 'STRIPE' : 'TWINT'
+  return 'STRIPE'
 }
 
 function buildPendingPayment(

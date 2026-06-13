@@ -528,9 +528,9 @@
       },
       "payment": {
         "card": "Card",
-        "cardDescription": "Dummy card payment for this checkout slice.",
+        "cardDescription": "Pay securely through Stripe Checkout.",
         "twint": "TWINT",
-        "twintDescription": "Dummy TWINT selection for this checkout slice."
+        "twintDescription": "Pay with TWINT through Stripe Checkout."
       },
       "items": "Products",
       "quantity": "Quantity",
@@ -550,6 +550,7 @@
       "total": "Total",
       "updating": "Updating",
       "placeOrder": "Place order",
+      "redirectingToPayment": "Redirecting to payment...",
       "unavailable": "One or more products need attention before this order can be placed."
     }
   },

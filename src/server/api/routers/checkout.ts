@@ -11,6 +11,7 @@ import {
   OrderPlacementError,
   placeOrder
 } from '~/server/commerce/order-placement'
+import { createStripeCheckoutSession } from '~/server/payments/stripe-checkout'
 
 export const checkoutShippingCents = 900
 const checkoutCurrencyCode = 'CHF'
@@ -48,7 +49,8 @@ const addressInputSchema = z.object({
 const placeOrderInputSchema = previewInputSchema
   .extend({
     paymentMethod: paymentMethodSchema,
-    addressId: z.string().trim().min(1).optional()
+    addressId: z.string().trim().min(1).optional(),
+    locale: z.enum(['de', 'en']).default('de')
   })
   .merge(addressInputSchema)
 
@@ -260,7 +262,7 @@ export const checkoutRouter = createTRPCRouter({
       }
 
       try {
-        return await placeOrder(ctx.db, {
+        const order = await placeOrder(ctx.db, {
           customerId: customer.id,
           lines: input.lines,
           paymentMethod: input.paymentMethod,
@@ -277,6 +279,32 @@ export const checkoutRouter = createTRPCRouter({
           shippingCountryCode: normalizeCountryCode(input.countryCode),
           shippingPhone: input.phone
         })
+        const session = await createStripeCheckoutSession({
+          order,
+          paymentMethod: input.paymentMethod,
+          locale: input.locale
+        })
+        const payment = order.payments[0]
+
+        if (!payment) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Order was placed without a pending Payment.'
+          })
+        }
+
+        await ctx.db.payment.update({
+          where: { id: payment.id },
+          data: { providerReference: session.id }
+        })
+
+        return {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          paymentId: payment.id,
+          stripeSessionId: session.id,
+          checkoutUrl: session.url
+        }
       } catch (error) {
         if (error instanceof OrderPlacementError) {
           throw toCheckoutPlacementTrpcError(error)
