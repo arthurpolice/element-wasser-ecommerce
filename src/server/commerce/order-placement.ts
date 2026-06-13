@@ -1,6 +1,7 @@
 import type {
   PaymentProvider,
   PaymentType,
+  PaymentMethod,
   Prisma,
   PrismaClient,
   Salutation
@@ -9,12 +10,33 @@ import type {
 export const PAYMENT_RESERVATION_MINUTES = 15
 
 export const orderListInclude = {
+  lines: {
+    orderBy: { createdAt: 'asc' as const },
+    select: {
+      id: true,
+      productId: true,
+      productName: true,
+      productSku: true,
+      quantity: true,
+      listPriceCents: true,
+      discountPercent: true,
+      unitPriceCents: true,
+      lineTotalCents: true
+    }
+  },
   payments: {
     orderBy: { createdAt: 'desc' as const },
     take: 1,
     select: {
+      id: true,
+      type: true,
       provider: true,
+      paymentMethod: true,
       status: true,
+      amountCents: true,
+      currencyCode: true,
+      providerReference: true,
+      stripeCheckoutSessionId: true,
       createdAt: true
     }
   }
@@ -254,24 +276,20 @@ function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000)
 }
 
-function mapPaymentProvider(
-  paymentMethod: CheckoutPaymentMethod
-): PaymentProvider {
-  return paymentMethod === 'CARD' ? 'STRIPE' : 'TWINT'
-}
-
-function buildPendingPayment(
+export function buildPendingPayment(
   paymentMethod: CheckoutPaymentMethod,
   amountCents: number
 ): {
   type: PaymentType
   provider: PaymentProvider
+  paymentMethod: PaymentMethod
   amountCents: number
   currencyCode: string
 } {
   return {
     type: 'CHARGE',
-    provider: mapPaymentProvider(paymentMethod),
+    provider: 'STRIPE',
+    paymentMethod,
     amountCents,
     currencyCode: 'CHF'
   }

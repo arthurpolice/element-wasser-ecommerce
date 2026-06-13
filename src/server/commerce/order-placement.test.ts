@@ -338,6 +338,7 @@ describe('placeOrder', () => {
         create: {
           type: 'CHARGE',
           provider: 'STRIPE',
+          paymentMethod: 'CARD',
           amountCents: 5400,
           currencyCode: 'CHF'
         }

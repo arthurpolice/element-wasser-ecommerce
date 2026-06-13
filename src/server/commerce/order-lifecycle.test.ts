@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
+import type {
+  FulfillmentStatus,
+  OrderPaymentStatus,
+  OrderStatus
+} from '../../../generated/prisma'
 
 import {
   cancelOrder,
@@ -13,9 +18,9 @@ const now = new Date('2026-05-15T10:00:00Z')
 
 type MockOrder = {
   id: string
-  status: string
-  paymentStatus: string
-  fulfillmentStatus: string
+  status: OrderStatus
+  paymentStatus: OrderPaymentStatus
+  fulfillmentStatus: FulfillmentStatus
   paymentExpiresAt: Date
   lines: Array<{ productId: string; quantity: number }>
 }
@@ -189,7 +194,7 @@ describe('fulfillOrder', () => {
 })
 
 describe('expirePendingPaymentOrders', () => {
-  it('cancels expired payment-pending Orders and releases their Stock Reservations', async () => {
+  it('cancels expired open unpaid Orders and releases their Stock Reservations', async () => {
     const db = createMockDb()
 
     await expirePendingPaymentOrders(db as never, { now: () => now })
@@ -197,7 +202,8 @@ describe('expirePendingPaymentOrders', () => {
     const [orderFindManyArgs] = firstMockCall(db.order.findMany)
     expect(orderFindManyArgs).toMatchObject({
       where: {
-        paymentStatus: 'PENDING',
+        status: 'PLACED',
+        paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
         fulfillmentStatus: 'UNFULFILLED',
         paymentExpiresAt: { lte: now }
       }

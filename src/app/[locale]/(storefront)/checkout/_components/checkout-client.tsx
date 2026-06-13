@@ -78,6 +78,7 @@ export function CheckoutClient() {
   const locale = useLocale()
   const utils = api.useUtils()
   const items = useStorefrontCart((state) => state.items)
+  const clearCart = useStorefrontCart((state) => state.clear)
   const [address, setAddress] = useState<GuestCheckoutAddress>(() =>
     createEmptyGuestCheckoutAddress()
   )
@@ -121,6 +122,18 @@ export function CheckoutClient() {
       placeholderData: (previousData) => previousData
     }
   )
+  const placeOrder = api.checkout.placeOrder.useMutation({
+    onSuccess: (result) => {
+      clearCart()
+      window.location.assign(result.checkoutUrl)
+    }
+  })
+  const placeGuestOrder = api.checkout.placeGuestOrder.useMutation({
+    onSuccess: (result) => {
+      clearCart()
+      window.location.assign(result.checkoutUrl)
+    }
+  })
   const previewUpdating =
     previewQuery.data !== undefined &&
     (!previewInputSettled || previewQuery.isFetching)
@@ -267,7 +280,7 @@ export function CheckoutClient() {
         </p>
       ) : (
         <div className="py-8 lg:py-12">
-          <div className="border-store-border mx-auto max-w-6xl border-t">
+          <div className="mx-auto max-w-6xl">
             <CheckoutSection
               complete={progression.addressComplete}
               stepIndex={1}
@@ -325,6 +338,66 @@ export function CheckoutClient() {
                   canUseFinalAction={progression.canUseFinalAction}
                   cartItems={items}
                   locale={locale}
+                  onPlaceOrder={() => {
+                    if (!paymentMethod) {
+                      return
+                    }
+
+                    const lines = items.map((item) => ({
+                      productId: item.productId,
+                      quantity: item.amount
+                    }))
+                    const checkoutLocale = locale === 'en' ? 'en' : 'de'
+
+                    if (registeredCustomer && selectedAddress) {
+                      placeOrder.mutate({
+                        lines,
+                        paymentMethod,
+                        locale: checkoutLocale,
+                        addressId: selectedAddress.id,
+                        salutation: selectedAddress.salutation ?? undefined,
+                        firstName: selectedAddress.firstName,
+                        lastName: selectedAddress.lastName,
+                        company: selectedAddress.company ?? undefined,
+                        streetLine1: selectedAddress.streetLine1,
+                        streetLine2: selectedAddress.streetLine2 ?? undefined,
+                        postalCode: selectedAddress.postalCode,
+                        city: selectedAddress.city,
+                        countryCode: selectedAddress.countryCode,
+                        phone: selectedAddress.phone ?? undefined
+                      })
+                      return
+                    }
+
+                    if (bootstrap?.status === 'guest') {
+                      placeGuestOrder.mutate({
+                        lines,
+                        paymentMethod,
+                        locale: checkoutLocale,
+                        email: address.email,
+                        salutation:
+                          address.salutation === 'HERR' ||
+                          address.salutation === 'FRAU'
+                            ? address.salutation
+                            : undefined,
+                        firstName: address.firstName,
+                        lastName: address.lastName,
+                        company: address.company || undefined,
+                        streetLine1: address.streetLine1,
+                        streetLine2: address.streetLine2 || undefined,
+                        postalCode: address.postalCode,
+                        city: address.city,
+                        countryCode: address.countryCode,
+                        phone: address.phone || undefined
+                      })
+                    }
+                  }}
+                  placeOrderError={
+                    placeOrder.isError || placeGuestOrder.isError
+                      ? t('placeOrderError')
+                      : null
+                  }
+                  placingOrder={placeOrder.isPending || placeGuestOrder.isPending}
                   preview={previewQuery.data}
                   updating={previewUpdating}
                 />
@@ -374,8 +447,6 @@ function CheckoutSection({
   stepIndex: number
   title: string
 }) {
-  const t = useTranslations('Storefront.checkout')
-
   return (
     <section
       aria-labelledby={`checkout-section-${stepIndex}-heading`}
@@ -481,7 +552,7 @@ function RegisteredAddressStep({
 
   return (
     <div className="grid gap-6">
-      <div className="text-store-muted border-store-border border-y py-4 text-sm leading-6">
+      <div className="text-store-muted border-store-border border-b py-4 text-sm leading-6">
         <p className="text-store-ink font-semibold">
           {customer.firstName} {customer.lastName}
         </p>
@@ -942,12 +1013,18 @@ function OrderOverview({
   canUseFinalAction,
   cartItems,
   locale,
+  onPlaceOrder,
+  placeOrderError,
+  placingOrder,
   preview,
   updating
 }: {
   canUseFinalAction: boolean
   cartItems: StorefrontCartItem[]
   locale: string
+  onPlaceOrder: () => void
+  placeOrderError: string | null
+  placingOrder: boolean
   preview: CheckoutPreview
   updating: boolean
 }) {
@@ -962,6 +1039,9 @@ function OrderOverview({
       <CheckoutTotals
         canUseFinalAction={canUseFinalAction}
         locale={locale}
+        onPlaceOrder={onPlaceOrder}
+        placeOrderError={placeOrderError}
+        placingOrder={placingOrder}
         preview={preview}
         updating={updating}
       />
@@ -1149,11 +1229,17 @@ function CheckoutItemRow({
 function CheckoutTotals({
   canUseFinalAction,
   locale,
+  onPlaceOrder,
+  placeOrderError,
+  placingOrder,
   preview,
   updating
 }: {
   canUseFinalAction: boolean
   locale: string
+  onPlaceOrder: () => void
+  placeOrderError: string | null
+  placingOrder: boolean
   preview: CheckoutPreview
   updating: boolean
 }) {
@@ -1189,11 +1275,31 @@ function CheckoutTotals({
       </dl>
       <button
         className="bg-store-ink text-store-surface hover:bg-store-accent disabled:bg-store-muted/35 focus-visible:ring-store-accent/25 mt-6 inline-flex h-12 w-full items-center justify-center px-5 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed"
-        disabled={!canUseFinalAction}
+        disabled={!canUseFinalAction || placingOrder}
+        onClick={onPlaceOrder}
         type="button"
       >
-        {t('placeOrder')}
+        {placingOrder ? (
+          <>
+            <FaSpinner
+              aria-hidden="true"
+              className="mr-2 size-3.5 animate-spin"
+            />
+            {t('placingOrder')}
+          </>
+        ) : (
+          t('placeOrder')
+        )}
       </button>
+      {placeOrderError ? (
+        <p className="mt-3 flex items-start gap-2 text-sm font-medium text-red-700">
+          <FaExclamationCircle
+            aria-hidden="true"
+            className="mt-0.5 size-3.5 shrink-0"
+          />
+          {placeOrderError}
+        </p>
+      ) : null}
     </div>
   )
 }

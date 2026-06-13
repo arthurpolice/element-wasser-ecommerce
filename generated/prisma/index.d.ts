@@ -179,11 +179,18 @@ export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
 
 
 export const PaymentProvider: {
-  STRIPE: 'STRIPE',
-  TWINT: 'TWINT'
+  STRIPE: 'STRIPE'
 };
 
 export type PaymentProvider = (typeof PaymentProvider)[keyof typeof PaymentProvider]
+
+
+export const PaymentMethod: {
+  CARD: 'CARD',
+  TWINT: 'TWINT'
+};
+
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
 
 
 export const ReviewStatus: {
@@ -227,6 +234,10 @@ export const PaymentStatus: typeof $Enums.PaymentStatus
 export type PaymentProvider = $Enums.PaymentProvider
 
 export const PaymentProvider: typeof $Enums.PaymentProvider
+
+export type PaymentMethod = $Enums.PaymentMethod
+
+export const PaymentMethod: typeof $Enums.PaymentMethod
 
 export type ReviewStatus = $Enums.ReviewStatus
 
@@ -18729,6 +18740,7 @@ export namespace Prisma {
     status: $Enums.OrderStatus | null
     paymentStatus: $Enums.OrderPaymentStatus | null
     fulfillmentStatus: $Enums.FulfillmentStatus | null
+    guestAccessTokenHash: string | null
     paymentExpiresAt: Date | null
     subtotalCents: number | null
     shippingCents: number | null
@@ -18774,6 +18786,7 @@ export namespace Prisma {
     status: $Enums.OrderStatus | null
     paymentStatus: $Enums.OrderPaymentStatus | null
     fulfillmentStatus: $Enums.FulfillmentStatus | null
+    guestAccessTokenHash: string | null
     paymentExpiresAt: Date | null
     subtotalCents: number | null
     shippingCents: number | null
@@ -18819,6 +18832,7 @@ export namespace Prisma {
     status: number
     paymentStatus: number
     fulfillmentStatus: number
+    guestAccessTokenHash: number
     paymentExpiresAt: number
     subtotalCents: number
     shippingCents: number
@@ -18880,6 +18894,7 @@ export namespace Prisma {
     status?: true
     paymentStatus?: true
     fulfillmentStatus?: true
+    guestAccessTokenHash?: true
     paymentExpiresAt?: true
     subtotalCents?: true
     shippingCents?: true
@@ -18925,6 +18940,7 @@ export namespace Prisma {
     status?: true
     paymentStatus?: true
     fulfillmentStatus?: true
+    guestAccessTokenHash?: true
     paymentExpiresAt?: true
     subtotalCents?: true
     shippingCents?: true
@@ -18970,6 +18986,7 @@ export namespace Prisma {
     status?: true
     paymentStatus?: true
     fulfillmentStatus?: true
+    guestAccessTokenHash?: true
     paymentExpiresAt?: true
     subtotalCents?: true
     shippingCents?: true
@@ -19102,6 +19119,7 @@ export namespace Prisma {
     status: $Enums.OrderStatus
     paymentStatus: $Enums.OrderPaymentStatus
     fulfillmentStatus: $Enums.FulfillmentStatus
+    guestAccessTokenHash: string | null
     paymentExpiresAt: Date | null
     subtotalCents: number
     shippingCents: number
@@ -19166,6 +19184,7 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
+    guestAccessTokenHash?: boolean
     paymentExpiresAt?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
@@ -19215,6 +19234,7 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
+    guestAccessTokenHash?: boolean
     paymentExpiresAt?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
@@ -19261,6 +19281,7 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
+    guestAccessTokenHash?: boolean
     paymentExpiresAt?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
@@ -19307,6 +19328,7 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
+    guestAccessTokenHash?: boolean
     paymentExpiresAt?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
@@ -19341,7 +19363,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "paymentExpiresAt" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "guestAccessTokenHash" | "paymentExpiresAt" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
     lines?: boolean | Order$linesArgs<ExtArgs>
@@ -19373,6 +19395,7 @@ export namespace Prisma {
       status: $Enums.OrderStatus
       paymentStatus: $Enums.OrderPaymentStatus
       fulfillmentStatus: $Enums.FulfillmentStatus
+      guestAccessTokenHash: string | null
       paymentExpiresAt: Date | null
       subtotalCents: number
       shippingCents: number
@@ -19841,6 +19864,7 @@ export namespace Prisma {
     readonly status: FieldRef<"Order", 'OrderStatus'>
     readonly paymentStatus: FieldRef<"Order", 'OrderPaymentStatus'>
     readonly fulfillmentStatus: FieldRef<"Order", 'FulfillmentStatus'>
+    readonly guestAccessTokenHash: FieldRef<"Order", 'String'>
     readonly paymentExpiresAt: FieldRef<"Order", 'DateTime'>
     readonly subtotalCents: FieldRef<"Order", 'Int'>
     readonly shippingCents: FieldRef<"Order", 'Int'>
@@ -21631,9 +21655,11 @@ export namespace Prisma {
     type: $Enums.PaymentType | null
     status: $Enums.PaymentStatus | null
     provider: $Enums.PaymentProvider | null
+    paymentMethod: $Enums.PaymentMethod | null
     amountCents: number | null
     currencyCode: string | null
     providerReference: string | null
+    stripeCheckoutSessionId: string | null
     failureReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -21645,9 +21671,11 @@ export namespace Prisma {
     type: $Enums.PaymentType | null
     status: $Enums.PaymentStatus | null
     provider: $Enums.PaymentProvider | null
+    paymentMethod: $Enums.PaymentMethod | null
     amountCents: number | null
     currencyCode: string | null
     providerReference: string | null
+    stripeCheckoutSessionId: string | null
     failureReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -21659,9 +21687,11 @@ export namespace Prisma {
     type: number
     status: number
     provider: number
+    paymentMethod: number
     amountCents: number
     currencyCode: number
     providerReference: number
+    stripeCheckoutSessionId: number
     failureReason: number
     createdAt: number
     updatedAt: number
@@ -21683,9 +21713,11 @@ export namespace Prisma {
     type?: true
     status?: true
     provider?: true
+    paymentMethod?: true
     amountCents?: true
     currencyCode?: true
     providerReference?: true
+    stripeCheckoutSessionId?: true
     failureReason?: true
     createdAt?: true
     updatedAt?: true
@@ -21697,9 +21729,11 @@ export namespace Prisma {
     type?: true
     status?: true
     provider?: true
+    paymentMethod?: true
     amountCents?: true
     currencyCode?: true
     providerReference?: true
+    stripeCheckoutSessionId?: true
     failureReason?: true
     createdAt?: true
     updatedAt?: true
@@ -21711,9 +21745,11 @@ export namespace Prisma {
     type?: true
     status?: true
     provider?: true
+    paymentMethod?: true
     amountCents?: true
     currencyCode?: true
     providerReference?: true
+    stripeCheckoutSessionId?: true
     failureReason?: true
     createdAt?: true
     updatedAt?: true
@@ -21812,9 +21848,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode: string
     providerReference: string | null
+    stripeCheckoutSessionId: string | null
     failureReason: string | null
     createdAt: Date
     updatedAt: Date
@@ -21845,9 +21883,11 @@ export namespace Prisma {
     type?: boolean
     status?: boolean
     provider?: boolean
+    paymentMethod?: boolean
     amountCents?: boolean
     currencyCode?: boolean
     providerReference?: boolean
+    stripeCheckoutSessionId?: boolean
     failureReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21860,9 +21900,11 @@ export namespace Prisma {
     type?: boolean
     status?: boolean
     provider?: boolean
+    paymentMethod?: boolean
     amountCents?: boolean
     currencyCode?: boolean
     providerReference?: boolean
+    stripeCheckoutSessionId?: boolean
     failureReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21875,9 +21917,11 @@ export namespace Prisma {
     type?: boolean
     status?: boolean
     provider?: boolean
+    paymentMethod?: boolean
     amountCents?: boolean
     currencyCode?: boolean
     providerReference?: boolean
+    stripeCheckoutSessionId?: boolean
     failureReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -21890,15 +21934,17 @@ export namespace Prisma {
     type?: boolean
     status?: boolean
     provider?: boolean
+    paymentMethod?: boolean
     amountCents?: boolean
     currencyCode?: boolean
     providerReference?: boolean
+    stripeCheckoutSessionId?: boolean
     failureReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "type" | "status" | "provider" | "amountCents" | "currencyCode" | "providerReference" | "failureReason" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "type" | "status" | "provider" | "paymentMethod" | "amountCents" | "currencyCode" | "providerReference" | "stripeCheckoutSessionId" | "failureReason" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
   }
@@ -21920,9 +21966,11 @@ export namespace Prisma {
       type: $Enums.PaymentType
       status: $Enums.PaymentStatus
       provider: $Enums.PaymentProvider
+      paymentMethod: $Enums.PaymentMethod
       amountCents: number
       currencyCode: string
       providerReference: string | null
+      stripeCheckoutSessionId: string | null
       failureReason: string | null
       createdAt: Date
       updatedAt: Date
@@ -22355,9 +22403,11 @@ export namespace Prisma {
     readonly type: FieldRef<"Payment", 'PaymentType'>
     readonly status: FieldRef<"Payment", 'PaymentStatus'>
     readonly provider: FieldRef<"Payment", 'PaymentProvider'>
+    readonly paymentMethod: FieldRef<"Payment", 'PaymentMethod'>
     readonly amountCents: FieldRef<"Payment", 'Int'>
     readonly currencyCode: FieldRef<"Payment", 'String'>
     readonly providerReference: FieldRef<"Payment", 'String'>
+    readonly stripeCheckoutSessionId: FieldRef<"Payment", 'String'>
     readonly failureReason: FieldRef<"Payment", 'String'>
     readonly createdAt: FieldRef<"Payment", 'DateTime'>
     readonly updatedAt: FieldRef<"Payment", 'DateTime'>
@@ -25279,6 +25329,7 @@ export namespace Prisma {
     status: 'status',
     paymentStatus: 'paymentStatus',
     fulfillmentStatus: 'fulfillmentStatus',
+    guestAccessTokenHash: 'guestAccessTokenHash',
     paymentExpiresAt: 'paymentExpiresAt',
     subtotalCents: 'subtotalCents',
     shippingCents: 'shippingCents',
@@ -25341,9 +25392,11 @@ export namespace Prisma {
     type: 'type',
     status: 'status',
     provider: 'provider',
+    paymentMethod: 'paymentMethod',
     amountCents: 'amountCents',
     currencyCode: 'currencyCode',
     providerReference: 'providerReference',
+    stripeCheckoutSessionId: 'stripeCheckoutSessionId',
     failureReason: 'failureReason',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -25601,6 +25654,20 @@ export namespace Prisma {
    * Reference to a field of type 'PaymentProvider[]'
    */
   export type ListEnumPaymentProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentProvider[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'PaymentMethod'
+   */
+  export type EnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod'>
+    
+
+
+  /**
+   * Reference to a field of type 'PaymentMethod[]'
+   */
+  export type ListEnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod[]'>
     
 
 
@@ -26672,6 +26739,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFilter<"Order"> | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: StringNullableFilter<"Order"> | string | null
     paymentExpiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     subtotalCents?: IntFilter<"Order"> | number
     shippingCents?: IntFilter<"Order"> | number
@@ -26720,6 +26788,7 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
+    guestAccessTokenHash?: SortOrderInput | SortOrder
     paymentExpiresAt?: SortOrderInput | SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
@@ -26760,6 +26829,7 @@ export namespace Prisma {
   export type OrderWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     orderNumber?: string
+    guestAccessTokenHash?: string
     AND?: OrderWhereInput | OrderWhereInput[]
     OR?: OrderWhereInput[]
     NOT?: OrderWhereInput | OrderWhereInput[]
@@ -26806,7 +26876,7 @@ export namespace Prisma {
     customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
     lines?: OrderLineListRelationFilter
     payments?: PaymentListRelationFilter
-  }, "id" | "orderNumber">
+  }, "id" | "orderNumber" | "guestAccessTokenHash">
 
   export type OrderOrderByWithAggregationInput = {
     id?: SortOrder
@@ -26819,6 +26889,7 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
+    guestAccessTokenHash?: SortOrderInput | SortOrder
     paymentExpiresAt?: SortOrderInput | SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
@@ -26872,6 +26943,7 @@ export namespace Prisma {
     status?: EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusWithAggregatesFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusWithAggregatesFilter<"Order"> | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: StringNullableWithAggregatesFilter<"Order"> | string | null
     paymentExpiresAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
     subtotalCents?: IntWithAggregatesFilter<"Order"> | number
     shippingCents?: IntWithAggregatesFilter<"Order"> | number
@@ -27021,9 +27093,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFilter<"Payment"> | $Enums.PaymentType
     status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFilter<"Payment"> | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
     amountCents?: IntFilter<"Payment"> | number
     currencyCode?: StringFilter<"Payment"> | string
     providerReference?: StringNullableFilter<"Payment"> | string | null
+    stripeCheckoutSessionId?: StringNullableFilter<"Payment"> | string | null
     failureReason?: StringNullableFilter<"Payment"> | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
@@ -27036,9 +27110,11 @@ export namespace Prisma {
     type?: SortOrder
     status?: SortOrder
     provider?: SortOrder
+    paymentMethod?: SortOrder
     amountCents?: SortOrder
     currencyCode?: SortOrder
     providerReference?: SortOrderInput | SortOrder
+    stripeCheckoutSessionId?: SortOrderInput | SortOrder
     failureReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -27054,9 +27130,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFilter<"Payment"> | $Enums.PaymentType
     status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFilter<"Payment"> | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
     amountCents?: IntFilter<"Payment"> | number
     currencyCode?: StringFilter<"Payment"> | string
     providerReference?: StringNullableFilter<"Payment"> | string | null
+    stripeCheckoutSessionId?: StringNullableFilter<"Payment"> | string | null
     failureReason?: StringNullableFilter<"Payment"> | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
@@ -27069,9 +27147,11 @@ export namespace Prisma {
     type?: SortOrder
     status?: SortOrder
     provider?: SortOrder
+    paymentMethod?: SortOrder
     amountCents?: SortOrder
     currencyCode?: SortOrder
     providerReference?: SortOrderInput | SortOrder
+    stripeCheckoutSessionId?: SortOrderInput | SortOrder
     failureReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -27091,9 +27171,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeWithAggregatesFilter<"Payment"> | $Enums.PaymentType
     status?: EnumPaymentStatusWithAggregatesFilter<"Payment"> | $Enums.PaymentStatus
     provider?: EnumPaymentProviderWithAggregatesFilter<"Payment"> | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodWithAggregatesFilter<"Payment"> | $Enums.PaymentMethod
     amountCents?: IntWithAggregatesFilter<"Payment"> | number
     currencyCode?: StringWithAggregatesFilter<"Payment"> | string
     providerReference?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    stripeCheckoutSessionId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     failureReason?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
@@ -28396,6 +28478,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -28444,6 +28527,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -28490,6 +28574,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -28538,6 +28623,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -28585,6 +28671,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -28629,6 +28716,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -28674,6 +28762,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -28831,9 +28920,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status?: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode?: string
     providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28846,9 +28937,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status?: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode?: string
     providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28859,9 +28952,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28874,9 +28969,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28888,9 +28985,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status?: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode?: string
     providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28901,9 +29000,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28915,9 +29016,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30084,6 +30187,7 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
+    guestAccessTokenHash?: SortOrder
     paymentExpiresAt?: SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
@@ -30136,6 +30240,7 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
+    guestAccessTokenHash?: SortOrder
     paymentExpiresAt?: SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
@@ -30181,6 +30286,7 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
+    guestAccessTokenHash?: SortOrder
     paymentExpiresAt?: SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
@@ -30354,15 +30460,24 @@ export namespace Prisma {
     not?: NestedEnumPaymentProviderFilter<$PrismaModel> | $Enums.PaymentProvider
   }
 
+  export type EnumPaymentMethodFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentMethod | EnumPaymentMethodFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentMethodFilter<$PrismaModel> | $Enums.PaymentMethod
+  }
+
   export type PaymentCountOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
     type?: SortOrder
     status?: SortOrder
     provider?: SortOrder
+    paymentMethod?: SortOrder
     amountCents?: SortOrder
     currencyCode?: SortOrder
     providerReference?: SortOrder
+    stripeCheckoutSessionId?: SortOrder
     failureReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30378,9 +30493,11 @@ export namespace Prisma {
     type?: SortOrder
     status?: SortOrder
     provider?: SortOrder
+    paymentMethod?: SortOrder
     amountCents?: SortOrder
     currencyCode?: SortOrder
     providerReference?: SortOrder
+    stripeCheckoutSessionId?: SortOrder
     failureReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30392,9 +30509,11 @@ export namespace Prisma {
     type?: SortOrder
     status?: SortOrder
     provider?: SortOrder
+    paymentMethod?: SortOrder
     amountCents?: SortOrder
     currencyCode?: SortOrder
     providerReference?: SortOrder
+    stripeCheckoutSessionId?: SortOrder
     failureReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30432,6 +30551,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPaymentProviderFilter<$PrismaModel>
     _max?: NestedEnumPaymentProviderFilter<$PrismaModel>
+  }
+
+  export type EnumPaymentMethodWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentMethod | EnumPaymentMethodFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentMethodWithAggregatesFilter<$PrismaModel> | $Enums.PaymentMethod
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPaymentMethodFilter<$PrismaModel>
+    _max?: NestedEnumPaymentMethodFilter<$PrismaModel>
   }
 
   export type EnumReviewStatusFilter<$PrismaModel = never> = {
@@ -31525,6 +31654,10 @@ export namespace Prisma {
     set?: $Enums.PaymentProvider
   }
 
+  export type EnumPaymentMethodFieldUpdateOperationsInput = {
+    set?: $Enums.PaymentMethod
+  }
+
   export type OrderUpdateOneRequiredWithoutPaymentsNestedInput = {
     create?: XOR<OrderCreateWithoutPaymentsInput, OrderUncheckedCreateWithoutPaymentsInput>
     connectOrCreate?: OrderCreateOrConnectWithoutPaymentsInput
@@ -31923,6 +32056,13 @@ export namespace Prisma {
     not?: NestedEnumPaymentProviderFilter<$PrismaModel> | $Enums.PaymentProvider
   }
 
+  export type NestedEnumPaymentMethodFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentMethod | EnumPaymentMethodFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentMethodFilter<$PrismaModel> | $Enums.PaymentMethod
+  }
+
   export type NestedEnumPaymentTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.PaymentType | EnumPaymentTypeFieldRefInput<$PrismaModel>
     in?: $Enums.PaymentType[] | ListEnumPaymentTypeFieldRefInput<$PrismaModel>
@@ -31951,6 +32091,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumPaymentProviderFilter<$PrismaModel>
     _max?: NestedEnumPaymentProviderFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPaymentMethodWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PaymentMethod | EnumPaymentMethodFieldRefInput<$PrismaModel>
+    in?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PaymentMethod[] | ListEnumPaymentMethodFieldRefInput<$PrismaModel>
+    not?: NestedEnumPaymentMethodWithAggregatesFilter<$PrismaModel> | $Enums.PaymentMethod
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPaymentMethodFilter<$PrismaModel>
+    _max?: NestedEnumPaymentMethodFilter<$PrismaModel>
   }
 
   export type NestedEnumReviewStatusFilter<$PrismaModel = never> = {
@@ -32527,6 +32677,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -32573,6 +32724,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -32761,6 +32913,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFilter<"Order"> | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: StringNullableFilter<"Order"> | string | null
     paymentExpiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     subtotalCents?: IntFilter<"Order"> | number
     shippingCents?: IntFilter<"Order"> | number
@@ -33811,9 +33964,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status?: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode?: string
     providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33824,9 +33979,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status?: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode?: string
     providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33920,9 +34077,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFilter<"Payment"> | $Enums.PaymentType
     status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFilter<"Payment"> | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFilter<"Payment"> | $Enums.PaymentMethod
     amountCents?: IntFilter<"Payment"> | number
     currencyCode?: StringFilter<"Payment"> | string
     providerReference?: StringNullableFilter<"Payment"> | string | null
+    stripeCheckoutSessionId?: StringNullableFilter<"Payment"> | string | null
     failureReason?: StringNullableFilter<"Payment"> | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
@@ -33938,6 +34097,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -33985,6 +34145,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -34153,6 +34314,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -34200,6 +34362,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -34370,6 +34533,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -34417,6 +34581,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -34478,6 +34643,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -34525,6 +34691,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -35059,6 +35226,7 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
+    guestAccessTokenHash?: string | null
     paymentExpiresAt?: Date | string | null
     subtotalCents: number
     shippingCents: number
@@ -35167,6 +35335,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -35213,6 +35382,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -35259,6 +35429,7 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
@@ -35696,9 +35867,11 @@ export namespace Prisma {
     type: $Enums.PaymentType
     status?: $Enums.PaymentStatus
     provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
     amountCents: number
     currencyCode?: string
     providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35758,9 +35931,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35771,9 +35946,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35784,9 +35961,11 @@ export namespace Prisma {
     type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
     provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     amountCents?: IntFieldUpdateOperationsInput | number
     currencyCode?: StringFieldUpdateOperationsInput | string
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

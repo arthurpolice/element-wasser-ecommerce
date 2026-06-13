@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
-import { type Prisma, Salutation } from '../../../../generated/prisma'
+import {
+  type OrderPaymentStatus,
+  type OrderStatus,
+  type Prisma,
+  type PrismaClient,
+  Salutation
+} from '../../../../generated/prisma'
 import { TRPCError } from '@trpc/server'
 import {
   createTRPCRouter,
@@ -8,9 +14,16 @@ import {
   publicProcedure
 } from '~/server/api/trpc'
 import {
+  buildPendingPayment,
   OrderPlacementError,
+  orderListInclude,
   placeOrder
 } from '~/server/commerce/order-placement'
+import {
+  createOrderAccessToken,
+  hashOrderAccessToken
+} from '~/server/commerce/order-access-token'
+import { startStripeCheckout } from '~/server/payments/stripe-checkout'
 
 export const checkoutShippingCents = 900
 const checkoutCurrencyCode = 'CHF'
@@ -48,9 +61,28 @@ const addressInputSchema = z.object({
 const placeOrderInputSchema = previewInputSchema
   .extend({
     paymentMethod: paymentMethodSchema,
-    addressId: z.string().trim().min(1).optional()
+    addressId: z.string().trim().min(1).optional(),
+    locale: z.enum(['de', 'en']).default('de')
   })
   .merge(addressInputSchema)
+
+const placeGuestOrderInputSchema = previewInputSchema
+  .extend({
+    email: z.string().trim().email(),
+    paymentMethod: paymentMethodSchema,
+    locale: z.enum(['de', 'en']).default('de')
+  })
+  .merge(addressInputSchema)
+
+const orderConfirmationInputSchema = z.object({
+  orderNumber: z.string().trim().min(1),
+  accessToken: z.string().trim().min(1).optional()
+})
+
+const retryPaymentInputSchema = orderConfirmationInputSchema.extend({
+  paymentMethod: paymentMethodSchema,
+  locale: z.enum(['de', 'en']).default('de')
+})
 
 const checkoutProductInclude = {
   images: {
@@ -63,6 +95,7 @@ const checkoutProductInclude = {
 type CheckoutProduct = Prisma.ProductGetPayload<{
   include: typeof checkoutProductInclude
 }>
+type PrismaClientLike = Pick<PrismaClient, 'payment'>
 
 const checkoutAddressSelect = {
   id: true,
@@ -81,6 +114,63 @@ const checkoutAddressSelect = {
 
 function normalizeCountryCode(countryCode: string) {
   return countryCode.toUpperCase()
+}
+
+function isRetryableOrder(order: {
+  status: OrderStatus
+  paymentStatus: OrderPaymentStatus
+  paymentExpiresAt: Date | null
+}) {
+  return (
+    order.status !== 'CANCELLED' &&
+    order.paymentStatus !== 'PAID' &&
+    order.paymentExpiresAt !== null &&
+    order.paymentExpiresAt.getTime() > Date.now()
+  )
+}
+
+async function startCheckoutForOrder({
+  db,
+  locale,
+  order,
+  orderAccessToken
+}: {
+  db: PrismaClientLike
+  locale: 'de' | 'en'
+  order: Awaited<ReturnType<typeof placeOrder>>
+  orderAccessToken?: string
+}) {
+  const payment = order.payments.find(
+    (candidate) => candidate.status === 'PENDING'
+  )
+
+  if (!payment) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Pending Payment was not created.'
+    })
+  }
+
+  const checkout = await startStripeCheckout({
+    order,
+    locale,
+    orderAccessToken
+  })
+
+  await db.payment.update({
+    where: { id: payment.id },
+    data: {
+      stripeCheckoutSessionId: checkout.sessionId,
+      ...(checkout.paymentIntentId
+        ? { providerReference: checkout.paymentIntentId }
+        : {})
+    }
+  })
+
+  return {
+    order,
+    checkoutUrl: checkout.url
+  }
 }
 
 function toCheckoutPlacementTrpcError(error: OrderPlacementError): TRPCError {
@@ -244,6 +334,167 @@ export const checkoutRouter = createTRPCRouter({
       })
     ),
 
+  orderConfirmation: publicProcedure
+    .input(orderConfirmationInputSchema)
+    .query(async ({ ctx, input }) => {
+      const accessTokenHash = input.accessToken
+        ? hashOrderAccessToken(input.accessToken)
+        : null
+      const customer = ctx.session?.user
+        ? await ctx.db.customer.findUnique({
+            where: { userId: ctx.session.user.id },
+            select: { id: true }
+          })
+        : null
+
+      if (!customer && !accessTokenHash) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Order access is required.'
+        })
+      }
+
+      const order = await ctx.db.order.findFirst({
+        where: {
+          orderNumber: input.orderNumber,
+          OR: [
+            ...(customer ? [{ customerId: customer.id }] : []),
+            ...(accessTokenHash ? [{ guestAccessTokenHash: accessTokenHash }] : [])
+          ]
+        },
+        select: {
+          id: true,
+          orderNumber: true,
+          status: true,
+          paymentStatus: true,
+          fulfillmentStatus: true,
+          paymentExpiresAt: true,
+          totalCents: true,
+          currencyCode: true,
+          placedAt: true,
+          shippingFirstName: true,
+          shippingLastName: true,
+          shippingStreetLine1: true,
+          shippingStreetLine2: true,
+          shippingPostalCode: true,
+          shippingCity: true,
+          shippingCountryCode: true,
+          billingFirstName: true,
+          billingLastName: true,
+          billingStreetLine1: true,
+          billingStreetLine2: true,
+          billingPostalCode: true,
+          billingCity: true,
+          billingCountryCode: true,
+          lines: {
+            orderBy: { createdAt: 'asc' },
+            select: {
+              id: true,
+              productName: true,
+              productSku: true,
+              quantity: true,
+              unitPriceCents: true,
+              lineTotalCents: true
+            }
+          },
+          payments: {
+            orderBy: { createdAt: 'desc' },
+            select: {
+              id: true,
+              paymentMethod: true,
+              status: true,
+              amountCents: true,
+              currencyCode: true,
+              failureReason: true,
+              createdAt: true
+            }
+          }
+        }
+      })
+
+      if (!order) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Order not found.'
+        })
+      }
+
+      return {
+        ...order,
+        canRetryPayment: isRetryableOrder(order)
+      }
+    }),
+
+  retryPayment: publicProcedure
+    .input(retryPaymentInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const accessTokenHash = input.accessToken
+        ? hashOrderAccessToken(input.accessToken)
+        : null
+      const customer = ctx.session?.user
+        ? await ctx.db.customer.findUnique({
+            where: { userId: ctx.session.user.id },
+            select: { id: true }
+          })
+        : null
+
+      if (!customer && !accessTokenHash) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Order access is required.'
+        })
+      }
+
+      const order = await ctx.db.$transaction(async (tx) => {
+        const existingOrder = await tx.order.findFirst({
+          where: {
+            orderNumber: input.orderNumber,
+            OR: [
+              ...(customer ? [{ customerId: customer.id }] : []),
+              ...(accessTokenHash
+                ? [{ guestAccessTokenHash: accessTokenHash }]
+                : [])
+            ]
+          },
+          include: orderListInclude
+        })
+
+        if (!existingOrder) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Order not found.'
+          })
+        }
+
+        if (!isRetryableOrder(existingOrder)) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Order payment can no longer be retried.'
+          })
+        }
+
+        await tx.payment.create({
+          data: {
+            orderId: existingOrder.id,
+            ...buildPendingPayment(input.paymentMethod, existingOrder.totalCents)
+          }
+        })
+
+        return tx.order.update({
+          where: { id: existingOrder.id },
+          data: { paymentStatus: 'PENDING' },
+          include: orderListInclude
+        })
+      })
+
+      return startCheckoutForOrder({
+        db: ctx.db,
+        order,
+        locale: input.locale,
+        orderAccessToken: input.accessToken
+      })
+    }),
+
   placeOrder: protectedProcedure
     .input(placeOrderInputSchema)
     .mutation(async ({ ctx, input }) => {
@@ -260,7 +511,7 @@ export const checkoutRouter = createTRPCRouter({
       }
 
       try {
-        return await placeOrder(ctx.db, {
+        const order = await placeOrder(ctx.db, {
           customerId: customer.id,
           lines: input.lines,
           paymentMethod: input.paymentMethod,
@@ -276,6 +527,64 @@ export const checkoutRouter = createTRPCRouter({
           shippingCity: input.city,
           shippingCountryCode: normalizeCountryCode(input.countryCode),
           shippingPhone: input.phone
+        })
+        return startCheckoutForOrder({
+          db: ctx.db,
+          order,
+          locale: input.locale
+        })
+      } catch (error) {
+        if (error instanceof OrderPlacementError) {
+          throw toCheckoutPlacementTrpcError(error)
+        }
+
+        throw error
+      }
+    }),
+
+  placeGuestOrder: publicProcedure
+    .input(placeGuestOrderInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const orderAccessToken = createOrderAccessToken()
+      const guestAccessTokenHash = hashOrderAccessToken(orderAccessToken)
+
+      try {
+        const customer = await ctx.db.customer.create({
+          data: {
+            email: input.email,
+            salutation: input.salutation,
+            firstName: input.firstName,
+            lastName: input.lastName
+          },
+          select: { id: true }
+        })
+        const placedOrder = await placeOrder(ctx.db, {
+          customerId: customer.id,
+          lines: input.lines,
+          paymentMethod: input.paymentMethod,
+          shippingCents: checkoutShippingCents,
+          shippingSalutation: input.salutation,
+          shippingFirstName: input.firstName,
+          shippingLastName: input.lastName,
+          shippingCompany: input.company,
+          shippingStreetLine1: input.streetLine1,
+          shippingStreetLine2: input.streetLine2,
+          shippingPostalCode: input.postalCode,
+          shippingCity: input.city,
+          shippingCountryCode: normalizeCountryCode(input.countryCode),
+          shippingPhone: input.phone
+        })
+        const order = await ctx.db.order.update({
+          where: { id: placedOrder.id },
+          data: { guestAccessTokenHash },
+          include: orderListInclude
+        })
+
+        return startCheckoutForOrder({
+          db: ctx.db,
+          order,
+          locale: input.locale,
+          orderAccessToken
         })
       } catch (error) {
         if (error instanceof OrderPlacementError) {

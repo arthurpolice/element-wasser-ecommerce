@@ -136,6 +136,10 @@ enum PaymentStatus {
 
 enum PaymentProvider {
   STRIPE
+}
+
+enum PaymentMethod {
+  CARD
   TWINT
 }
 
@@ -245,7 +249,7 @@ model Category {
   children  Category[]        @relation("CategoryTree")
   products  ProductCategory[]
   createdAt DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  updatedAt DateTime          @updatedAt
 
   @@index([parentId])
 }
@@ -288,6 +292,7 @@ model Order {
   status                OrderStatus        @default(PLACED)
   paymentStatus         OrderPaymentStatus @default(PENDING)
   fulfillmentStatus     FulfillmentStatus  @default(UNFULFILLED)
+  guestAccessTokenHash  String?            @unique
   paymentExpiresAt      DateTime?
   subtotalCents         Int
   shippingCents         Int
@@ -353,21 +358,24 @@ model OrderLine {
 }
 
 model Payment {
-  id                String          @id @default(cuid())
-  orderId           String
-  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  type              PaymentType
-  status            PaymentStatus   @default(PENDING)
-  provider          PaymentProvider
-  amountCents       Int
-  currencyCode      String          @default("CHF")
-  providerReference String?
-  failureReason     String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                      String          @id @default(cuid())
+  orderId                 String
+  order                   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  type                    PaymentType
+  status                  PaymentStatus   @default(PENDING)
+  provider                PaymentProvider
+  paymentMethod           PaymentMethod
+  amountCents             Int
+  currencyCode            String          @default("CHF")
+  providerReference       String?
+  stripeCheckoutSessionId String?
+  failureReason           String?
+  createdAt               DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
 
   @@index([orderId])
   @@index([provider, providerReference])
+  @@index([stripeCheckoutSessionId])
   @@index([status])
 }
 

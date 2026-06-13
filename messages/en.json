@@ -528,9 +528,9 @@
       },
       "payment": {
         "card": "Card",
-        "cardDescription": "Dummy card payment for this checkout slice.",
+        "cardDescription": "Pay securely by card through Stripe.",
         "twint": "TWINT",
-        "twintDescription": "Dummy TWINT selection for this checkout slice."
+        "twintDescription": "Pay securely with TWINT through Stripe."
       },
       "items": "Products",
       "quantity": "Quantity",
@@ -550,7 +550,38 @@
       "total": "Total",
       "updating": "Updating",
       "placeOrder": "Place order",
+      "placingOrder": "Redirecting to Stripe…",
+      "placeOrderError": "Could not start Stripe Checkout. Please try again.",
       "unavailable": "One or more products need attention before this order can be placed."
+    },
+    "checkoutConfirmation": {
+      "eyebrow": "Order Confirmation",
+      "loading": "Loading order confirmation…",
+      "paymentStatus": "Payment: {status}",
+      "fulfillmentStatus": "Fulfillment: {status}",
+      "retryTitle": "Payment can be retried",
+      "retryDescription": "Choose how you want to pay and continue to Stripe for this order.",
+      "retryCard": "Card",
+      "retryTwint": "TWINT",
+      "retryAction": "Retry payment",
+      "retryRedirecting": "Redirecting to Stripe…",
+      "retryError": "Could not start a new Stripe Checkout session. Please try again.",
+      "paymentHistory": "Payment history",
+      "paymentAttempt": "{method}: {status}",
+      "paymentMethods": {
+        "CARD": "Card",
+        "TWINT": "TWINT"
+      },
+      "quantity": "{quantity, plural, one {# unit} other {# units}}",
+      "addresses": "Addresses",
+      "shipping": "Shipping",
+      "billing": "Billing",
+      "missingTitle": "Order not found.",
+      "missingOrder": "The order confirmation link is missing an order number.",
+      "errorTitle": "Could not load this order.",
+      "error": "Sign in with the customer account that placed this order, or view your order history.",
+      "returnToCheckout": "Return to checkout",
+      "viewOrders": "View orders"
     }
   },
   "Orders": {

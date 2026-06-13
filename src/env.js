@@ -1,5 +1,5 @@
-import { createEnv } from "@t3-oss/env-nextjs";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-nextjs'
+import { z } from 'zod'
 
 export const env = createEnv({
   /**
@@ -8,51 +8,61 @@ export const env = createEnv({
    */
   server: {
     BETTER_AUTH_SECRET:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     DATABASE_URL: z.string().url(),
     NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
+      .enum(['development', 'test', 'production'])
+      .default('development'),
     AWS_ACCESS_KEY_ID:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     AWS_SECRET_ACCESS_KEY:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     S3_BUCKET:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     S3_REGION:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     S3_ENDPOINT: z.string().url().optional(),
     S3_PUBLIC_URL_BASE: z.string().url().optional(),
     S3_FORCE_PATH_STYLE: z
-      .enum(["true", "false"])
+      .enum(['true', 'false'])
       .optional()
-      .transform((value) => value === "true"),
+      .transform((value) => value === 'true'),
     QSTASH_TOKEN:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     QSTASH_CURRENT_SIGNING_KEY:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     QSTASH_NEXT_SIGNING_KEY:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
     QSTASH_PUBLISH_BASE_URL:
-      process.env.NODE_ENV === "production"
+      process.env.NODE_ENV === 'production'
         ? z.string().url()
         : z.string().url().optional(),
+    APP_BASE_URL:
+      process.env.NODE_ENV === 'production'
+        ? z.string().url()
+        : z.string().url().optional(),
+    STRIPE_SECRET_KEY:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
+    STRIPE_WEBHOOK_SECRET:
+      process.env.NODE_ENV === 'production' ? z.string() : z.string().optional()
   },
 
   /**
@@ -83,6 +93,9 @@ export const env = createEnv({
     QSTASH_CURRENT_SIGNING_KEY: process.env.QSTASH_CURRENT_SIGNING_KEY,
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     QSTASH_PUBLISH_BASE_URL: process.env.QSTASH_PUBLISH_BASE_URL,
+    APP_BASE_URL: process.env.APP_BASE_URL,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
@@ -93,5 +106,5 @@ export const env = createEnv({
    * Makes it so that empty strings are treated as undefined. `SOME_VAR: z.string()` and
    * `SOME_VAR=''` will throw an error.
    */
-  emptyStringAsUndefined: true,
-});
+  emptyStringAsUndefined: true
+})

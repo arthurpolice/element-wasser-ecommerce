@@ -6,13 +6,7 @@ import {
 } from '~/server/commerce/order-placement'
 
 export const orderLifecycleInclude = {
-  ...orderListInclude,
-  lines: {
-    select: {
-      productId: true,
-      quantity: true
-    }
-  }
+  ...orderListInclude
 } satisfies Prisma.OrderInclude
 
 type OrderLifecycleRow = Prisma.OrderGetPayload<{
@@ -175,7 +169,8 @@ export async function expirePendingPaymentOrders(
   return db.$transaction(async (tx) => {
     const expiredOrders = await tx.order.findMany({
       where: {
-        paymentStatus: 'PENDING',
+        status: 'PLACED',
+        paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
         fulfillmentStatus: 'UNFULFILLED',
         paymentExpiresAt: { lte: cancelledAt }
       },

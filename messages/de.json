@@ -528,9 +528,9 @@
       },
       "payment": {
         "card": "Karte",
-        "cardDescription": "Dummy-Kartenzahlung für diesen Checkout-Slice.",
+        "cardDescription": "Sicher mit Karte über Stripe bezahlen.",
         "twint": "TWINT",
-        "twintDescription": "Dummy-TWINT-Auswahl für diesen Checkout-Slice."
+        "twintDescription": "Sicher mit TWINT über Stripe bezahlen."
       },
       "items": "Produkte",
       "quantity": "Menge",
@@ -550,7 +550,38 @@
       "total": "Total",
       "updating": "Wird aktualisiert",
       "placeOrder": "Bestellung aufgeben",
+      "placingOrder": "Weiterleitung zu Stripe…",
+      "placeOrderError": "Stripe Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
       "unavailable": "Ein oder mehrere Produkte benötigen Aufmerksamkeit, bevor die Bestellung aufgegeben werden kann."
+    },
+    "checkoutConfirmation": {
+      "eyebrow": "Bestellbestätigung",
+      "loading": "Bestellbestätigung wird geladen…",
+      "paymentStatus": "Zahlung: {status}",
+      "fulfillmentStatus": "Erfüllung: {status}",
+      "retryTitle": "Zahlung kann erneut versucht werden",
+      "retryDescription": "Wählen Sie die Zahlungsart und fahren Sie für diese Bestellung mit Stripe fort.",
+      "retryCard": "Karte",
+      "retryTwint": "TWINT",
+      "retryAction": "Zahlung erneut versuchen",
+      "retryRedirecting": "Weiterleitung zu Stripe…",
+      "retryError": "Eine neue Stripe Checkout-Sitzung konnte nicht gestartet werden. Bitte versuchen Sie es erneut.",
+      "paymentHistory": "Zahlungsverlauf",
+      "paymentAttempt": "{method}: {status}",
+      "paymentMethods": {
+        "CARD": "Karte",
+        "TWINT": "TWINT"
+      },
+      "quantity": "{quantity, plural, one {# Stück} other {# Stück}}",
+      "addresses": "Adressen",
+      "shipping": "Lieferadresse",
+      "billing": "Rechnungsadresse",
+      "missingTitle": "Bestellung nicht gefunden.",
+      "missingOrder": "Im Bestätigungslink fehlt die Bestellnummer.",
+      "errorTitle": "Diese Bestellung konnte nicht geladen werden.",
+      "error": "Melden Sie sich mit dem Kundenkonto an, das diese Bestellung aufgegeben hat, oder öffnen Sie Ihre Bestellhistorie.",
+      "returnToCheckout": "Zurück zum Checkout",
+      "viewOrders": "Bestellungen anzeigen"
     }
   },
   "Orders": {
