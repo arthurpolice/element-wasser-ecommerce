@@ -98,6 +98,10 @@ async function markPaymentFailed(
     providerReference?: string | null
   }
 ) {
+  if (payment.status === 'CAPTURED') {
+    return
+  }
+
   if (payment.status !== input.status) {
     await tx.payment.update({
       where: { id: payment.id },
