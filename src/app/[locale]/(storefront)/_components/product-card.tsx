@@ -5,6 +5,7 @@ import { RevealOnScroll } from '~/app/[locale]/(storefront)/_components/reveal-o
 import { formatDispatchEstimate, formatPriceCents } from '~/lib/format-catalog'
 import { Link } from '~/i18n/navigation'
 import type { StorefrontProduct } from '~/lib/catalog-product'
+import { calculateUnitPriceCents } from '~/lib/order-quote'
 
 type ProductCardProps = {
   product: StorefrontProduct
@@ -17,9 +18,10 @@ export function ProductCard({
 }: ProductCardProps) {
   const locale = useLocale()
   const t = useTranslations('Storefront.productCard')
-  const unitPriceCents = product.discountPercent
-    ? Math.round(product.priceCents * (1 - product.discountPercent / 100))
-    : product.priceCents
+  const unitPriceCents = calculateUnitPriceCents(
+    product.priceCents,
+    product.discountPercent
+  )
 
   return (
     <RevealOnScroll delayClassName={revealDelayClassName}>

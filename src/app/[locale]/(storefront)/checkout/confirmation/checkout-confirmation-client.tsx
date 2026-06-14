@@ -21,6 +21,7 @@ type RetryPaymentMethod = 'CARD' | 'TWINT'
 type CheckoutConfirmationClientProps = {
   orderAccessToken: string | null
   orderNumber: string | null
+  stripeResult: string | null
 }
 
 function paymentTone(paymentStatus: OrderConfirmation['paymentStatus']) {
@@ -51,7 +52,8 @@ function formatAddress(parts: Array<string | null>) {
 
 export function CheckoutConfirmationClient({
   orderAccessToken,
-  orderNumber
+  orderNumber,
+  stripeResult
 }: CheckoutConfirmationClientProps) {
   const t = useTranslations('Storefront.checkoutConfirmation')
   const tPaymentStatus = useTranslations('OrderPaymentStatus')
@@ -111,6 +113,8 @@ export function CheckoutConfirmationClient({
 
   const order = orderQuery.data
   const tone = paymentTone(order.paymentStatus)
+  const canShowRetryPayment =
+    order.canRetryPayment && stripeResult !== 'success'
 
   return (
     <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:px-8 lg:px-10 lg:py-16">
@@ -151,7 +155,7 @@ export function CheckoutConfirmationClient({
               status: tFulfillmentStatus(order.fulfillmentStatus)
             })}
           </p>
-          {order.canRetryPayment ? (
+          {canShowRetryPayment ? (
             <PaymentRetryPanel
               disabled={retryPayment.isPending}
               error={retryPayment.isError ? t('retryError') : null}

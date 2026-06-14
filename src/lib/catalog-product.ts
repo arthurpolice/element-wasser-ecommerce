@@ -1,4 +1,5 @@
 import type { Prisma } from '../../generated/prisma'
+import { calculateAvailableStock } from '~/lib/order-quote'
 
 export type StorefrontProductImage = {
   id: string
@@ -162,7 +163,7 @@ export function mapStorefrontProductDetail(
   const categoriesById = new Map(
     allActiveCategories.map((category) => [category.id, category])
   )
-  const availableStock = product.stockOnHand - product.stockReserved
+  const availableStock = calculateAvailableStock(product)
 
   return {
     ...mapStorefrontProduct(product),

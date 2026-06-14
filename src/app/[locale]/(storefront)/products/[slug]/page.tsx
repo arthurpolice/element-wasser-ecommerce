@@ -8,6 +8,7 @@ import { RevealOnScroll } from '~/app/[locale]/(storefront)/_components/reveal-o
 import { StorefrontShell } from '~/app/[locale]/(storefront)/_components/storefront-shell'
 import { Link } from '~/i18n/navigation'
 import { formatDispatchEstimate, formatPriceCents } from '~/lib/format-catalog'
+import { calculateUnitPriceCents } from '~/lib/order-quote'
 import { api, HydrateClient } from '~/trpc/server'
 
 type ProductPageProps = {
@@ -26,9 +27,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   void api.catalog.navigationTree.prefetch()
 
-  const unitPriceCents = product.discountPercent
-    ? Math.round(product.priceCents * (1 - product.discountPercent / 100))
-    : product.priceCents
+  const unitPriceCents = calculateUnitPriceCents(
+    product.priceCents,
+    product.discountPercent
+  )
   const primaryImage = product.images[0]
   const secondaryImages = product.images.slice(1, 5)
   const firstCategory = product.categories[0]

@@ -397,7 +397,9 @@ export function CheckoutClient() {
                       ? t('placeOrderError')
                       : null
                   }
-                  placingOrder={placeOrder.isPending || placeGuestOrder.isPending}
+                  placingOrder={
+                    placeOrder.isPending || placeGuestOrder.isPending
+                  }
                   preview={previewQuery.data}
                   updating={previewUpdating}
                 />
@@ -1122,14 +1124,14 @@ function CheckoutItemRow({
         : null
 
   return (
-    <div className="grid gap-4 py-5 sm:grid-cols-[5rem_minmax(0,1fr)_9rem] sm:items-start">
-      <div className="border-store-border bg-store-surface relative size-20 overflow-hidden border">
+    <div className="grid gap-y-5 py-6 sm:grid-cols-[6rem_minmax(0,1fr)_9rem] sm:items-start sm:gap-x-6">
+      <div className="border-store-border bg-store-surface relative size-24 overflow-hidden border">
         {imageUrl ? (
           <Image
             alt={imageAlt ?? productName}
             className="object-cover"
             fill
-            sizes="80px"
+            sizes="96px"
             src={imageUrl}
           />
         ) : (

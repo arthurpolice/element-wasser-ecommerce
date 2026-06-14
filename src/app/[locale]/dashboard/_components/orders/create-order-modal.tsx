@@ -15,6 +15,10 @@ import {
   mapCreateOrderFormToInput,
   type CreateOrderFormValues,
 } from "~/lib/form-schemas";
+import {
+  calculateAvailableStock,
+  calculateUnitPriceCents,
+} from "~/lib/order-quote";
 import { api } from "~/trpc/react";
 
 const defaultValues: CreateOrderFormValues = {
@@ -34,17 +38,6 @@ const defaultValues: CreateOrderFormValues = {
   shippingCountryCode: "CH",
   shippingPhone: "",
 };
-
-function calculateUnitPriceCents(
-  listPriceCents: number,
-  discountPercent: number | null,
-): number {
-  if (!discountPercent) {
-    return listPriceCents;
-  }
-
-  return Math.round((listPriceCents * (100 - discountPercent)) / 100);
-}
 
 export function CreateOrderDialog() {
   const t = useTranslations("Orders");
@@ -113,7 +106,7 @@ export function CreateOrderDialog() {
   );
 
   const availableStock = selectedProduct
-    ? selectedProduct.stockOnHand - selectedProduct.stockReserved
+    ? calculateAvailableStock(selectedProduct)
     : undefined;
 
   const createOrder = api.order.create.useMutation({

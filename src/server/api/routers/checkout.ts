@@ -4,7 +4,6 @@ import {
   type OrderPaymentStatus,
   type OrderStatus,
   type Prisma,
-  type PrismaClient,
   Salutation
 } from '../../../../generated/prisma'
 import { TRPCError } from '@trpc/server'
@@ -14,16 +13,21 @@ import {
   publicProcedure
 } from '~/server/api/trpc'
 import {
-  buildPendingPayment,
   OrderPlacementError,
-  orderListInclude,
-  placeOrder
+  type PlaceOrderInput
 } from '~/server/commerce/order-placement'
+import { hashOrderAccessToken } from '~/server/commerce/order-access-token'
 import {
-  createOrderAccessToken,
-  hashOrderAccessToken
-} from '~/server/commerce/order-access-token'
-import { startStripeCheckout } from '~/server/payments/stripe-checkout'
+  beginCheckoutPayment,
+  beginGuestCheckoutPayment,
+  CheckoutPaymentError,
+  retryCheckoutPayment
+} from '~/server/commerce/checkout-payment'
+import {
+  normalizeOrderQuoteLines,
+  quoteOrderLines,
+  type OrderQuoteProblemCode
+} from '~/lib/order-quote'
 
 export const checkoutShippingCents = 900
 const checkoutCurrencyCode = 'CHF'
@@ -95,7 +99,6 @@ const checkoutProductInclude = {
 type CheckoutProduct = Prisma.ProductGetPayload<{
   include: typeof checkoutProductInclude
 }>
-type PrismaClientLike = Pick<PrismaClient, 'payment'>
 
 const checkoutAddressSelect = {
   id: true,
@@ -116,7 +119,7 @@ function normalizeCountryCode(countryCode: string) {
   return countryCode.toUpperCase()
 }
 
-function isRetryableOrder(order: {
+function canRetryPayment(order: {
   status: OrderStatus
   paymentStatus: OrderPaymentStatus
   paymentExpiresAt: Date | null
@@ -127,50 +130,6 @@ function isRetryableOrder(order: {
     order.paymentExpiresAt !== null &&
     order.paymentExpiresAt.getTime() > Date.now()
   )
-}
-
-async function startCheckoutForOrder({
-  db,
-  locale,
-  order,
-  orderAccessToken
-}: {
-  db: PrismaClientLike
-  locale: 'de' | 'en'
-  order: Awaited<ReturnType<typeof placeOrder>>
-  orderAccessToken?: string
-}) {
-  const payment = order.payments.find(
-    (candidate) => candidate.status === 'PENDING'
-  )
-
-  if (!payment) {
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'Pending Payment was not created.'
-    })
-  }
-
-  const checkout = await startStripeCheckout({
-    order,
-    locale,
-    orderAccessToken
-  })
-
-  await db.payment.update({
-    where: { id: payment.id },
-    data: {
-      stripeCheckoutSessionId: checkout.sessionId,
-      ...(checkout.paymentIntentId
-        ? { providerReference: checkout.paymentIntentId }
-        : {})
-    }
-  })
-
-  return {
-    order,
-    checkoutUrl: checkout.url
-  }
 }
 
 function toCheckoutPlacementTrpcError(error: OrderPlacementError): TRPCError {
@@ -192,61 +151,74 @@ function toCheckoutPlacementTrpcError(error: OrderPlacementError): TRPCError {
   }
 }
 
-export function calculateDiscountedUnitPriceCents(
-  priceCents: number,
-  discountPercent: number | null
-) {
-  if (!discountPercent) {
-    return priceCents
+function toCheckoutPaymentTrpcError(error: CheckoutPaymentError): TRPCError {
+  switch (error.code) {
+    case 'ORDER_NOT_FOUND':
+      return new TRPCError({
+        code: 'NOT_FOUND',
+        message: error.message
+      })
+    case 'ORDER_PAYMENT_NOT_RETRYABLE':
+      return new TRPCError({
+        code: 'BAD_REQUEST',
+        message: error.message
+      })
+    case 'PENDING_PAYMENT_NOT_FOUND':
+      return new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message
+      })
   }
-
-  return Math.round(priceCents * (1 - discountPercent / 100))
 }
 
-function normalizePreviewLines(
-  lines: Array<{ productId: string; quantity: number }>
-) {
-  const quantitiesByProductId = new Map<string, number>()
-
-  for (const line of lines) {
-    const productId = line.productId.trim()
-
-    if (!productId) {
-      continue
-    }
-
-    quantitiesByProductId.set(
-      productId,
-      (quantitiesByProductId.get(productId) ?? 0) + line.quantity
-    )
+function toPlaceOrderInput(
+  customerId: string,
+  input: z.infer<typeof placeOrderInputSchema>
+): PlaceOrderInput {
+  return {
+    customerId,
+    lines: input.lines,
+    paymentMethod: input.paymentMethod,
+    shippingCents: checkoutShippingCents,
+    addressId: input.addressId,
+    shippingSalutation: input.salutation,
+    shippingFirstName: input.firstName,
+    shippingLastName: input.lastName,
+    shippingCompany: input.company,
+    shippingStreetLine1: input.streetLine1,
+    shippingStreetLine2: input.streetLine2,
+    shippingPostalCode: input.postalCode,
+    shippingCity: input.city,
+    shippingCountryCode: normalizeCountryCode(input.countryCode),
+    shippingPhone: input.phone
   }
-
-  return Array.from(quantitiesByProductId.entries()).map(
-    ([productId, quantity]) => ({
-      productId,
-      quantity: Math.min(99, quantity)
-    })
-  )
 }
 
-function getPreviewProblemCode(
-  product: CheckoutProduct | undefined,
-  quantity: number
-): CheckoutPreviewProblemCode | null {
-  if (!product) {
-    return 'MISSING_PRODUCT'
+function toGuestOrderInput(
+  input: z.infer<typeof placeGuestOrderInputSchema>
+): Omit<PlaceOrderInput, 'customerId'> {
+  return {
+    lines: input.lines,
+    paymentMethod: input.paymentMethod,
+    shippingCents: checkoutShippingCents,
+    shippingSalutation: input.salutation,
+    shippingFirstName: input.firstName,
+    shippingLastName: input.lastName,
+    shippingCompany: input.company,
+    shippingStreetLine1: input.streetLine1,
+    shippingStreetLine2: input.streetLine2,
+    shippingPostalCode: input.postalCode,
+    shippingCity: input.city,
+    shippingCountryCode: normalizeCountryCode(input.countryCode),
+    shippingPhone: input.phone
   }
-
-  if (!product.active) {
-    return 'INACTIVE_PRODUCT'
-  }
-
-  if (product.stockOnHand - product.stockReserved < quantity) {
-    return 'INSUFFICIENT_STOCK'
-  }
-
-  return null
 }
+
+const checkoutPreviewProblemCodes = {
+  MISSING_PRODUCT: 'MISSING_PRODUCT',
+  INACTIVE_PRODUCT: 'INACTIVE_PRODUCT',
+  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK'
+} satisfies Record<OrderQuoteProblemCode, CheckoutPreviewProblemCode>
 
 export const checkoutRouter = createTRPCRouter({
   bootstrap: publicProcedure.query(async ({ ctx }) => {
@@ -421,7 +393,7 @@ export const checkoutRouter = createTRPCRouter({
 
       return {
         ...order,
-        canRetryPayment: isRetryableOrder(order)
+        canRetryPayment: canRetryPayment(order)
       }
     }),
 
@@ -445,54 +417,23 @@ export const checkoutRouter = createTRPCRouter({
         })
       }
 
-      const order = await ctx.db.$transaction(async (tx) => {
-        const existingOrder = await tx.order.findFirst({
-          where: {
-            orderNumber: input.orderNumber,
-            OR: [
-              ...(customer ? [{ customerId: customer.id }] : []),
-              ...(accessTokenHash
-                ? [{ guestAccessTokenHash: accessTokenHash }]
-                : [])
-            ]
+      try {
+        return await retryCheckoutPayment(ctx.db, {
+          orderNumber: input.orderNumber,
+          access: {
+            customerId: customer?.id,
+            accessToken: input.accessToken
           },
-          include: orderListInclude
+          paymentMethod: input.paymentMethod,
+          locale: input.locale
         })
-
-        if (!existingOrder) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Order not found.'
-          })
+      } catch (error) {
+        if (error instanceof CheckoutPaymentError) {
+          throw toCheckoutPaymentTrpcError(error)
         }
 
-        if (!isRetryableOrder(existingOrder)) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Order payment can no longer be retried.'
-          })
-        }
-
-        await tx.payment.create({
-          data: {
-            orderId: existingOrder.id,
-            ...buildPendingPayment(input.paymentMethod, existingOrder.totalCents)
-          }
-        })
-
-        return tx.order.update({
-          where: { id: existingOrder.id },
-          data: { paymentStatus: 'PENDING' },
-          include: orderListInclude
-        })
-      })
-
-      return startCheckoutForOrder({
-        db: ctx.db,
-        order,
-        locale: input.locale,
-        orderAccessToken: input.accessToken
-      })
+        throw error
+      }
     }),
 
   placeOrder: protectedProcedure
@@ -511,31 +452,17 @@ export const checkoutRouter = createTRPCRouter({
       }
 
       try {
-        const order = await placeOrder(ctx.db, {
-          customerId: customer.id,
-          lines: input.lines,
-          paymentMethod: input.paymentMethod,
-          shippingCents: checkoutShippingCents,
-          addressId: input.addressId,
-          shippingSalutation: input.salutation,
-          shippingFirstName: input.firstName,
-          shippingLastName: input.lastName,
-          shippingCompany: input.company,
-          shippingStreetLine1: input.streetLine1,
-          shippingStreetLine2: input.streetLine2,
-          shippingPostalCode: input.postalCode,
-          shippingCity: input.city,
-          shippingCountryCode: normalizeCountryCode(input.countryCode),
-          shippingPhone: input.phone
-        })
-        return startCheckoutForOrder({
-          db: ctx.db,
-          order,
-          locale: input.locale
-        })
+        return await beginCheckoutPayment(
+          ctx.db,
+          toPlaceOrderInput(customer.id, input),
+          input.locale
+        )
       } catch (error) {
         if (error instanceof OrderPlacementError) {
           throw toCheckoutPlacementTrpcError(error)
+        }
+        if (error instanceof CheckoutPaymentError) {
+          throw toCheckoutPaymentTrpcError(error)
         }
 
         throw error
@@ -545,50 +472,23 @@ export const checkoutRouter = createTRPCRouter({
   placeGuestOrder: publicProcedure
     .input(placeGuestOrderInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const orderAccessToken = createOrderAccessToken()
-      const guestAccessTokenHash = hashOrderAccessToken(orderAccessToken)
-
       try {
-        const customer = await ctx.db.customer.create({
-          data: {
+        return await beginGuestCheckoutPayment(ctx.db, {
+          guestCustomer: {
             email: input.email,
             salutation: input.salutation,
             firstName: input.firstName,
             lastName: input.lastName
           },
-          select: { id: true }
-        })
-        const placedOrder = await placeOrder(ctx.db, {
-          customerId: customer.id,
-          lines: input.lines,
-          paymentMethod: input.paymentMethod,
-          shippingCents: checkoutShippingCents,
-          shippingSalutation: input.salutation,
-          shippingFirstName: input.firstName,
-          shippingLastName: input.lastName,
-          shippingCompany: input.company,
-          shippingStreetLine1: input.streetLine1,
-          shippingStreetLine2: input.streetLine2,
-          shippingPostalCode: input.postalCode,
-          shippingCity: input.city,
-          shippingCountryCode: normalizeCountryCode(input.countryCode),
-          shippingPhone: input.phone
-        })
-        const order = await ctx.db.order.update({
-          where: { id: placedOrder.id },
-          data: { guestAccessTokenHash },
-          include: orderListInclude
-        })
-
-        return startCheckoutForOrder({
-          db: ctx.db,
-          order,
-          locale: input.locale,
-          orderAccessToken
+          order: toGuestOrderInput(input),
+          locale: input.locale
         })
       } catch (error) {
         if (error instanceof OrderPlacementError) {
           throw toCheckoutPlacementTrpcError(error)
+        }
+        if (error instanceof CheckoutPaymentError) {
+          throw toCheckoutPaymentTrpcError(error)
         }
 
         throw error
@@ -598,7 +498,9 @@ export const checkoutRouter = createTRPCRouter({
   preview: publicProcedure
     .input(previewInputSchema)
     .query(async ({ ctx, input }) => {
-      const normalizedLines = normalizePreviewLines(input.lines)
+      const normalizedLines = normalizeOrderQuoteLines(input.lines, {
+        maxQuantity: 99
+      })
 
       if (normalizedLines.length === 0) {
         return {
@@ -619,13 +521,16 @@ export const checkoutRouter = createTRPCRouter({
         include: checkoutProductInclude
       })
 
-      const productsById = new Map(
-        products.map((product) => [product.id, product])
+      const quote = quoteOrderLines(
+        products,
+        normalizedLines,
+        checkoutShippingCents
       )
-      const items = normalizedLines.map((line) => {
-        const product = productsById.get(line.productId)
-
-        const problemCode = getPreviewProblemCode(product, line.quantity)
+      const items = quote.lines.map((line) => {
+        const product = line.product
+        const problemCode = line.problemCode
+          ? checkoutPreviewProblemCodes[line.problemCode]
+          : null
 
         if (!product) {
           return {
@@ -647,62 +552,35 @@ export const checkoutRouter = createTRPCRouter({
           }
         }
 
-        const unitPriceCents = calculateDiscountedUnitPriceCents(
-          product.priceCents,
-          product.discountPercent
-        )
-        const availableStock = product.stockOnHand - product.stockReserved
         const primaryImage = product.images[0]
-        const canPlaceLine = problemCode === null
-        const lineSubtotalCents = canPlaceLine
-          ? product.priceCents * line.quantity
-          : 0
-        const lineTotalCents = canPlaceLine ? unitPriceCents * line.quantity : 0
 
         return {
           productId: product.id,
           name: product.name,
           slug: product.slug,
           quantity: line.quantity,
-          unitPriceCents,
-          originalUnitPriceCents: product.priceCents,
-          discountPercent: product.discountPercent,
-          lineSubtotalCents,
-          lineDiscountCents: lineSubtotalCents - lineTotalCents,
-          lineTotalCents,
+          unitPriceCents: line.unitPriceCents,
+          originalUnitPriceCents: line.originalUnitPriceCents,
+          discountPercent: line.discountPercent,
+          lineSubtotalCents: line.lineSubtotalCents,
+          lineDiscountCents: line.lineDiscountCents,
+          lineTotalCents: line.lineTotalCents,
           imageUrl: primaryImage?.url ?? null,
           imageAlt: primaryImage?.altText ?? null,
-          availableStock,
-          canPlaceLine,
+          availableStock: line.availableStock,
+          canPlaceLine: line.canPlaceLine,
           problemCode
         }
       })
 
-      const subtotalCents = items.reduce(
-        (sum, item) => sum + item.lineSubtotalCents,
-        0
-      )
-      const discountCents = items.reduce(
-        (sum, item) => sum + item.lineDiscountCents,
-        0
-      )
-      const lineTotalCents = items.reduce(
-        (sum, item) => sum + item.lineTotalCents,
-        0
-      )
-      const canPlaceOrder =
-        items.length > 0 && items.every((item) => item.canPlaceLine)
-      const hasOrderableLines = items.some((item) => item.canPlaceLine)
-      const shippingCents = hasOrderableLines ? checkoutShippingCents : 0
-
       return {
         items,
-        subtotalCents,
-        discountCents,
-        shippingCents,
-        totalCents: lineTotalCents + shippingCents,
+        subtotalCents: quote.subtotalCents,
+        discountCents: quote.discountCents,
+        shippingCents: quote.shippingCents,
+        totalCents: quote.totalCents,
         currencyCode: checkoutCurrencyCode,
-        canPlaceOrder
+        canPlaceOrder: quote.canPlaceOrder
       }
     })
 })

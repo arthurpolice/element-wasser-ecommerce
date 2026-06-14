@@ -1,24 +1,24 @@
-import { Prisma } from "../../../../generated/prisma"
-import { TRPCError } from "@trpc/server"
-import { z } from "zod"
+import { Prisma } from '../../../../generated/prisma'
+import { TRPCError } from '@trpc/server'
+import { z } from 'zod'
 
 import {
   isCategoryDescendant,
   resolveMoveTarget,
-  type CategoryMoveInput,
-} from "~/lib/category-tree"
-import { createTRPCRouter, ownerProcedure } from "~/server/api/trpc"
+  type CategoryMoveInput
+} from '~/lib/category-tree'
+import { createTRPCRouter, ownerProcedure } from '~/server/api/trpc'
 import {
   assertCategoriesExist,
-  replaceProductCategories,
-} from "~/lib/product-categories"
-import { toSlug } from "~/lib/slug"
+  replaceProductCategories
+} from '~/lib/product-categories'
+import { toSlug } from '~/lib/slug'
 
 const createInputSchema = z.object({
   name: z.string().trim().min(1),
   parentId: z.string().optional(),
   sortOrder: z.number().int().min(0).default(0),
-  active: z.boolean().default(true),
+  active: z.boolean().default(true)
 })
 
 const updateInputSchema = z.object({
@@ -26,31 +26,35 @@ const updateInputSchema = z.object({
   name: z.string().trim().min(1).optional(),
   parentId: z.string().nullable().optional(),
   sortOrder: z.number().int().min(0).optional(),
-  active: z.boolean().optional(),
+  active: z.boolean().optional()
 })
 
-const moveInputSchema = z.discriminatedUnion("intent", [
+const moveInputSchema = z.discriminatedUnion('intent', [
   z.object({
     categoryId: z.string(),
-    intent: z.literal("inside"),
+    intent: z.literal('inside'),
     targetCategoryId: z.string(),
-    position: z.number().int().min(0).optional(),
+    position: z.number().int().min(0).optional()
   }),
   z.object({
     categoryId: z.string(),
-    intent: z.literal("before"),
-    targetCategoryId: z.string(),
+    intent: z.literal('before'),
+    targetCategoryId: z.string()
   }),
   z.object({
     categoryId: z.string(),
-    intent: z.literal("after"),
-    targetCategoryId: z.string(),
-  }),
+    intent: z.literal('after'),
+    targetCategoryId: z.string()
+  })
 ])
 
 const setProductCategoriesInputSchema = z.object({
   productId: z.string(),
-  categoryIds: z.array(z.string()),
+  categoryIds: z.array(z.string())
+})
+
+const deleteInputSchema = z.object({
+  id: z.string()
 })
 
 type CategoryRow = Prisma.CategoryGetPayload<{
@@ -67,13 +71,13 @@ function mapCategoryRow(category: CategoryRow) {
     parentId: category.parentId,
     productCount: category._count.products,
     childCount: category._count.children,
-    createdAt: category.createdAt,
+    createdAt: category.createdAt
   }
 }
 
 async function uniqueCategorySlug(
   db: Prisma.TransactionClient,
-  base: string,
+  base: string
 ): Promise<string> {
   let slug = toSlug(base)
   let counter = 1
@@ -81,7 +85,7 @@ async function uniqueCategorySlug(
   while (
     await db.category.findUnique({
       where: { slug },
-      select: { id: true },
+      select: { id: true }
     })
   ) {
     slug = `${toSlug(base)}-${counter}`
@@ -94,7 +98,7 @@ async function uniqueCategorySlug(
 async function assertValidParent(
   db: Prisma.TransactionClient,
   categoryId: string | undefined,
-  parentId: string | null | undefined,
+  parentId: string | null | undefined
 ) {
   if (!parentId) {
     return
@@ -102,20 +106,20 @@ async function assertValidParent(
 
   if (categoryId && parentId === categoryId) {
     throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "A category cannot be its own parent.",
+      code: 'BAD_REQUEST',
+      message: 'A category cannot be its own parent.'
     })
   }
 
   const parent = await db.category.findUnique({
     where: { id: parentId },
-    select: { id: true },
+    select: { id: true }
   })
 
   if (!parent) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Parent category not found.",
+      code: 'NOT_FOUND',
+      message: 'Parent category not found.'
     })
   }
 
@@ -127,15 +131,15 @@ async function assertValidParent(
   while (currentId) {
     if (currentId === categoryId) {
       throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Category hierarchy cannot contain a cycle.",
+        code: 'BAD_REQUEST',
+        message: 'Category hierarchy cannot contain a cycle.'
       })
     }
 
     const ancestor: { parentId: string | null } | null =
       await db.category.findUnique({
         where: { id: currentId },
-        select: { parentId: true },
+        select: { parentId: true }
       })
 
     currentId = ancestor?.parentId ?? null
@@ -144,30 +148,30 @@ async function assertValidParent(
 
 async function normalizeSiblingSortOrders(
   db: Prisma.TransactionClient,
-  orderedIds: string[],
+  orderedIds: string[]
 ) {
   await Promise.all(
     orderedIds.map((id, index) =>
       db.category.update({
         where: { id },
-        data: { sortOrder: index },
-      }),
-    ),
+        data: { sortOrder: index }
+      })
+    )
   )
 }
 
 async function getSiblingIds(
   db: Prisma.TransactionClient,
   parentId: string | null,
-  excludeId?: string,
+  excludeId?: string
 ) {
   const siblings = await db.category.findMany({
     where: {
       parentId,
-      ...(excludeId ? { id: { not: excludeId } } : {}),
+      ...(excludeId ? { id: { not: excludeId } } : {})
     },
     select: { id: true },
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }]
   })
 
   return siblings.map((sibling) => sibling.id)
@@ -175,67 +179,76 @@ async function getSiblingIds(
 
 async function moveCategoryInTransaction(
   db: Prisma.TransactionClient,
-  input: CategoryMoveInput,
+  input: CategoryMoveInput
 ) {
-
   const allCategories = await db.category.findMany({
-    select: { id: true, parentId: true, sortOrder: true },
+    select: { id: true, parentId: true, sortOrder: true }
   })
 
-  const moving = allCategories.find((category) => category.id === input.categoryId)
+  const moving = allCategories.find(
+    (category) => category.id === input.categoryId
+  )
 
   if (!moving) {
     throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Category not found.",
+      code: 'NOT_FOUND',
+      message: 'Category not found.'
     })
   }
 
-  if (input.intent === "inside") {
+  if (input.intent === 'inside') {
     const target = allCategories.find(
-      (category) => category.id === input.targetCategoryId,
+      (category) => category.id === input.targetCategoryId
     )
 
     if (!target) {
       throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Target category not found.",
+        code: 'NOT_FOUND',
+        message: 'Target category not found.'
       })
     }
 
     if (
-      isCategoryDescendant(allCategories, input.categoryId, input.targetCategoryId)
+      isCategoryDescendant(
+        allCategories,
+        input.categoryId,
+        input.targetCategoryId
+      )
     ) {
       throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Cannot move a category into one of its descendants.",
+        code: 'BAD_REQUEST',
+        message: 'Cannot move a category into one of its descendants.'
       })
     }
   } else {
     const target = allCategories.find(
-      (category) => category.id === input.targetCategoryId,
+      (category) => category.id === input.targetCategoryId
     )
 
     if (!target) {
       throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Target category not found.",
+        code: 'NOT_FOUND',
+        message: 'Target category not found.'
       })
     }
 
     if (
-      isCategoryDescendant(allCategories, input.categoryId, input.targetCategoryId)
+      isCategoryDescendant(
+        allCategories,
+        input.categoryId,
+        input.targetCategoryId
+      )
     ) {
       throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Cannot move a category relative to one of its descendants.",
+        code: 'BAD_REQUEST',
+        message: 'Cannot move a category relative to one of its descendants.'
       })
     }
   }
 
   const { parentId: nextParentId, index } = resolveMoveTarget(
     allCategories,
-    input,
+    input
   )
 
   await assertValidParent(db, input.categoryId, nextParentId)
@@ -246,7 +259,7 @@ async function moveCategoryInTransaction(
 
   await db.category.update({
     where: { id: input.categoryId },
-    data: { parentId: nextParentId },
+    data: { parentId: nextParentId }
   })
 
   await normalizeSiblingSortOrders(db, nextSiblingIds)
@@ -259,8 +272,8 @@ async function moveCategoryInTransaction(
   const category = await db.category.findUniqueOrThrow({
     where: { id: input.categoryId },
     include: {
-      _count: { select: { products: true, children: true } },
-    },
+      _count: { select: { products: true, children: true } }
+    }
   })
 
   return mapCategoryRow(category)
@@ -270,9 +283,9 @@ export const categoryRouter = createTRPCRouter({
   listFlat: ownerProcedure.query(async ({ ctx }) => {
     const categories = await ctx.db.category.findMany({
       include: {
-        _count: { select: { products: true, children: true } },
+        _count: { select: { products: true, children: true } }
       },
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }]
     })
 
     return categories.map(mapCategoryRow)
@@ -283,7 +296,7 @@ export const categoryRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const assignments = await ctx.db.productCategory.findMany({
         where: { productId: input.productId },
-        select: { categoryId: true },
+        select: { categoryId: true }
       })
 
       return assignments.map((assignment) => assignment.categoryId)
@@ -304,7 +317,7 @@ export const categoryRouter = createTRPCRouter({
 
           const insertIndex = Math.min(input.sortOrder, siblingIds.length)
           const orderedIds = [...siblingIds]
-          orderedIds.splice(insertIndex, 0, "__new__")
+          orderedIds.splice(insertIndex, 0, '__new__')
 
           const created = await tx.category.create({
             data: {
@@ -312,26 +325,23 @@ export const categoryRouter = createTRPCRouter({
               slug: await uniqueCategorySlug(tx, input.name),
               parentId: input.parentId,
               sortOrder: insertIndex,
-              active: input.active,
+              active: input.active
             },
             include: {
-              _count: { select: { products: true, children: true } },
-            },
+              _count: { select: { products: true, children: true } }
+            }
           })
 
           const normalizedIds = orderedIds.map((id) =>
-            id === "__new__" ? created.id : id,
+            id === '__new__' ? created.id : id
           )
-          await normalizeSiblingSortOrders(
-            tx,
-            normalizedIds,
-          )
+          await normalizeSiblingSortOrders(tx, normalizedIds)
 
           return tx.category.findUniqueOrThrow({
             where: { id: created.id },
             include: {
-              _count: { select: { products: true, children: true } },
-            },
+              _count: { select: { products: true, children: true } }
+            }
           })
         })
 
@@ -339,11 +349,11 @@ export const categoryRouter = createTRPCRouter({
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === "P2002"
+          error.code === 'P2002'
         ) {
           throw new TRPCError({
-            code: "CONFLICT",
-            message: "Could not create the category.",
+            code: 'CONFLICT',
+            message: 'Could not create the category.'
           })
         }
 
@@ -356,13 +366,13 @@ export const categoryRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const existing = await ctx.db.category.findUnique({
         where: { id: input.id },
-        select: { id: true, name: true },
+        select: { id: true, name: true }
       })
 
       if (!existing) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Category not found.",
+          code: 'NOT_FOUND',
+          message: 'Category not found.'
         })
       }
 
@@ -375,12 +385,14 @@ export const categoryRouter = createTRPCRouter({
         data: {
           ...(input.name !== undefined ? { name: input.name } : {}),
           ...(input.parentId !== undefined ? { parentId: input.parentId } : {}),
-          ...(input.sortOrder !== undefined ? { sortOrder: input.sortOrder } : {}),
-          ...(input.active !== undefined ? { active: input.active } : {}),
+          ...(input.sortOrder !== undefined
+            ? { sortOrder: input.sortOrder }
+            : {}),
+          ...(input.active !== undefined ? { active: input.active } : {})
         },
         include: {
-          _count: { select: { products: true, children: true } },
-        },
+          _count: { select: { products: true, children: true } }
+        }
       })
 
       return mapCategoryRow(category)
@@ -390,17 +402,55 @@ export const categoryRouter = createTRPCRouter({
     .input(moveInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.$transaction((tx) => moveCategoryInTransaction(tx, input))
+        return await ctx.db.$transaction((tx) =>
+          moveCategoryInTransaction(tx, input)
+        )
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error
         }
 
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Could not move the category.",
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Could not move the category.'
         })
       }
+    }),
+
+  delete: ownerProcedure
+    .input(deleteInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const category = await ctx.db.category.findUnique({
+        where: { id: input.id },
+        include: {
+          _count: { select: { children: true } }
+        }
+      })
+
+      if (!category) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Category not found.'
+        })
+      }
+
+      if (category._count.children > 0) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Delete child categories before deleting this category.'
+        })
+      }
+
+      await ctx.db.$transaction(async (tx) => {
+        await tx.category.delete({
+          where: { id: input.id }
+        })
+
+        const siblingIds = await getSiblingIds(tx, category.parentId)
+        await normalizeSiblingSortOrders(tx, siblingIds)
+      })
+
+      return { id: input.id }
     }),
 
   setProductCategories: ownerProcedure
@@ -408,13 +458,13 @@ export const categoryRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const product = await ctx.db.product.findUnique({
         where: { id: input.productId },
-        select: { id: true },
+        select: { id: true }
       })
 
       if (!product) {
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Product not found.",
+          code: 'NOT_FOUND',
+          message: 'Product not found.'
         })
       }
 
@@ -425,5 +475,5 @@ export const categoryRouter = createTRPCRouter({
       })
 
       return { productId: input.productId, categoryIds: input.categoryIds }
-    }),
+    })
 })

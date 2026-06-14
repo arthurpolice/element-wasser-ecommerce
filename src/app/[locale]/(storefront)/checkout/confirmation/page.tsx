@@ -5,6 +5,7 @@ import { HydrateClient } from '~/trpc/server'
 type CheckoutConfirmationPageProps = {
   searchParams: Promise<{
     order?: string
+    stripe?: string
     token?: string
   }>
 }
@@ -12,7 +13,7 @@ type CheckoutConfirmationPageProps = {
 export default async function CheckoutConfirmationPage({
   searchParams
 }: CheckoutConfirmationPageProps) {
-  const { order, token } = await searchParams
+  const { order, stripe, token } = await searchParams
 
   return (
     <HydrateClient>
@@ -20,6 +21,7 @@ export default async function CheckoutConfirmationPage({
         <CheckoutConfirmationClient
           orderAccessToken={token ?? null}
           orderNumber={order ?? null}
+          stripeResult={stripe ?? null}
         />
       </StorefrontShell>
     </HydrateClient>
