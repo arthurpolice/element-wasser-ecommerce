@@ -8,12 +8,18 @@ import { firstMockCall } from '~/test/mock-calls'
 import { hashOrderAccessToken } from '~/server/commerce/order-access-token'
 import type { Salutation } from '../../../../generated/prisma'
 
+const scheduleExpiredPaymentCleanupMock = vi.hoisted(() => vi.fn())
+
 vi.mock('~/server/payments/stripe-checkout', () => ({
   startStripeCheckout: vi.fn(async () => ({
     url: 'https://checkout.stripe.com/c/pay/cs_test_123',
     sessionId: 'cs_test_123',
     paymentIntentId: 'pi_test_123'
   }))
+}))
+
+vi.mock('~/server/commerce/payment-cleanup-queue', () => ({
+  scheduleExpiredPaymentCleanup: scheduleExpiredPaymentCleanupMock
 }))
 
 const createCaller = createCallerFactory(checkoutRouter)

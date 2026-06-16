@@ -17,6 +17,7 @@ import {
   createOrderAccessToken,
   hashOrderAccessToken
 } from '~/server/commerce/order-access-token'
+import { scheduleExpiredPaymentCleanup } from '~/server/commerce/payment-cleanup-queue'
 import { startStripeCheckout } from '~/server/payments/stripe-checkout'
 
 type CheckoutPaymentDb = Pick<
@@ -107,6 +108,9 @@ async function startCheckoutForOrder({
         ? { providerReference: checkout.paymentIntentId }
         : {})
     }
+  })
+  await scheduleExpiredPaymentCleanup({
+    paymentExpiresAt: order.paymentExpiresAt
   })
 
   return {
