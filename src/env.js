@@ -57,6 +57,10 @@ export const env = createEnv({
       process.env.NODE_ENV === 'production'
         ? z.string().url()
         : z.string().url().optional(),
+    CRON_SECRET:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
     STRIPE_SECRET_KEY:
       process.env.NODE_ENV === 'production'
         ? z.string()
@@ -94,6 +98,7 @@ export const env = createEnv({
     QSTASH_NEXT_SIGNING_KEY: process.env.QSTASH_NEXT_SIGNING_KEY,
     QSTASH_PUBLISH_BASE_URL: process.env.QSTASH_PUBLISH_BASE_URL,
     APP_BASE_URL: process.env.APP_BASE_URL,
+    CRON_SECRET: process.env.CRON_SECRET,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET
   },
