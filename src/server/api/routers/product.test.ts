@@ -14,6 +14,11 @@ vi.mock('~/server/storage/s3', () => ({
   )
 }))
 
+vi.mock('~/server/queue/qstash', () => ({
+  isQstashConfigured: vi.fn(() => false),
+  publishQstashJson: vi.fn()
+}))
+
 import { productRouter } from '~/server/api/routers/product'
 import { isS3Configured } from '~/server/storage/s3'
 
@@ -121,7 +126,17 @@ function createProductDb() {
           ...data,
           include
         })
-      )
+      ),
+      findMany: vi.fn(async () => [
+        {
+          id: 'product-1',
+          name: 'Mineral Water',
+          sku: 'EW-ELE-MIN-00001',
+          description: productDescription,
+          manufacturer: { name: manufacturer.name },
+          categories: []
+        }
+      ])
     },
     manufacturer: {
       findUnique: vi.fn(async () => null),
@@ -140,7 +155,9 @@ function createProductDb() {
     },
     $transaction: vi.fn(async (callback: (tx: typeof db) => Promise<unknown>) =>
       callback(db)
-    )
+    ),
+    $executeRaw: vi.fn(async () => 1),
+    $queryRaw: vi.fn(async () => [{ productId: 'product-1' }])
   }
 
   return db
@@ -248,6 +265,12 @@ describe('product router create', () => {
     expect(productCreateArgs.data).toMatchObject({
       description: productDescription
     })
+    expect(db.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['product-1'] } }
+      })
+    )
+    expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -270,5 +293,11 @@ describe('product router update', () => {
     expect(productUpdateArgs.data).toMatchObject({
       description: productDescription
     })
+    expect(db.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['product-1'] } }
+      })
+    )
+    expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 })

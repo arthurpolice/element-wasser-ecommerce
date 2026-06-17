@@ -11,6 +11,10 @@ import {
   storefrontProductInclude
 } from '~/lib/catalog-product'
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc'
+import {
+  getProductSearchSuggestions,
+  searchProducts
+} from '~/server/commerce/product-search'
 
 const listProductsInputSchema = z.object({
   slugPath: z.string().trim().min(1),
@@ -20,6 +24,19 @@ const listProductsInputSchema = z.object({
 
 const resolveCategoryInputSchema = z.object({
   slugPath: z.string().trim().min(1)
+})
+
+const searchSuggestionsInputSchema = z.object({
+  q: z.string().trim(),
+  limit: z.number().int().min(1).max(6).default(6)
+})
+
+const searchProductsInputSchema = z.object({
+  q: z.string().trim(),
+  categoryId: z.string().trim().min(1).optional(),
+  manufacturerId: z.string().trim().min(1).optional(),
+  page: z.number().int().min(1).default(1),
+  pageSize: z.number().int().min(1).max(48).default(12)
 })
 
 type NavigationCategory = {
@@ -67,6 +84,27 @@ function buildNavigationTree(
 }
 
 export const catalogRouter = createTRPCRouter({
+  searchSuggestions: publicProcedure
+    .input(searchSuggestionsInputSchema)
+    .query(async ({ ctx, input }) =>
+      getProductSearchSuggestions(ctx.db, {
+        query: input.q,
+        limit: input.limit
+      })
+    ),
+
+  searchProducts: publicProcedure
+    .input(searchProductsInputSchema)
+    .query(async ({ ctx, input }) =>
+      searchProducts(ctx.db, {
+        query: input.q,
+        categoryId: input.categoryId,
+        manufacturerId: input.manufacturerId,
+        page: input.page,
+        pageSize: input.pageSize
+      })
+    ),
+
   navigationTree: publicProcedure.query(async ({ ctx }) => {
     const categories = await ctx.db.category.findMany({
       where: { active: true },

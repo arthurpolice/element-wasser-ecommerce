@@ -96,6 +96,18 @@ _Avoid_: Available item
 A product deliberately promoted wherever it appears in storefront Category views. Category membership determines which Category views can feature the Product, including ancestor views.
 _Avoid_: Featured item
 
+**Product Search**:
+A global customer-facing product discovery mode that returns matching active Products for a customer's query, including Products that are temporarily not orderable. Category and Manufacturer can shape relevance or refinement, but are not standalone Product Search results.
+_Avoid_: Storefront Search, site search, mixed search
+
+**Product Search Relevance**:
+How closely a Product matches a customer's Product Search query, with Product name and Manufacturer as the strongest signals, Category as discovery context, SKU as a precise lookup signal, and Product Description as supporting text. Featured Product status does not increase Product Search Relevance.
+_Avoid_: Sort order, popularity, merchandising order
+
+**Product Search Suggestion**:
+A Product shown directly under the Product Search bar while the customer is typing, linking to the Product detail page.
+_Avoid_: Autocomplete result, typeahead item
+
 **SKU**:
 A system-assigned unique product code stored on products and copied onto order lines for support and operations. Structured as a brand prefix, a three-character manufacturer hint, a three-character product-name hint, and a sequence (for example `EW-BRI-WAT-00001`). Once assigned, a SKU never changes. The merchant does not assign or manage SKUs.
 _Avoid_: Product ID
@@ -123,6 +135,10 @@ _Avoid_: Available to user, free stock
 **Stock Reservation**:
 A commitment of stock to a placed order while payment or fulfillment is still pending. A payment-pending reservation can expire; a paid reservation remains committed until fulfillment or cancellation.
 _Avoid_: Cart hold, lock
+
+**Stock Reservation Expiry**:
+The point at which an unpaid placed order should stop holding stock for the customer. Expiry cancels the whole order and releases its stock reservation when payment has not succeeded in time.
+_Avoid_: Cleanup, timeout job
 
 **Product Image**:
 An optional image attached to a product for catalog presentation.

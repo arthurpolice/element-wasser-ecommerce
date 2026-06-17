@@ -13,6 +13,7 @@ import {
   replaceProductCategories
 } from '~/lib/product-categories'
 import { toSlug } from '~/lib/slug'
+import { syncProductSearchDocumentsForMutation } from '~/server/commerce/product-search'
 
 const createInputSchema = z.object({
   name: z.string().trim().min(1),
@@ -175,6 +176,18 @@ async function getSiblingIds(
   })
 
   return siblings.map((sibling) => sibling.id)
+}
+
+async function getProductIdsForCategory(
+  db: Pick<Prisma.TransactionClient, 'productCategory'>,
+  categoryId: string
+) {
+  const productCategories = await db.productCategory.findMany({
+    where: { categoryId },
+    select: { productId: true }
+  })
+
+  return productCategories.map((entry) => entry.productId)
 }
 
 async function moveCategoryInTransaction(
@@ -395,6 +408,11 @@ export const categoryRouter = createTRPCRouter({
         }
       })
 
+      await syncProductSearchDocumentsForMutation(
+        ctx.db,
+        await getProductIdsForCategory(ctx.db, input.id)
+      )
+
       return mapCategoryRow(category)
     }),
 
@@ -402,9 +420,15 @@ export const categoryRouter = createTRPCRouter({
     .input(moveInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        return await ctx.db.$transaction((tx) =>
+        const category = await ctx.db.$transaction((tx) =>
           moveCategoryInTransaction(tx, input)
         )
+        await syncProductSearchDocumentsForMutation(
+          ctx.db,
+          await getProductIdsForCategory(ctx.db, input.categoryId)
+        )
+
+        return category
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error
@@ -441,6 +465,11 @@ export const categoryRouter = createTRPCRouter({
         })
       }
 
+      const affectedProductIds = await getProductIdsForCategory(
+        ctx.db,
+        input.id
+      )
+
       await ctx.db.$transaction(async (tx) => {
         await tx.category.delete({
           where: { id: input.id }
@@ -449,6 +478,8 @@ export const categoryRouter = createTRPCRouter({
         const siblingIds = await getSiblingIds(tx, category.parentId)
         await normalizeSiblingSortOrders(tx, siblingIds)
       })
+
+      await syncProductSearchDocumentsForMutation(ctx.db, affectedProductIds)
 
       return { id: input.id }
     }),
@@ -473,6 +504,8 @@ export const categoryRouter = createTRPCRouter({
       await ctx.db.$transaction(async (tx) => {
         await replaceProductCategories(tx, input.productId, input.categoryIds)
       })
+
+      await syncProductSearchDocumentsForMutation(ctx.db, [input.productId])
 
       return { productId: input.productId, categoryIds: input.categoryIds }
     })

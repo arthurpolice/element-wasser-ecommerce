@@ -233,6 +233,17 @@ exports.Prisma.ProductScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ProductSearchDocumentScalarFieldEnum = {
+  productId: 'productId',
+  productNameText: 'productNameText',
+  manufacturerText: 'manufacturerText',
+  skuText: 'skuText',
+  categoryText: 'categoryText',
+  descriptionText: 'descriptionText',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ProductImageScalarFieldEnum = {
   id: 'id',
   productId: 'productId',
@@ -472,6 +483,7 @@ exports.Prisma.ModelName = {
   Address: 'Address',
   Manufacturer: 'Manufacturer',
   Product: 'Product',
+  ProductSearchDocument: 'ProductSearchDocument',
   ProductImage: 'ProductImage',
   Category: 'Category',
   ProductCategory: 'ProductCategory',

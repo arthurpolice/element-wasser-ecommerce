@@ -59,6 +59,11 @@ export type Manufacturer = $Result.DefaultSelection<Prisma.$ManufacturerPayload>
  */
 export type Product = $Result.DefaultSelection<Prisma.$ProductPayload>
 /**
+ * Model ProductSearchDocument
+ * 
+ */
+export type ProductSearchDocument = $Result.DefaultSelection<Prisma.$ProductSearchDocumentPayload>
+/**
  * Model ProductImage
  * 
  */
@@ -450,6 +455,16 @@ export class PrismaClient<
     * ```
     */
   get product(): Prisma.ProductDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.productSearchDocument`: Exposes CRUD operations for the **ProductSearchDocument** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProductSearchDocuments
+    * const productSearchDocuments = await prisma.productSearchDocument.findMany()
+    * ```
+    */
+  get productSearchDocument(): Prisma.ProductSearchDocumentDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.productImage`: Exposes CRUD operations for the **ProductImage** model.
@@ -1000,6 +1015,7 @@ export namespace Prisma {
     Address: 'Address',
     Manufacturer: 'Manufacturer',
     Product: 'Product',
+    ProductSearchDocument: 'ProductSearchDocument',
     ProductImage: 'ProductImage',
     Category: 'Category',
     ProductCategory: 'ProductCategory',
@@ -1028,7 +1044,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "orderLine" | "payment" | "review" | "reviewInvite"
+      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "orderLine" | "payment" | "review" | "reviewInvite"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1695,6 +1711,64 @@ export namespace Prisma {
           count: {
             args: Prisma.ProductCountArgs<ExtArgs>
             result: $Utils.Optional<ProductCountAggregateOutputType> | number
+          }
+        }
+      }
+      ProductSearchDocument: {
+        payload: Prisma.$ProductSearchDocumentPayload<ExtArgs>
+        fields: Prisma.ProductSearchDocumentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProductSearchDocumentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProductSearchDocumentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload>
+          }
+          findFirst: {
+            args: Prisma.ProductSearchDocumentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProductSearchDocumentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload>
+          }
+          findMany: {
+            args: Prisma.ProductSearchDocumentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload>[]
+          }
+          delete: {
+            args: Prisma.ProductSearchDocumentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload>
+          }
+          update: {
+            args: Prisma.ProductSearchDocumentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProductSearchDocumentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProductSearchDocumentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ProductSearchDocumentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchDocumentPayload>[]
+          }
+          aggregate: {
+            args: Prisma.ProductSearchDocumentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProductSearchDocument>
+          }
+          groupBy: {
+            args: Prisma.ProductSearchDocumentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProductSearchDocumentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProductSearchDocumentCountArgs<ExtArgs>
+            result: $Utils.Optional<ProductSearchDocumentCountAggregateOutputType> | number
           }
         }
       }
@@ -2543,6 +2617,7 @@ export namespace Prisma {
     address?: AddressOmit
     manufacturer?: ManufacturerOmit
     product?: ProductOmit
+    productSearchDocument?: ProductSearchDocumentOmit
     productImage?: ProductImageOmit
     category?: CategoryOmit
     productCategory?: ProductCategoryOmit
@@ -12191,6 +12266,7 @@ export namespace Prisma {
     categories?: boolean | Product$categoriesArgs<ExtArgs>
     orderLines?: boolean | Product$orderLinesArgs<ExtArgs>
     reviews?: boolean | Product$reviewsArgs<ExtArgs>
+    searchDocument?: boolean | Product$searchDocumentArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -12263,6 +12339,7 @@ export namespace Prisma {
     categories?: boolean | Product$categoriesArgs<ExtArgs>
     orderLines?: boolean | Product$orderLinesArgs<ExtArgs>
     reviews?: boolean | Product$reviewsArgs<ExtArgs>
+    searchDocument?: boolean | Product$searchDocumentArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProductIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12280,6 +12357,7 @@ export namespace Prisma {
       categories: Prisma.$ProductCategoryPayload<ExtArgs>[]
       orderLines: Prisma.$OrderLinePayload<ExtArgs>[]
       reviews: Prisma.$ReviewPayload<ExtArgs>[]
+      searchDocument: Prisma.$ProductSearchDocumentPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -12698,6 +12776,7 @@ export namespace Prisma {
     categories<T extends Product$categoriesArgs<ExtArgs> = {}>(args?: Subset<T, Product$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     orderLines<T extends Product$orderLinesArgs<ExtArgs> = {}>(args?: Subset<T, Product$orderLinesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderLinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reviews<T extends Product$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Product$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    searchDocument<T extends Product$searchDocumentArgs<ExtArgs> = {}>(args?: Subset<T, Product$searchDocumentArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13236,6 +13315,25 @@ export namespace Prisma {
   }
 
   /**
+   * Product.searchDocument
+   */
+  export type Product$searchDocumentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    where?: ProductSearchDocumentWhereInput
+  }
+
+  /**
    * Product without action
    */
   export type ProductDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13251,6 +13349,932 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProductInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ProductSearchDocument
+   */
+
+  export type AggregateProductSearchDocument = {
+    _count: ProductSearchDocumentCountAggregateOutputType | null
+    _min: ProductSearchDocumentMinAggregateOutputType | null
+    _max: ProductSearchDocumentMaxAggregateOutputType | null
+  }
+
+  export type ProductSearchDocumentMinAggregateOutputType = {
+    productId: string | null
+    productNameText: string | null
+    manufacturerText: string | null
+    skuText: string | null
+    categoryText: string | null
+    descriptionText: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductSearchDocumentMaxAggregateOutputType = {
+    productId: string | null
+    productNameText: string | null
+    manufacturerText: string | null
+    skuText: string | null
+    categoryText: string | null
+    descriptionText: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductSearchDocumentCountAggregateOutputType = {
+    productId: number
+    productNameText: number
+    manufacturerText: number
+    skuText: number
+    categoryText: number
+    descriptionText: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ProductSearchDocumentMinAggregateInputType = {
+    productId?: true
+    productNameText?: true
+    manufacturerText?: true
+    skuText?: true
+    categoryText?: true
+    descriptionText?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductSearchDocumentMaxAggregateInputType = {
+    productId?: true
+    productNameText?: true
+    manufacturerText?: true
+    skuText?: true
+    categoryText?: true
+    descriptionText?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductSearchDocumentCountAggregateInputType = {
+    productId?: true
+    productNameText?: true
+    manufacturerText?: true
+    skuText?: true
+    categoryText?: true
+    descriptionText?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ProductSearchDocumentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductSearchDocument to aggregate.
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchDocuments to fetch.
+     */
+    orderBy?: ProductSearchDocumentOrderByWithRelationInput | ProductSearchDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProductSearchDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProductSearchDocuments
+    **/
+    _count?: true | ProductSearchDocumentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProductSearchDocumentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProductSearchDocumentMaxAggregateInputType
+  }
+
+  export type GetProductSearchDocumentAggregateType<T extends ProductSearchDocumentAggregateArgs> = {
+        [P in keyof T & keyof AggregateProductSearchDocument]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProductSearchDocument[P]>
+      : GetScalarType<T[P], AggregateProductSearchDocument[P]>
+  }
+
+
+
+
+  export type ProductSearchDocumentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductSearchDocumentWhereInput
+    orderBy?: ProductSearchDocumentOrderByWithAggregationInput | ProductSearchDocumentOrderByWithAggregationInput[]
+    by: ProductSearchDocumentScalarFieldEnum[] | ProductSearchDocumentScalarFieldEnum
+    having?: ProductSearchDocumentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProductSearchDocumentCountAggregateInputType | true
+    _min?: ProductSearchDocumentMinAggregateInputType
+    _max?: ProductSearchDocumentMaxAggregateInputType
+  }
+
+  export type ProductSearchDocumentGroupByOutputType = {
+    productId: string
+    productNameText: string
+    manufacturerText: string
+    skuText: string
+    categoryText: string
+    descriptionText: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ProductSearchDocumentCountAggregateOutputType | null
+    _min: ProductSearchDocumentMinAggregateOutputType | null
+    _max: ProductSearchDocumentMaxAggregateOutputType | null
+  }
+
+  type GetProductSearchDocumentGroupByPayload<T extends ProductSearchDocumentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProductSearchDocumentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProductSearchDocumentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProductSearchDocumentGroupByOutputType[P]>
+            : GetScalarType<T[P], ProductSearchDocumentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProductSearchDocumentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    productId?: boolean
+    productNameText?: boolean
+    manufacturerText?: boolean
+    skuText?: boolean
+    categoryText?: boolean
+    descriptionText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productSearchDocument"]>
+
+
+  export type ProductSearchDocumentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    productId?: boolean
+    productNameText?: boolean
+    manufacturerText?: boolean
+    skuText?: boolean
+    categoryText?: boolean
+    descriptionText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productSearchDocument"]>
+
+  export type ProductSearchDocumentSelectScalar = {
+    productId?: boolean
+    productNameText?: boolean
+    manufacturerText?: boolean
+    skuText?: boolean
+    categoryText?: boolean
+    descriptionText?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ProductSearchDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"productId" | "productNameText" | "manufacturerText" | "skuText" | "categoryText" | "descriptionText" | "createdAt" | "updatedAt", ExtArgs["result"]["productSearchDocument"]>
+  export type ProductSearchDocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ProductSearchDocumentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+
+  export type $ProductSearchDocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProductSearchDocument"
+    objects: {
+      product: Prisma.$ProductPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      productId: string
+      productNameText: string
+      manufacturerText: string
+      skuText: string
+      categoryText: string
+      descriptionText: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["productSearchDocument"]>
+    composites: {}
+  }
+
+  type ProductSearchDocumentGetPayload<S extends boolean | null | undefined | ProductSearchDocumentDefaultArgs> = $Result.GetResult<Prisma.$ProductSearchDocumentPayload, S>
+
+  type ProductSearchDocumentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProductSearchDocumentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProductSearchDocumentCountAggregateInputType | true
+    }
+
+  export interface ProductSearchDocumentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProductSearchDocument'], meta: { name: 'ProductSearchDocument' } }
+    /**
+     * Find zero or one ProductSearchDocument that matches the filter.
+     * @param {ProductSearchDocumentFindUniqueArgs} args - Arguments to find a ProductSearchDocument
+     * @example
+     * // Get one ProductSearchDocument
+     * const productSearchDocument = await prisma.productSearchDocument.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProductSearchDocumentFindUniqueArgs>(args: SelectSubset<T, ProductSearchDocumentFindUniqueArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProductSearchDocument that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProductSearchDocumentFindUniqueOrThrowArgs} args - Arguments to find a ProductSearchDocument
+     * @example
+     * // Get one ProductSearchDocument
+     * const productSearchDocument = await prisma.productSearchDocument.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProductSearchDocumentFindUniqueOrThrowArgs>(args: SelectSubset<T, ProductSearchDocumentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductSearchDocument that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentFindFirstArgs} args - Arguments to find a ProductSearchDocument
+     * @example
+     * // Get one ProductSearchDocument
+     * const productSearchDocument = await prisma.productSearchDocument.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProductSearchDocumentFindFirstArgs>(args?: SelectSubset<T, ProductSearchDocumentFindFirstArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductSearchDocument that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentFindFirstOrThrowArgs} args - Arguments to find a ProductSearchDocument
+     * @example
+     * // Get one ProductSearchDocument
+     * const productSearchDocument = await prisma.productSearchDocument.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProductSearchDocumentFindFirstOrThrowArgs>(args?: SelectSubset<T, ProductSearchDocumentFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProductSearchDocuments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProductSearchDocuments
+     * const productSearchDocuments = await prisma.productSearchDocument.findMany()
+     * 
+     * // Get first 10 ProductSearchDocuments
+     * const productSearchDocuments = await prisma.productSearchDocument.findMany({ take: 10 })
+     * 
+     * // Only select the `productId`
+     * const productSearchDocumentWithProductIdOnly = await prisma.productSearchDocument.findMany({ select: { productId: true } })
+     * 
+     */
+    findMany<T extends ProductSearchDocumentFindManyArgs>(args?: SelectSubset<T, ProductSearchDocumentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Delete a ProductSearchDocument.
+     * @param {ProductSearchDocumentDeleteArgs} args - Arguments to delete one ProductSearchDocument.
+     * @example
+     * // Delete one ProductSearchDocument
+     * const ProductSearchDocument = await prisma.productSearchDocument.delete({
+     *   where: {
+     *     // ... filter to delete one ProductSearchDocument
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProductSearchDocumentDeleteArgs>(args: SelectSubset<T, ProductSearchDocumentDeleteArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProductSearchDocument.
+     * @param {ProductSearchDocumentUpdateArgs} args - Arguments to update one ProductSearchDocument.
+     * @example
+     * // Update one ProductSearchDocument
+     * const productSearchDocument = await prisma.productSearchDocument.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProductSearchDocumentUpdateArgs>(args: SelectSubset<T, ProductSearchDocumentUpdateArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProductSearchDocuments.
+     * @param {ProductSearchDocumentDeleteManyArgs} args - Arguments to filter ProductSearchDocuments to delete.
+     * @example
+     * // Delete a few ProductSearchDocuments
+     * const { count } = await prisma.productSearchDocument.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProductSearchDocumentDeleteManyArgs>(args?: SelectSubset<T, ProductSearchDocumentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductSearchDocuments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProductSearchDocuments
+     * const productSearchDocument = await prisma.productSearchDocument.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProductSearchDocumentUpdateManyArgs>(args: SelectSubset<T, ProductSearchDocumentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductSearchDocuments and returns the data updated in the database.
+     * @param {ProductSearchDocumentUpdateManyAndReturnArgs} args - Arguments to update many ProductSearchDocuments.
+     * @example
+     * // Update many ProductSearchDocuments
+     * const productSearchDocument = await prisma.productSearchDocument.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ProductSearchDocuments and only return the `productId`
+     * const productSearchDocumentWithProductIdOnly = await prisma.productSearchDocument.updateManyAndReturn({
+     *   select: { productId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ProductSearchDocumentUpdateManyAndReturnArgs>(args: SelectSubset<T, ProductSearchDocumentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+
+    /**
+     * Count the number of ProductSearchDocuments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentCountArgs} args - Arguments to filter ProductSearchDocuments to count.
+     * @example
+     * // Count the number of ProductSearchDocuments
+     * const count = await prisma.productSearchDocument.count({
+     *   where: {
+     *     // ... the filter for the ProductSearchDocuments we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProductSearchDocumentCountArgs>(
+      args?: Subset<T, ProductSearchDocumentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProductSearchDocumentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProductSearchDocument.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProductSearchDocumentAggregateArgs>(args: Subset<T, ProductSearchDocumentAggregateArgs>): Prisma.PrismaPromise<GetProductSearchDocumentAggregateType<T>>
+
+    /**
+     * Group by ProductSearchDocument.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchDocumentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProductSearchDocumentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProductSearchDocumentGroupByArgs['orderBy'] }
+        : { orderBy?: ProductSearchDocumentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProductSearchDocumentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProductSearchDocumentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProductSearchDocument model
+   */
+  readonly fields: ProductSearchDocumentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProductSearchDocument.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProductSearchDocumentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProductSearchDocument model
+   */
+  interface ProductSearchDocumentFieldRefs {
+    readonly productId: FieldRef<"ProductSearchDocument", 'String'>
+    readonly productNameText: FieldRef<"ProductSearchDocument", 'String'>
+    readonly manufacturerText: FieldRef<"ProductSearchDocument", 'String'>
+    readonly skuText: FieldRef<"ProductSearchDocument", 'String'>
+    readonly categoryText: FieldRef<"ProductSearchDocument", 'String'>
+    readonly descriptionText: FieldRef<"ProductSearchDocument", 'String'>
+    readonly createdAt: FieldRef<"ProductSearchDocument", 'DateTime'>
+    readonly updatedAt: FieldRef<"ProductSearchDocument", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProductSearchDocument findUnique
+   */
+  export type ProductSearchDocumentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchDocument to fetch.
+     */
+    where: ProductSearchDocumentWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchDocument findUniqueOrThrow
+   */
+  export type ProductSearchDocumentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchDocument to fetch.
+     */
+    where: ProductSearchDocumentWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchDocument findFirst
+   */
+  export type ProductSearchDocumentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchDocument to fetch.
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchDocuments to fetch.
+     */
+    orderBy?: ProductSearchDocumentOrderByWithRelationInput | ProductSearchDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductSearchDocuments.
+     */
+    cursor?: ProductSearchDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSearchDocuments.
+     */
+    distinct?: ProductSearchDocumentScalarFieldEnum | ProductSearchDocumentScalarFieldEnum[]
+  }
+
+  /**
+   * ProductSearchDocument findFirstOrThrow
+   */
+  export type ProductSearchDocumentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchDocument to fetch.
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchDocuments to fetch.
+     */
+    orderBy?: ProductSearchDocumentOrderByWithRelationInput | ProductSearchDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductSearchDocuments.
+     */
+    cursor?: ProductSearchDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSearchDocuments.
+     */
+    distinct?: ProductSearchDocumentScalarFieldEnum | ProductSearchDocumentScalarFieldEnum[]
+  }
+
+  /**
+   * ProductSearchDocument findMany
+   */
+  export type ProductSearchDocumentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchDocuments to fetch.
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchDocuments to fetch.
+     */
+    orderBy?: ProductSearchDocumentOrderByWithRelationInput | ProductSearchDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProductSearchDocuments.
+     */
+    cursor?: ProductSearchDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchDocuments.
+     */
+    skip?: number
+    distinct?: ProductSearchDocumentScalarFieldEnum | ProductSearchDocumentScalarFieldEnum[]
+  }
+
+  /**
+   * ProductSearchDocument update
+   */
+  export type ProductSearchDocumentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProductSearchDocument.
+     */
+    data: XOR<ProductSearchDocumentUpdateInput, ProductSearchDocumentUncheckedUpdateInput>
+    /**
+     * Choose, which ProductSearchDocument to update.
+     */
+    where: ProductSearchDocumentWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchDocument updateMany
+   */
+  export type ProductSearchDocumentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProductSearchDocuments.
+     */
+    data: XOR<ProductSearchDocumentUpdateManyMutationInput, ProductSearchDocumentUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductSearchDocuments to update
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * Limit how many ProductSearchDocuments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductSearchDocument updateManyAndReturn
+   */
+  export type ProductSearchDocumentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * The data used to update ProductSearchDocuments.
+     */
+    data: XOR<ProductSearchDocumentUpdateManyMutationInput, ProductSearchDocumentUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductSearchDocuments to update
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * Limit how many ProductSearchDocuments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProductSearchDocument delete
+   */
+  export type ProductSearchDocumentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
+    /**
+     * Filter which ProductSearchDocument to delete.
+     */
+    where: ProductSearchDocumentWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchDocument deleteMany
+   */
+  export type ProductSearchDocumentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductSearchDocuments to delete
+     */
+    where?: ProductSearchDocumentWhereInput
+    /**
+     * Limit how many ProductSearchDocuments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductSearchDocument without action
+   */
+  export type ProductSearchDocumentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchDocument
+     */
+    select?: ProductSearchDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchDocument
+     */
+    omit?: ProductSearchDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchDocumentInclude<ExtArgs> | null
   }
 
 
@@ -25261,6 +26285,20 @@ export namespace Prisma {
   export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
 
 
+  export const ProductSearchDocumentScalarFieldEnum: {
+    productId: 'productId',
+    productNameText: 'productNameText',
+    manufacturerText: 'manufacturerText',
+    skuText: 'skuText',
+    categoryText: 'categoryText',
+    descriptionText: 'descriptionText',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ProductSearchDocumentScalarFieldEnum = (typeof ProductSearchDocumentScalarFieldEnum)[keyof typeof ProductSearchDocumentScalarFieldEnum]
+
+
   export const ProductImageScalarFieldEnum: {
     id: 'id',
     productId: 'productId',
@@ -26323,6 +27361,7 @@ export namespace Prisma {
     categories?: ProductCategoryListRelationFilter
     orderLines?: OrderLineListRelationFilter
     reviews?: ReviewListRelationFilter
+    searchDocument?: XOR<ProductSearchDocumentNullableScalarRelationFilter, ProductSearchDocumentWhereInput> | null
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -26348,6 +27387,7 @@ export namespace Prisma {
     categories?: ProductCategoryOrderByRelationAggregateInput
     orderLines?: OrderLineOrderByRelationAggregateInput
     reviews?: ReviewOrderByRelationAggregateInput
+    searchDocument?: ProductSearchDocumentOrderByWithRelationInput
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -26376,6 +27416,7 @@ export namespace Prisma {
     categories?: ProductCategoryListRelationFilter
     orderLines?: OrderLineListRelationFilter
     reviews?: ReviewListRelationFilter
+    searchDocument?: XOR<ProductSearchDocumentNullableScalarRelationFilter, ProductSearchDocumentWhereInput> | null
   }, "id" | "slug" | "sku">
 
   export type ProductOrderByWithAggregationInput = {
@@ -26424,6 +27465,76 @@ export namespace Prisma {
     dispatchMaxDays?: IntWithAggregatesFilter<"Product"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
+  }
+
+  export type ProductSearchDocumentWhereInput = {
+    AND?: ProductSearchDocumentWhereInput | ProductSearchDocumentWhereInput[]
+    OR?: ProductSearchDocumentWhereInput[]
+    NOT?: ProductSearchDocumentWhereInput | ProductSearchDocumentWhereInput[]
+    productId?: StringFilter<"ProductSearchDocument"> | string
+    productNameText?: StringFilter<"ProductSearchDocument"> | string
+    manufacturerText?: StringFilter<"ProductSearchDocument"> | string
+    skuText?: StringFilter<"ProductSearchDocument"> | string
+    categoryText?: StringFilter<"ProductSearchDocument"> | string
+    descriptionText?: StringFilter<"ProductSearchDocument"> | string
+    createdAt?: DateTimeFilter<"ProductSearchDocument"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductSearchDocument"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }
+
+  export type ProductSearchDocumentOrderByWithRelationInput = {
+    productId?: SortOrder
+    productNameText?: SortOrder
+    manufacturerText?: SortOrder
+    skuText?: SortOrder
+    categoryText?: SortOrder
+    descriptionText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    product?: ProductOrderByWithRelationInput
+  }
+
+  export type ProductSearchDocumentWhereUniqueInput = Prisma.AtLeast<{
+    productId?: string
+    AND?: ProductSearchDocumentWhereInput | ProductSearchDocumentWhereInput[]
+    OR?: ProductSearchDocumentWhereInput[]
+    NOT?: ProductSearchDocumentWhereInput | ProductSearchDocumentWhereInput[]
+    productNameText?: StringFilter<"ProductSearchDocument"> | string
+    manufacturerText?: StringFilter<"ProductSearchDocument"> | string
+    skuText?: StringFilter<"ProductSearchDocument"> | string
+    categoryText?: StringFilter<"ProductSearchDocument"> | string
+    descriptionText?: StringFilter<"ProductSearchDocument"> | string
+    createdAt?: DateTimeFilter<"ProductSearchDocument"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductSearchDocument"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }, "productId">
+
+  export type ProductSearchDocumentOrderByWithAggregationInput = {
+    productId?: SortOrder
+    productNameText?: SortOrder
+    manufacturerText?: SortOrder
+    skuText?: SortOrder
+    categoryText?: SortOrder
+    descriptionText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ProductSearchDocumentCountOrderByAggregateInput
+    _max?: ProductSearchDocumentMaxOrderByAggregateInput
+    _min?: ProductSearchDocumentMinOrderByAggregateInput
+  }
+
+  export type ProductSearchDocumentScalarWhereWithAggregatesInput = {
+    AND?: ProductSearchDocumentScalarWhereWithAggregatesInput | ProductSearchDocumentScalarWhereWithAggregatesInput[]
+    OR?: ProductSearchDocumentScalarWhereWithAggregatesInput[]
+    NOT?: ProductSearchDocumentScalarWhereWithAggregatesInput | ProductSearchDocumentScalarWhereWithAggregatesInput[]
+    productId?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
+    productNameText?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
+    manufacturerText?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
+    skuText?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
+    categoryText?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
+    descriptionText?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ProductSearchDocument"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ProductSearchDocument"> | Date | string
   }
 
   export type ProductImageWhereInput = {
@@ -28037,6 +29148,7 @@ export namespace Prisma {
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateInput = {
@@ -28061,6 +29173,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductUpdateInput = {
@@ -28085,6 +29198,7 @@ export namespace Prisma {
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -28109,6 +29223,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductCreateManyInput = {
@@ -28166,6 +29281,49 @@ export namespace Prisma {
     stockReserved?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchDocumentUpdateInput = {
+    productNameText?: StringFieldUpdateOperationsInput | string
+    manufacturerText?: StringFieldUpdateOperationsInput | string
+    skuText?: StringFieldUpdateOperationsInput | string
+    categoryText?: StringFieldUpdateOperationsInput | string
+    descriptionText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutSearchDocumentNestedInput
+  }
+
+  export type ProductSearchDocumentUncheckedUpdateInput = {
+    productId?: StringFieldUpdateOperationsInput | string
+    productNameText?: StringFieldUpdateOperationsInput | string
+    manufacturerText?: StringFieldUpdateOperationsInput | string
+    skuText?: StringFieldUpdateOperationsInput | string
+    categoryText?: StringFieldUpdateOperationsInput | string
+    descriptionText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchDocumentUpdateManyMutationInput = {
+    productNameText?: StringFieldUpdateOperationsInput | string
+    manufacturerText?: StringFieldUpdateOperationsInput | string
+    skuText?: StringFieldUpdateOperationsInput | string
+    categoryText?: StringFieldUpdateOperationsInput | string
+    descriptionText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchDocumentUncheckedUpdateManyInput = {
+    productId?: StringFieldUpdateOperationsInput | string
+    productNameText?: StringFieldUpdateOperationsInput | string
+    manufacturerText?: StringFieldUpdateOperationsInput | string
+    skuText?: StringFieldUpdateOperationsInput | string
+    categoryText?: StringFieldUpdateOperationsInput | string
+    descriptionText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29799,6 +30957,11 @@ export namespace Prisma {
     none?: OrderLineWhereInput
   }
 
+  export type ProductSearchDocumentNullableScalarRelationFilter = {
+    is?: ProductSearchDocumentWhereInput | null
+    isNot?: ProductSearchDocumentWhereInput | null
+  }
+
   export type ProductImageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -29950,6 +31113,39 @@ export namespace Prisma {
   export type ProductScalarRelationFilter = {
     is?: ProductWhereInput
     isNot?: ProductWhereInput
+  }
+
+  export type ProductSearchDocumentCountOrderByAggregateInput = {
+    productId?: SortOrder
+    productNameText?: SortOrder
+    manufacturerText?: SortOrder
+    skuText?: SortOrder
+    categoryText?: SortOrder
+    descriptionText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductSearchDocumentMaxOrderByAggregateInput = {
+    productId?: SortOrder
+    productNameText?: SortOrder
+    manufacturerText?: SortOrder
+    skuText?: SortOrder
+    categoryText?: SortOrder
+    descriptionText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductSearchDocumentMinOrderByAggregateInput = {
+    productId?: SortOrder
+    productNameText?: SortOrder
+    manufacturerText?: SortOrder
+    skuText?: SortOrder
+    categoryText?: SortOrder
+    descriptionText?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type ProductImageCountOrderByAggregateInput = {
@@ -31128,6 +32324,10 @@ export namespace Prisma {
     connect?: ReviewWhereUniqueInput | ReviewWhereUniqueInput[]
   }
 
+  export type ProductSearchDocumentCreateNestedOneWithoutProductInput = {
+    connect?: ProductSearchDocumentWhereUniqueInput
+  }
+
   export type ProductImageUncheckedCreateNestedManyWithoutProductInput = {
     create?: XOR<ProductImageCreateWithoutProductInput, ProductImageUncheckedCreateWithoutProductInput> | ProductImageCreateWithoutProductInput[] | ProductImageUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ProductImageCreateOrConnectWithoutProductInput | ProductImageCreateOrConnectWithoutProductInput[]
@@ -31154,6 +32354,10 @@ export namespace Prisma {
     connectOrCreate?: ReviewCreateOrConnectWithoutProductInput | ReviewCreateOrConnectWithoutProductInput[]
     createMany?: ReviewCreateManyProductInputEnvelope
     connect?: ReviewWhereUniqueInput | ReviewWhereUniqueInput[]
+  }
+
+  export type ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput = {
+    connect?: ProductSearchDocumentWhereUniqueInput
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -31236,6 +32440,13 @@ export namespace Prisma {
     deleteMany?: ReviewScalarWhereInput | ReviewScalarWhereInput[]
   }
 
+  export type ProductSearchDocumentUpdateOneWithoutProductNestedInput = {
+    disconnect?: ProductSearchDocumentWhereInput | boolean
+    delete?: ProductSearchDocumentWhereInput | boolean
+    connect?: ProductSearchDocumentWhereUniqueInput
+    update?: XOR<XOR<ProductSearchDocumentUpdateToOneWithWhereWithoutProductInput, ProductSearchDocumentUpdateWithoutProductInput>, ProductSearchDocumentUncheckedUpdateWithoutProductInput>
+  }
+
   export type ProductImageUncheckedUpdateManyWithoutProductNestedInput = {
     create?: XOR<ProductImageCreateWithoutProductInput, ProductImageUncheckedCreateWithoutProductInput> | ProductImageCreateWithoutProductInput[] | ProductImageUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ProductImageCreateOrConnectWithoutProductInput | ProductImageCreateOrConnectWithoutProductInput[]
@@ -31290,6 +32501,21 @@ export namespace Prisma {
     update?: ReviewUpdateWithWhereUniqueWithoutProductInput | ReviewUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: ReviewUpdateManyWithWhereWithoutProductInput | ReviewUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: ReviewScalarWhereInput | ReviewScalarWhereInput[]
+  }
+
+  export type ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput = {
+    disconnect?: ProductSearchDocumentWhereInput | boolean
+    delete?: ProductSearchDocumentWhereInput | boolean
+    connect?: ProductSearchDocumentWhereUniqueInput
+    update?: XOR<XOR<ProductSearchDocumentUpdateToOneWithWhereWithoutProductInput, ProductSearchDocumentUpdateWithoutProductInput>, ProductSearchDocumentUncheckedUpdateWithoutProductInput>
+  }
+
+  export type ProductUpdateOneRequiredWithoutSearchDocumentNestedInput = {
+    create?: XOR<ProductCreateWithoutSearchDocumentInput, ProductUncheckedCreateWithoutSearchDocumentInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutSearchDocumentInput
+    upsert?: ProductUpsertWithoutSearchDocumentInput
+    connect?: ProductWhereUniqueInput
+    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutSearchDocumentInput, ProductUpdateWithoutSearchDocumentInput>, ProductUncheckedUpdateWithoutSearchDocumentInput>
   }
 
   export type ProductCreateNestedOneWithoutImagesInput = {
@@ -33070,6 +34296,7 @@ export namespace Prisma {
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutManufacturerInput = {
@@ -33093,6 +34320,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutManufacturerInput = {
@@ -33434,6 +34662,143 @@ export namespace Prisma {
     data: XOR<ReviewUpdateManyMutationInput, ReviewUncheckedUpdateManyWithoutProductInput>
   }
 
+  export type ProductSearchDocumentUpdateToOneWithWhereWithoutProductInput = {
+    where?: ProductSearchDocumentWhereInput
+    data: XOR<ProductSearchDocumentUpdateWithoutProductInput, ProductSearchDocumentUncheckedUpdateWithoutProductInput>
+  }
+
+  export type ProductSearchDocumentUpdateWithoutProductInput = {
+    productNameText?: StringFieldUpdateOperationsInput | string
+    manufacturerText?: StringFieldUpdateOperationsInput | string
+    skuText?: StringFieldUpdateOperationsInput | string
+    categoryText?: StringFieldUpdateOperationsInput | string
+    descriptionText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchDocumentUncheckedUpdateWithoutProductInput = {
+    productNameText?: StringFieldUpdateOperationsInput | string
+    manufacturerText?: StringFieldUpdateOperationsInput | string
+    skuText?: StringFieldUpdateOperationsInput | string
+    categoryText?: StringFieldUpdateOperationsInput | string
+    descriptionText?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductCreateWithoutSearchDocumentInput = {
+    id?: string
+    name: string
+    slug: string
+    sku: string
+    active?: boolean
+    featured?: boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents: number
+    costCents: number
+    discountPercent?: number | null
+    stockOnHand?: number
+    stockReserved?: number
+    dispatchMinDays: number
+    dispatchMaxDays: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    manufacturer: ManufacturerCreateNestedOneWithoutProductsInput
+    images?: ProductImageCreateNestedManyWithoutProductInput
+    categories?: ProductCategoryCreateNestedManyWithoutProductInput
+    orderLines?: OrderLineCreateNestedManyWithoutProductInput
+    reviews?: ReviewCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductUncheckedCreateWithoutSearchDocumentInput = {
+    id?: string
+    manufacturerId: string
+    name: string
+    slug: string
+    sku: string
+    active?: boolean
+    featured?: boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents: number
+    costCents: number
+    discountPercent?: number | null
+    stockOnHand?: number
+    stockReserved?: number
+    dispatchMinDays: number
+    dispatchMaxDays: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    images?: ProductImageUncheckedCreateNestedManyWithoutProductInput
+    categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
+    orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutSearchDocumentInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutSearchDocumentInput, ProductUncheckedCreateWithoutSearchDocumentInput>
+  }
+
+  export type ProductUpsertWithoutSearchDocumentInput = {
+    update: XOR<ProductUpdateWithoutSearchDocumentInput, ProductUncheckedUpdateWithoutSearchDocumentInput>
+    create: XOR<ProductCreateWithoutSearchDocumentInput, ProductUncheckedCreateWithoutSearchDocumentInput>
+    where?: ProductWhereInput
+  }
+
+  export type ProductUpdateToOneWithWhereWithoutSearchDocumentInput = {
+    where?: ProductWhereInput
+    data: XOR<ProductUpdateWithoutSearchDocumentInput, ProductUncheckedUpdateWithoutSearchDocumentInput>
+  }
+
+  export type ProductUpdateWithoutSearchDocumentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents?: IntFieldUpdateOperationsInput | number
+    costCents?: IntFieldUpdateOperationsInput | number
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    stockOnHand?: IntFieldUpdateOperationsInput | number
+    stockReserved?: IntFieldUpdateOperationsInput | number
+    dispatchMinDays?: IntFieldUpdateOperationsInput | number
+    dispatchMaxDays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    manufacturer?: ManufacturerUpdateOneRequiredWithoutProductsNestedInput
+    images?: ProductImageUpdateManyWithoutProductNestedInput
+    categories?: ProductCategoryUpdateManyWithoutProductNestedInput
+    orderLines?: OrderLineUpdateManyWithoutProductNestedInput
+    reviews?: ReviewUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutSearchDocumentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    manufacturerId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents?: IntFieldUpdateOperationsInput | number
+    costCents?: IntFieldUpdateOperationsInput | number
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    stockOnHand?: IntFieldUpdateOperationsInput | number
+    stockReserved?: IntFieldUpdateOperationsInput | number
+    dispatchMinDays?: IntFieldUpdateOperationsInput | number
+    dispatchMaxDays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: ProductImageUncheckedUpdateManyWithoutProductNestedInput
+    categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
+    orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+  }
+
   export type ProductCreateWithoutImagesInput = {
     id?: string
     name: string
@@ -33455,6 +34820,7 @@ export namespace Prisma {
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutImagesInput = {
@@ -33478,6 +34844,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutImagesInput = {
@@ -33517,6 +34884,7 @@ export namespace Prisma {
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutImagesInput = {
@@ -33540,6 +34908,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type CategoryCreateWithoutChildrenInput = {
@@ -33733,6 +35102,7 @@ export namespace Prisma {
     images?: ProductImageCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutCategoriesInput = {
@@ -33756,6 +35126,7 @@ export namespace Prisma {
     images?: ProductImageUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutCategoriesInput = {
@@ -33824,6 +35195,7 @@ export namespace Prisma {
     images?: ProductImageUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutCategoriesInput = {
@@ -33847,6 +35219,7 @@ export namespace Prisma {
     images?: ProductImageUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type CategoryUpsertWithoutProductsInput = {
@@ -34207,6 +35580,7 @@ export namespace Prisma {
     images?: ProductImageCreateNestedManyWithoutProductInput
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutOrderLinesInput = {
@@ -34230,6 +35604,7 @@ export namespace Prisma {
     images?: ProductImageUncheckedCreateNestedManyWithoutProductInput
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutOrderLinesInput = {
@@ -34430,6 +35805,7 @@ export namespace Prisma {
     images?: ProductImageUpdateManyWithoutProductNestedInput
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutOrderLinesInput = {
@@ -34453,6 +35829,7 @@ export namespace Prisma {
     images?: ProductImageUncheckedUpdateManyWithoutProductNestedInput
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ReviewUpsertWithoutOrderLineInput = {
@@ -34748,6 +36125,7 @@ export namespace Prisma {
     images?: ProductImageCreateNestedManyWithoutProductInput
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutReviewsInput = {
@@ -34771,6 +36149,7 @@ export namespace Prisma {
     images?: ProductImageUncheckedCreateNestedManyWithoutProductInput
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutReviewsInput = {
@@ -34880,6 +36259,7 @@ export namespace Prisma {
     images?: ProductImageUpdateManyWithoutProductNestedInput
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutReviewsInput = {
@@ -34903,6 +36283,7 @@ export namespace Prisma {
     images?: ProductImageUncheckedUpdateManyWithoutProductNestedInput
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type CustomerUpsertWithoutReviewsInput = {
@@ -35543,6 +36924,7 @@ export namespace Prisma {
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutManufacturerInput = {
@@ -35566,6 +36948,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutManufacturerInput = {

@@ -198,31 +198,47 @@ model Manufacturer {
 }
 
 model Product {
-  id              String            @id @default(cuid())
+  id              String                 @id @default(cuid())
   manufacturerId  String
-  manufacturer    Manufacturer      @relation(fields: [manufacturerId], references: [id], onDelete: Restrict)
+  manufacturer    Manufacturer           @relation(fields: [manufacturerId], references: [id], onDelete: Restrict)
   name            String
-  slug            String            @unique
-  sku             String            @unique
-  active          Boolean           @default(false)
-  featured        Boolean           @default(false)
+  slug            String                 @unique
+  sku             String                 @unique
+  active          Boolean                @default(false)
+  featured        Boolean                @default(false)
   description     Json?
   priceCents      Int
   costCents       Int
   discountPercent Int?
-  stockOnHand     Int               @default(0)
-  stockReserved   Int               @default(0)
+  stockOnHand     Int                    @default(0)
+  stockReserved   Int                    @default(0)
   dispatchMinDays Int
   dispatchMaxDays Int
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
   images          ProductImage[]
   categories      ProductCategory[]
   orderLines      OrderLine[]
   reviews         Review[]
+  searchDocument  ProductSearchDocument?
 
   @@index([manufacturerId])
   @@index([active])
+}
+
+model ProductSearchDocument {
+  productId        String                  @id
+  product          Product                 @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productNameText  String
+  manufacturerText String
+  skuText          String
+  categoryText     String
+  descriptionText  String
+  searchVector     Unsupported("tsvector")
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@index([searchVector], type: Gin)
 }
 
 model ProductImage {

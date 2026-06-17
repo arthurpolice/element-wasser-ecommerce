@@ -19,6 +19,7 @@ import {
   updateProduct,
   type ProductMaintenanceRow
 } from '~/server/commerce/product-maintenance'
+import { syncProductSearchDocumentsForMutation } from '~/server/commerce/product-search'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -273,6 +274,7 @@ export const productRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const product = await createProduct(ctx.db, input)
+        await syncProductSearchDocumentsForMutation(ctx.db, [product.id])
         return mapProductRow(product)
       } catch (error) {
         if (error instanceof ProductMaintenanceError) {
@@ -336,6 +338,7 @@ export const productRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const product = await updateProduct(ctx.db, input)
+        await syncProductSearchDocumentsForMutation(ctx.db, [product.id])
         return mapProductRow(product)
       } catch (error) {
         if (error instanceof ProductMaintenanceError) {

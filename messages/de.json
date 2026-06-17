@@ -399,6 +399,10 @@
       "searchLabel": "Suche",
       "searchPlaceholder": "Filter, Ersatzteile, Luftpflege suchen",
       "searchHint": "Katalog",
+      "searchLoading": "Produkte werden gesucht…",
+      "searchEmpty": "Keine Produkte gefunden.",
+      "searchViewAll": "Alle Ergebnisse anzeigen",
+      "searchUnavailable": "Ausverkauft",
       "userMenu": "Kundenmenü",
       "signIn": "Anmelden",
       "cart": "Warenkorb",
@@ -439,6 +443,22 @@
       "empty": "Dieser Kategorie sind noch keine aktiven Produkte zugeordnet.",
       "loadMore": "Weitere Produkte laden",
       "loadingMore": "Wird geladen…"
+    },
+    "searchPage": {
+      "eyebrow": "Produktsuche",
+      "title": "Katalog durchsuchen",
+      "titleWithQuery": "Ergebnisse für „{query}“",
+      "description": "Produkte werden nach Suchrelevanz über Name, Hersteller, SKU, Kategorie und Beschreibung sortiert.",
+      "emptyQuery": "Geben Sie eine Suche in der Katalogleiste ein, um Produkte zu finden.",
+      "summary": "{count, plural, =0 {Keine Produkte} one {# Produkt} other {# Produkte}}",
+      "categoryFacet": "Kategorie",
+      "manufacturerFacet": "Hersteller",
+      "clearAll": "Filter zurücksetzen",
+      "empty": "Keine Produkte passen zu dieser Suche.",
+      "emptyQueryResults": "Geben Sie eine Suchanfrage ein, um passende Produkte zu sehen.",
+      "pageSummary": "Seite {page} von {totalPages}",
+      "previous": "Zurück",
+      "next": "Weiter"
     },
     "productCard": {
       "noImage": "Kein Bild",

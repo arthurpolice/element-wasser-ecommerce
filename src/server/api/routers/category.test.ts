@@ -20,6 +20,10 @@ type CategoryRecord = {
 
 function createMockDb(initialCategories: CategoryRecord[]) {
   const categories = [...initialCategories]
+  const productCategories = [
+    { productId: 'product-1', categoryId: 'root-b' },
+    { productId: 'product-2', categoryId: 'child-a1' }
+  ]
 
   const db = {
     category: {
@@ -162,9 +166,36 @@ function createMockDb(initialCategories: CategoryRecord[]) {
         return deleted
       })
     },
+    productCategory: {
+      findMany: vi.fn(
+        async ({ where }: { where?: { categoryId?: string } } = {}) =>
+          productCategories.filter((entry) =>
+            where?.categoryId ? entry.categoryId === where.categoryId : true
+          )
+      ),
+      deleteMany: vi.fn(async () => ({ count: 0 })),
+      createMany: vi.fn(async () => ({ count: 0 }))
+    },
+    product: {
+      findUnique: vi.fn(async ({ where }: { where: { id: string } }) =>
+        where.id ? { id: where.id } : null
+      ),
+      findMany: vi.fn(
+        async ({ where }: { where?: { id?: { in?: string[] } } }) =>
+          (where?.id?.in ?? []).map((id) => ({
+            id,
+            name: `Product ${id}`,
+            sku: `SKU-${id}`,
+            description: null,
+            manufacturer: { name: 'Element Wasser' },
+            categories: []
+          }))
+      )
+    },
     $transaction: vi.fn(async (callback: (tx: typeof db) => Promise<unknown>) =>
       callback(db)
-    )
+    ),
+    $executeRaw: vi.fn(async () => 1)
   }
 
   return { db, categories }
@@ -260,6 +291,12 @@ describe('category router move', () => {
         .sort((left, right) => left.sortOrder - right.sortOrder)
         .map((category) => category.id)
     ).toEqual(['child-a1', 'child-a2', 'root-b'])
+    expect(db.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['product-1'] } }
+      })
+    )
+    expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 
   it('moves a category before a sibling', async () => {
@@ -369,6 +406,12 @@ describe('category router delete', () => {
     expect(
       categories.find((category) => category.id === 'root-a')?.sortOrder
     ).toBe(0)
+    expect(db.product.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: { in: ['product-1'] } }
+      })
+    )
+    expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 
   it('deletes a child leaf category', async () => {

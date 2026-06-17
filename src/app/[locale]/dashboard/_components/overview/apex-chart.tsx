@@ -23,25 +23,33 @@ export function ApexChart({
     let chart: ApexCharts | null = null;
     let cancelled = false;
 
-    void import("apexcharts").then(({ default: ApexChartsConstructor }) => {
-      if (cancelled || !containerRef.current) {
-        return;
-      }
+    void import("apexcharts")
+      .then(({ default: ApexChartsConstructor }) => {
+        if (cancelled || !containerRef.current) {
+          return;
+        }
 
-      chart = new ApexChartsConstructor(containerRef.current, {
-        ...options,
-        series,
-        chart: {
-          ...options.chart,
-          type,
-          height,
-          fontFamily: "inherit",
-          toolbar: { show: false },
-        },
+        chart = new ApexChartsConstructor(containerRef.current, {
+          ...options,
+          series,
+          chart: {
+            ...options.chart,
+            type,
+            height,
+            fontFamily: "inherit",
+            toolbar: { show: false },
+          },
+        });
+
+        void chart.render().catch(() => {
+          chart?.destroy();
+          chart = null;
+        });
+      })
+      .catch(() => {
+        chart?.destroy();
+        chart = null;
       });
-
-      void chart.render();
-    });
 
     return () => {
       cancelled = true;

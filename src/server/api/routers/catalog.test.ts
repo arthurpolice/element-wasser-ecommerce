@@ -1,31 +1,31 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createCallerFactory } from "~/server/api/trpc";
-import { catalogRouter } from "~/server/api/routers/catalog";
+import { createCallerFactory } from '~/server/api/trpc'
+import { catalogRouter } from '~/server/api/routers/catalog'
 
-const createCaller = createCallerFactory(catalogRouter);
+const createCaller = createCallerFactory(catalogRouter)
 
 const categories = [
   {
-    id: "root",
-    name: "Water Filters",
-    slug: "water-filters",
+    id: 'root',
+    name: 'Water Filters',
+    slug: 'water-filters',
     parentId: null,
-    sortOrder: 0,
+    sortOrder: 0
   },
   {
-    id: "child",
-    name: "Replacement Cartridges",
-    slug: "replacement-cartridges",
-    parentId: "root",
-    sortOrder: 0,
-  },
-];
+    id: 'child',
+    name: 'Replacement Cartridges',
+    slug: 'replacement-cartridges',
+    parentId: 'root',
+    sortOrder: 0
+  }
+]
 
 const product = {
-  id: "product-1",
-  name: "Cartridge Pack",
-  slug: "cartridge-pack",
+  id: 'product-1',
+  name: 'Cartridge Pack',
+  slug: 'cartridge-pack',
   priceCents: 2500,
   discountPercent: null,
   dispatchMinDays: 1,
@@ -33,126 +33,211 @@ const product = {
   active: true,
   featured: false,
   description: null,
-  manufacturer: { name: "Brita" },
-  images: [{ url: "https://cdn.example.com/cartridge.jpg", altText: "Cartridge" }],
-  reviews: [{ rating: 5 }],
-};
+  manufacturer: { name: 'Brita' },
+  images: [
+    { url: 'https://cdn.example.com/cartridge.jpg', altText: 'Cartridge' }
+  ],
+  reviews: [{ rating: 5 }]
+}
 
 const featuredProduct = {
   ...product,
-  id: "product-2",
-  name: "Featured Filter",
-  slug: "featured-filter",
-  featured: true,
-};
+  id: 'product-2',
+  name: 'Featured Filter',
+  slug: 'featured-filter',
+  featured: true
+}
 
 function createMockDb() {
   return {
     category: {
       findMany: vi.fn(async ({ where }: { where?: { active?: boolean } }) => {
         if (where?.active) {
-          return categories;
+          return categories
         }
-        return categories;
+        return categories
       }),
-      findFirst: vi.fn(async ({ where }: { where: { id: string; active?: boolean } }) => {
-        return categories.find((category) => category.id === where.id) ?? null;
-      }),
+      findFirst: vi.fn(
+        async ({ where }: { where: { id: string; active?: boolean } }) => {
+          return categories.find((category) => category.id === where.id) ?? null
+        }
+      )
     },
     product: {
       count: vi.fn(async () => 1),
       findMany: vi.fn(async () => [product]),
-      findFirst: vi.fn(async ({ where }: { where: { slug: string; active?: boolean } }) => {
-        if (where.slug === product.slug && where.active) {
-          return product;
+      findFirst: vi.fn(
+        async ({ where }: { where: { slug: string; active?: boolean } }) => {
+          if (where.slug === product.slug && where.active) {
+            return product
+          }
+          return null
         }
-        return null;
-      }),
+      )
     },
-    $transaction: vi.fn(async (queries: Promise<unknown>[]) => Promise.all(queries)),
-  };
+    $queryRaw: vi.fn(async () => [
+      {
+        id: 'product-1',
+        slug: 'cartridge-pack',
+        name: 'Cartridge Pack',
+        sku: 'EW-CAR-00001',
+        showSku: false,
+        manufacturerName: 'Brita',
+        active: true,
+        availableToSell: true,
+        imageUrl: 'https://cdn.example.com/cartridge.jpg',
+        imageAlt: 'Cartridge',
+        rank: 0.8
+      }
+    ]),
+    $transaction: vi.fn(async (queries: Promise<unknown>[]) =>
+      Promise.all(queries)
+    )
+  }
 }
 
 function createPublicCaller(db: ReturnType<typeof createMockDb>) {
   return createCaller({
     db: db as never,
     session: null,
-    headers: new Headers(),
-  });
+    headers: new Headers()
+  })
 }
 
-describe("catalog router", () => {
-  let db: ReturnType<typeof createMockDb>;
+describe('catalog router', () => {
+  let db: ReturnType<typeof createMockDb>
 
   beforeEach(() => {
-    db = createMockDb();
-  });
+    db = createMockDb()
+  })
 
-  it("resolves nested category paths for active categories", async () => {
-    const caller = createPublicCaller(db);
+  it('resolves nested category paths for active categories', async () => {
+    const caller = createPublicCaller(db)
 
     await expect(
-      caller.resolveCategory({ slugPath: "water-filters/replacement-cartridges" }),
+      caller.resolveCategory({
+        slugPath: 'water-filters/replacement-cartridges'
+      })
     ).resolves.toMatchObject({
-      id: "child",
-      slugPath: "water-filters/replacement-cartridges",
-    });
-  });
+      id: 'child',
+      slugPath: 'water-filters/replacement-cartridges'
+    })
+  })
 
-  it("lists active products for a category and its descendants", async () => {
-    const caller = createPublicCaller(db);
+  it('lists active products for a category and its descendants', async () => {
+    const caller = createPublicCaller(db)
 
     const result = await caller.listCategoryProducts({
-      slugPath: "water-filters",
+      slugPath: 'water-filters',
       page: 1,
-      pageSize: 12,
-    });
+      pageSize: 12
+    })
 
     expect(result).toMatchObject({
-      categoryId: "root",
+      categoryId: 'root',
       totalCount: 1,
       items: [
         expect.objectContaining({
-          slug: "cartridge-pack",
-          manufacturerName: "Brita",
-          priceCents: 2500,
-        }),
-      ],
-    });
-    expect(result?.items[0]).not.toHaveProperty("costCents");
-  });
+          slug: 'cartridge-pack',
+          manufacturerName: 'Brita',
+          priceCents: 2500
+        })
+      ]
+    })
+    expect(result?.items[0]).not.toHaveProperty('costCents')
+  })
 
-  it("lists featured products before non-featured products in category views", async () => {
-    const caller = createPublicCaller(db);
-    db.product.count = vi.fn(async () => 2);
-    db.product.findMany = vi.fn(async ({ orderBy }: { orderBy?: Array<Record<string, string>> }) => {
-      if (orderBy?.[0]?.featured === "desc") {
-        return [featuredProduct, product];
+  it('lists featured products before non-featured products in category views', async () => {
+    const caller = createPublicCaller(db)
+    db.product.count = vi.fn(async () => 2)
+    db.product.findMany = vi.fn(
+      async ({ orderBy }: { orderBy?: Array<Record<string, string>> }) => {
+        if (orderBy?.[0]?.featured === 'desc') {
+          return [featuredProduct, product]
+        }
+        return [product]
       }
-      return [product];
-    });
+    )
 
     const result = await caller.listCategoryProducts({
-      slugPath: "water-filters",
+      slugPath: 'water-filters',
       page: 1,
-      pageSize: 12,
-    });
+      pageSize: 12
+    })
 
     expect(result?.items.map((item) => item.slug)).toEqual([
-      "featured-filter",
-      "cartridge-pack",
-    ]);
-  });
+      'featured-filter',
+      'cartridge-pack'
+    ])
+  })
 
-  it("returns null for unknown category paths", async () => {
-    const caller = createPublicCaller(db);
+  it('returns null for unknown category paths', async () => {
+    const caller = createPublicCaller(db)
 
     await expect(
       caller.listCategoryProducts({
-        slugPath: "unknown-category",
+        slugPath: 'unknown-category',
         page: 1,
-        pageSize: 12,
-      }),
-    ).resolves.toBeNull();
-  });
-});
+        pageSize: 12
+      })
+    ).resolves.toBeNull()
+  })
+
+  it('returns public Product Search Suggestions from the catalog router', async () => {
+    const caller = createPublicCaller(db)
+
+    await expect(
+      caller.searchSuggestions({ q: 'cartridge', limit: 6 })
+    ).resolves.toEqual([
+      {
+        id: 'product-1',
+        slug: 'cartridge-pack',
+        name: 'Cartridge Pack',
+        sku: 'EW-CAR-00001',
+        showSku: false,
+        manufacturerName: 'Brita',
+        active: true,
+        availableToSell: true,
+        imageUrl: 'https://cdn.example.com/cartridge.jpg',
+        imageAlt: 'Cartridge'
+      }
+    ])
+  })
+
+  it('returns full Product Search results from the catalog router', async () => {
+    const caller = createPublicCaller(db)
+    db.$queryRaw = vi
+      .fn()
+      .mockResolvedValueOnce([{ count: 1 }])
+      .mockResolvedValueOnce([{ productId: 'product-1', rank: 0.8 }])
+      .mockResolvedValueOnce([
+        { id: 'child', name: 'Replacement Cartridges', count: 1 }
+      ])
+      .mockResolvedValueOnce([
+        { id: 'manufacturer-1', name: 'Brita', count: 1 }
+      ])
+
+    await expect(
+      caller.searchProducts({
+        q: 'cartridge',
+        categoryId: 'child',
+        manufacturerId: 'manufacturer-1',
+        page: 1,
+        pageSize: 12
+      })
+    ).resolves.toMatchObject({
+      totalCount: 1,
+      categoryFacets: [
+        { id: 'child', name: 'Replacement Cartridges', count: 1 }
+      ],
+      manufacturerFacets: [{ id: 'manufacturer-1', name: 'Brita', count: 1 }],
+      items: [
+        {
+          id: 'product-1',
+          slug: 'cartridge-pack',
+          manufacturerName: 'Brita'
+        }
+      ]
+    })
+  })
+})

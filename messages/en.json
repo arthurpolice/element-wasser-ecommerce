@@ -399,6 +399,10 @@
       "searchLabel": "Search",
       "searchPlaceholder": "Search filters, refills, air care",
       "searchHint": "Catalogue",
+      "searchLoading": "Searching products…",
+      "searchEmpty": "No products found.",
+      "searchViewAll": "View all results",
+      "searchUnavailable": "Out of stock",
       "userMenu": "Customer menu",
       "signIn": "Sign in",
       "cart": "Cart",
@@ -439,6 +443,22 @@
       "empty": "No active products are assigned to this category yet.",
       "loadMore": "Load more products",
       "loadingMore": "Loading…"
+    },
+    "searchPage": {
+      "eyebrow": "Product Search",
+      "title": "Search the catalogue",
+      "titleWithQuery": "Results for “{query}”",
+      "description": "Products are ordered by search relevance across name, manufacturer, SKU, category, and description.",
+      "emptyQuery": "Type a search in the catalogue bar to find products.",
+      "summary": "{count, plural, =0 {No products} one {# product} other {# products}}",
+      "categoryFacet": "Category",
+      "manufacturerFacet": "Manufacturer",
+      "clearAll": "Clear refinements",
+      "empty": "No products match this search.",
+      "emptyQueryResults": "Enter a search query to see matching products.",
+      "pageSummary": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next"
     },
     "productCard": {
       "noImage": "No image",

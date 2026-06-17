@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { FaBars, FaSearch } from 'react-icons/fa'
+import { FaBars } from 'react-icons/fa'
 
 import { CategoryNav } from '~/app/[locale]/(storefront)/_components/category-nav'
+import { ProductSearchBar } from '~/app/[locale]/(storefront)/_components/product-search-bar'
 import {
   iconButtonClass,
   TopNavActions,
@@ -21,13 +22,15 @@ import { authClient } from '~/server/better-auth/client'
 type StorefrontShellProps = {
   children: React.ReactNode
   currentSlugPath?: string
+  searchQuery?: string
 }
 
 const dropdownCloseDurationMs = 150
 
 export function StorefrontShell({
   children,
-  currentSlugPath
+  currentSlugPath,
+  searchQuery
 }: StorefrontShellProps) {
   const t = useTranslations('Storefront')
   const { data: session } = authClient.useSession()
@@ -160,7 +163,7 @@ export function StorefrontShell({
             </div>
           </div>
           <div className="min-w-0 lg:flex-1">
-            <SearchBar />
+            <ProductSearchBar initialQuery={searchQuery} />
           </div>
           <div className="hidden shrink-0 lg:block">
             <TopNavActions
@@ -198,21 +201,5 @@ export function StorefrontShell({
         />
       ) : null}
     </div>
-  )
-}
-
-function SearchBar() {
-  const t = useTranslations('Storefront.topNav')
-
-  return (
-    <label className="border-store-border/80 bg-store-surface/80 focus-within:border-store-accent/60 focus-within:bg-store-surface flex h-14 w-full max-w-[1400px] min-w-0 items-center gap-3 rounded-full border px-5 shadow-[0_16px_44px_-34px_rgba(31,42,36,0.55)] transition focus-within:shadow-[0_18px_48px_-32px_rgba(47,111,99,0.35)]">
-      <FaSearch aria-hidden="true" className="text-store-accent size-4" />
-      <span className="sr-only">{t('searchLabel')}</span>
-      <input
-        className="placeholder:text-store-muted/75 text-store-ink h-full min-w-0 flex-1 bg-transparent text-base outline-none"
-        placeholder={t('searchPlaceholder')}
-        type="search"
-      />
-    </label>
   )
 }
