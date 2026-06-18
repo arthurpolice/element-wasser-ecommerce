@@ -40,6 +40,10 @@ _Avoid_: Basket
 A customer commitment to buy one or more products at recorded purchase terms. Cancellations apply to whole orders, and customer contact details are stored as order snapshots.
 _Avoid_: Purchase, transaction
 
+**Order Origin**:
+The channel where an Order was created: storefront checkout or the owner dashboard. Order Origin determines which automatic customer communications and payment workflows apply.
+_Avoid_: Order source, creator
+
 **Order Lifecycle Status**:
 Whether the order as a whole is open, cancelled, or closed. This is distinct from payment outcome and fulfillment progress.
 _Avoid_: Order Status, state
@@ -47,6 +51,38 @@ _Avoid_: Order Status, state
 **Order Confirmation**:
 The customer-facing page for one placed order after checkout, showing the order summary and current payment outcome.
 _Avoid_: Receipt, thank-you page
+
+**Order Access Link**:
+A secure, expiring link that gives a Guest Customer access to one Order Confirmation without signing in. It grants access only to the referenced Order.
+_Avoid_: Guest token, permanent order link
+
+**Order Placed Email**:
+A transactional email confirming that an Order was placed, while making no claim that its Payment succeeded. It gives the Customer a way to return to the Order Confirmation.
+_Avoid_: Order Confirmation Email, payment receipt
+
+**Payment Confirmation Email**:
+A transactional email confirming that an Order's Payment succeeded.
+_Avoid_: Order Placed Email, receipt
+
+**New Paid Order Email**:
+An internal merchant notification sent once when an Order first becomes paid.
+_Avoid_: Payment Confirmation Email, new Order email
+
+**Payment Failed Email**:
+A transactional email informing the Customer that a Payment attempt failed and, while the Order remains open, directing them to retry payment.
+_Avoid_: Order Failed Email
+
+**Order Cancelled Email**:
+A transactional email informing the Customer that the merchant explicitly cancelled the whole Order. Automatic Stock Reservation Expiry does not create this communication.
+_Avoid_: Payment Cancelled Email
+
+**Order Dispatched Email**:
+A transactional email informing the Customer that the merchant handed the Order to the carrier. It does not claim that the Order was delivered.
+_Avoid_: Order Fulfilled Email, Delivery Confirmation Email
+
+**Email Notification**:
+A single transactional communication owed to a Customer because a meaningful Order, Payment, or Fulfillment outcome occurred. Each Email Notification has one purpose and must not be delivered more than once.
+_Avoid_: User email, marketing email
 
 **Order Line**:
 One product entry inside an order, including purchase-time quantity, price, and cost.
@@ -65,8 +101,20 @@ The process of completing an order after it is placed.
 _Avoid_: Delivery
 
 **Fulfillment Status**:
-Whether the merchant's operational completion of an order is unfulfilled, fulfilled, or cancelled.
+Whether the merchant's operational handling of an order is unfulfilled, dispatched, fulfilled, or cancelled. An Order must be dispatched before it can be marked fulfilled.
 _Avoid_: Delivery status, Order Lifecycle Status
+
+**Dispatch**:
+The point when the merchant hands an Order to the carrier. Dispatch does not mean the Order was delivered.
+_Avoid_: Fulfillment, delivery
+
+**Carrier**:
+The delivery service that receives a dispatched Order from the merchant. Schweizerische Post is the only supported Carrier in the first version.
+_Avoid_: Shipping method, fulfillment provider
+
+**Fulfillment Completion**:
+The merchant's manual confirmation that operational work for a dispatched Order is complete. It does not create a Customer email.
+_Avoid_: Dispatch, automatic delivery confirmation
 
 **Address Book Entry**:
 A reusable registered-customer address selected or created during checkout and copied into the order.

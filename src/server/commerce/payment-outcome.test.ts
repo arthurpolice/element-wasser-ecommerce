@@ -170,6 +170,29 @@ describe('handleStripeWebhookEvent', () => {
     expect('product' in db).toBe(false)
   })
 
+  it('ignores an expired Checkout Session when the Payment was already captured', async () => {
+    const db = createMockDb(
+      createPayment({
+        status: 'CAPTURED',
+        providerReference: 'pi_test_123',
+        order: { id: 'order-1', paymentStatus: 'PAID' }
+      })
+    )
+
+    await handleStripeWebhookEvent(
+      db as never,
+      createEvent('checkout.session.expired', {
+        id: 'cs_test_123',
+        metadata: {
+          paymentId: 'payment-1'
+        }
+      })
+    )
+
+    expect(db.payment.update).not.toHaveBeenCalled()
+    expect(db.order.update).not.toHaveBeenCalled()
+  })
+
   it('marks a failed PaymentIntent failed while keeping retry represented by failed Order Payment Status', async () => {
     const db = createMockDb()
 
@@ -199,6 +222,32 @@ describe('handleStripeWebhookEvent', () => {
       where: { id: 'order-1' },
       data: { paymentStatus: 'FAILED' }
     })
+  })
+
+  it('ignores a failed PaymentIntent when the Payment was already captured', async () => {
+    const db = createMockDb(
+      createPayment({
+        status: 'CAPTURED',
+        providerReference: 'pi_test_123',
+        order: { id: 'order-1', paymentStatus: 'PAID' }
+      })
+    )
+
+    await handleStripeWebhookEvent(
+      db as never,
+      createEvent('payment_intent.payment_failed', {
+        id: 'pi_test_123',
+        metadata: {
+          paymentId: 'payment-1'
+        },
+        last_payment_error: {
+          message: 'Card declined.'
+        }
+      })
+    )
+
+    expect(db.payment.update).not.toHaveBeenCalled()
+    expect(db.order.update).not.toHaveBeenCalled()
   })
 
   it('ignores unrelated Stripe events', async () => {
