@@ -1,7 +1,7 @@
 'use client'
 
 import { useFormatter, useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   FaCheckCircle,
   FaClock,
@@ -13,6 +13,7 @@ import {
 
 import { Link } from '~/i18n/navigation'
 import { formatPriceCents } from '~/lib/format-catalog'
+import { getSwissPostTrackingUrl } from '~/lib/order-tracking'
 import { api, type RouterOutputs } from '~/trpc/react'
 
 type OrderConfirmation = RouterOutputs['checkout']['orderConfirmation']
@@ -74,6 +75,37 @@ export function CheckoutConfirmationClient({
       window.location.assign(result.checkoutUrl)
     }
   })
+  const reconcilePayment = api.checkout.reconcilePayment.useMutation({
+    onSuccess: async () => {
+      await orderQuery.refetch()
+    }
+  })
+
+  useEffect(() => {
+    if (
+      stripeResult !== 'success' ||
+      orderQuery.data?.paymentStatus !== 'PENDING'
+    ) {
+      return
+    }
+
+    const interval = window.setInterval(() => {
+      if (!reconcilePayment.isPending) {
+        reconcilePayment.mutate({
+          orderNumber: orderNumber ?? '',
+          accessToken: orderAccessToken ?? undefined
+        })
+      }
+    }, 30000)
+
+    return () => window.clearInterval(interval)
+  }, [
+    orderAccessToken,
+    orderNumber,
+    orderQuery.data?.paymentStatus,
+    reconcilePayment,
+    stripeResult
+  ])
 
   if (!orderNumber) {
     return (
@@ -112,6 +144,7 @@ export function CheckoutConfirmationClient({
   }
 
   const order = orderQuery.data
+  const trackingUrl = getSwissPostTrackingUrl(order.trackingNumber)
   const tone = paymentTone(order.paymentStatus)
   const canShowRetryPayment =
     order.canRetryPayment && stripeResult !== 'success'
@@ -155,6 +188,29 @@ export function CheckoutConfirmationClient({
               status: tFulfillmentStatus(order.fulfillmentStatus)
             })}
           </p>
+          {order.dispatchedAt ? (
+            <div className="border-store-border bg-store-paper mt-6 border-l-2 px-4 py-4">
+              <p className="text-store-ink font-semibold">
+                {t('dispatchedWithSwissPost')}
+              </p>
+              <p className="text-store-muted mt-1 text-sm">
+                {format.dateTime(order.dispatchedAt, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short'
+                })}
+              </p>
+              {trackingUrl ? (
+                <a
+                  className="text-store-accent mt-3 inline-flex text-sm font-semibold underline underline-offset-4"
+                  href={trackingUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  {t('trackShipment')}
+                </a>
+              ) : null}
+            </div>
+          ) : null}
           {canShowRetryPayment ? (
             <PaymentRetryPanel
               disabled={retryPayment.isPending}
@@ -193,8 +249,6 @@ export function CheckoutConfirmationClient({
               </div>
             ))}
           </div>
-
-          <PaymentHistory payments={order.payments} />
         </div>
 
         <aside className="text-sm">
@@ -311,58 +365,6 @@ function RetryMethodButton({
       {icon}
       {label}
     </button>
-  )
-}
-
-function PaymentHistory({
-  payments
-}: {
-  payments: OrderConfirmation['payments']
-}) {
-  const t = useTranslations('Storefront.checkoutConfirmation')
-  const tPaymentStatus = useTranslations('PaymentStatus')
-  const locale = useLocale()
-  const format = useFormatter()
-
-  if (payments.length === 0) {
-    return null
-  }
-
-  return (
-    <div className="mt-8">
-      <h2 className="text-store-ink text-sm font-semibold">
-        {t('paymentHistory')}
-      </h2>
-      <div className="border-store-border mt-3 divide-y border-y">
-        {payments.map((payment) => (
-          <div
-            className="grid gap-2 py-4 text-sm sm:grid-cols-[minmax(0,1fr)_8rem]"
-            key={payment.id}
-          >
-            <div>
-              <p className="text-store-ink font-semibold">
-                {t('paymentAttempt', {
-                  method: t(`paymentMethods.${payment.paymentMethod}`),
-                  status: tPaymentStatus(payment.status)
-                })}
-              </p>
-              <p className="text-store-muted mt-1">
-                {format.dateTime(payment.createdAt, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short'
-                })}
-              </p>
-              {payment.failureReason ? (
-                <p className="mt-2 text-red-700">{payment.failureReason}</p>
-              ) : null}
-            </div>
-            <p className="text-store-ink font-semibold sm:text-right">
-              {formatPriceCents(payment.amountCents, locale)}
-            </p>
-          </div>
-        ))}
-      </div>
-    </div>
   )
 }
 

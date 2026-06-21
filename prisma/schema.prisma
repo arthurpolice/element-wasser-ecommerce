@@ -12,7 +12,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -116,8 +115,13 @@ enum OrderPaymentStatus {
 
 enum FulfillmentStatus {
   UNFULFILLED
+  DISPATCHED
   FULFILLED
   CANCELLED
+}
+
+enum ShippingCarrier {
+  SWISS_POST
 }
 
 enum PaymentType {
@@ -127,7 +131,6 @@ enum PaymentType {
 
 enum PaymentStatus {
   PENDING
-  AUTHORIZED
   CAPTURED
   FAILED
   CANCELLED
@@ -296,58 +299,108 @@ model ProductSkuSequence {
   updatedAt  DateTime @updatedAt
 }
 
+enum OrderOrigin {
+  STOREFRONT
+  OWNER_DASHBOARD
+}
+
+enum EmailNotificationType {
+  ORDER_PLACED
+  ORDER_PAYMENT_CONFIRMED
+  NEW_PAID_ORDER
+  ORDER_CANCELLED
+  ORDER_DISPATCHED
+}
+
+enum EmailNotificationStatus {
+  PENDING
+  SENT
+}
+
 model Order {
-  id                    String             @id @default(cuid())
-  orderNumber           String             @unique
-  customerId            String
-  customer              Customer           @relation(fields: [customerId], references: [id], onDelete: Restrict)
-  customerSalutation    Salutation?
-  customerFirstName     String
-  customerLastName      String
-  customerEmail         String
-  status                OrderStatus        @default(PLACED)
-  paymentStatus         OrderPaymentStatus @default(PENDING)
-  fulfillmentStatus     FulfillmentStatus  @default(UNFULFILLED)
-  guestAccessTokenHash  String?            @unique
-  paymentExpiresAt      DateTime?
-  subtotalCents         Int
-  shippingCents         Int
-  discountCents         Int                @default(0)
-  totalCents            Int
-  currencyCode          String             @default("CHF")
-  shippingSalutation    Salutation?
-  shippingFirstName     String
-  shippingLastName      String
-  shippingCompany       String?
-  shippingStreetLine1   String
-  shippingStreetLine2   String?
-  shippingPostalCode    String
-  shippingCity          String
-  shippingCountryCode   String
-  shippingPhone         String?
-  billingSameAsShipping Boolean            @default(true)
-  billingSalutation     Salutation?
-  billingFirstName      String
-  billingLastName       String
-  billingCompany        String?
-  billingStreetLine1    String
-  billingStreetLine2    String?
-  billingPostalCode     String
-  billingCity           String
-  billingCountryCode    String
-  billingPhone          String?
-  placedAt              DateTime           @default(now())
-  completedAt           DateTime?
-  cancelledAt           DateTime?
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
-  lines                 OrderLine[]
-  payments              Payment[]
+  id                            String              @id @default(cuid())
+  orderNumber                   String              @unique
+  customerId                    String
+  customer                      Customer            @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  customerSalutation            Salutation?
+  customerFirstName             String
+  customerLastName              String
+  customerEmail                 String
+  status                        OrderStatus         @default(PLACED)
+  paymentStatus                 OrderPaymentStatus  @default(PENDING)
+  fulfillmentStatus             FulfillmentStatus   @default(UNFULFILLED)
+  origin                        OrderOrigin         @default(OWNER_DASHBOARD)
+  dispatchCarrier               ShippingCarrier?
+  trackingNumber                String?
+  dispatchedAt                  DateTime?
+  paymentExpiresAt              DateTime?
+  paymentExpiryStartedAt        DateTime?
+  checkoutSubmissionId          String?             @unique
+  checkoutSubmissionFingerprint String?
+  paymentExceptionAt            DateTime?
+  paymentExceptionReason        String?
+  subtotalCents                 Int
+  shippingCents                 Int
+  discountCents                 Int                 @default(0)
+  totalCents                    Int
+  currencyCode                  String              @default("CHF")
+  shippingSalutation            Salutation?
+  shippingFirstName             String
+  shippingLastName              String
+  shippingCompany               String?
+  shippingStreetLine1           String
+  shippingStreetLine2           String?
+  shippingPostalCode            String
+  shippingCity                  String
+  shippingCountryCode           String
+  shippingPhone                 String?
+  billingSameAsShipping         Boolean             @default(true)
+  billingSalutation             Salutation?
+  billingFirstName              String
+  billingLastName               String
+  billingCompany                String?
+  billingStreetLine1            String
+  billingStreetLine2            String?
+  billingPostalCode             String
+  billingCity                   String
+  billingCountryCode            String
+  billingPhone                  String?
+  placedAt                      DateTime            @default(now())
+  completedAt                   DateTime?
+  cancelledAt                   DateTime?
+  createdAt                     DateTime            @default(now())
+  updatedAt                     DateTime            @updatedAt
+  lines                         OrderLine[]
+  payments                      Payment[]
+  emailNotifications            EmailNotification[]
 
   @@index([customerId])
   @@index([customerEmail])
   @@index([status, paymentStatus, fulfillmentStatus])
   @@index([placedAt])
+}
+
+model EmailNotification {
+  id               String                  @id @default(cuid())
+  orderId          String
+  order            Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentId        String?
+  payment          Payment?                @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  deduplicationKey String                  @unique
+  type             EmailNotificationType
+  status           EmailNotificationStatus @default(PENDING)
+  recipientEmail   String
+  accessExpiresAt  DateTime?
+  attemptCount     Int                     @default(0)
+  lastAttemptAt    DateTime?
+  lastError        String?
+  providerId       String?
+  sentAt           DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@index([paymentId])
+  @@index([status, createdAt])
 }
 
 model OrderLine {
@@ -374,20 +427,21 @@ model OrderLine {
 }
 
 model Payment {
-  id                      String          @id @default(cuid())
+  id                      String              @id @default(cuid())
   orderId                 String
-  order                   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order                   Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
   type                    PaymentType
-  status                  PaymentStatus   @default(PENDING)
+  status                  PaymentStatus       @default(PENDING)
   provider                PaymentProvider
   paymentMethod           PaymentMethod
   amountCents             Int
-  currencyCode            String          @default("CHF")
+  currencyCode            String              @default("CHF")
   providerReference       String?
   stripeCheckoutSessionId String?
   failureReason           String?
-  createdAt               DateTime        @default(now())
-  updatedAt               DateTime        @updatedAt
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+  emailNotifications      EmailNotification[]
 
   @@index([orderId])
   @@index([provider, providerReference])

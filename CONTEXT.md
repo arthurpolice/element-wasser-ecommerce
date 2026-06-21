@@ -32,6 +32,10 @@ _Avoid_: Account setup, profile completion
 The customer-facing step where a customer provides or selects the information needed to place an order. Checkout supports both guest customers and registered customers; only registered customers use address book entries during checkout.
 _Avoid_: Kasse
 
+**Checkout Submission**:
+One Customer confirmation to place an Order from Checkout. Repeating the same submission because of a timeout or network retry must resolve to the same Order and Active Payment Attempt.
+_Avoid_: Checkout request, form submit
+
 **Cart**:
 A customer's pre-checkout selection of products and quantities intended to become one order.
 _Avoid_: Basket
@@ -83,6 +87,10 @@ _Avoid_: Order Fulfilled Email, Delivery Confirmation Email
 **Email Notification**:
 A single transactional communication owed to a Customer because a meaningful Order, Payment, or Fulfillment outcome occurred. Each Email Notification has one purpose and must not be delivered more than once.
 _Avoid_: User email, marketing email
+
+**Payment-scoped Email Notification**:
+An Email Notification owed because of one specific Payment outcome. Its identity includes the Payment so separate attempts for the same Order can each create their own communication.
+_Avoid_: Order payment email
 
 **Order Line**:
 One product entry inside an order, including purchase-time quantity, price, and cost.
@@ -185,8 +193,12 @@ A commitment of stock to a placed order while payment or fulfillment is still pe
 _Avoid_: Cart hold, lock
 
 **Stock Reservation Expiry**:
-The point at which an unpaid placed order should stop holding stock for the customer. Expiry cancels the whole order and releases its stock reservation when payment has not succeeded in time.
+The end of an Order's Payment Window, when an unpaid placed Order stops accepting payment and holding stock for the Customer. Expiry cancels the whole Order and releases its Stock Reservation only if Payment has not already succeeded.
 _Avoid_: Cleanup, timeout job
+
+**Payment Window**:
+The period during which the Customer can complete Payment through the Active Payment Attempt while the Order's Stock Reservation remains held. It begins when the Payment Provider creates the payable session.
+_Avoid_: Checkout timeout, Session lifetime
 
 **Product Image**:
 An optional image attached to a product for catalog presentation.
@@ -232,6 +244,26 @@ _Avoid_: Coupon
 A payment attempt or money movement associated with an order. Checkout creates a pending payment for the selected payment method when the order is placed.
 _Avoid_: Transaction
 
+**Active Payment Attempt**:
+The one Payment attempt for an Order that can still succeed. A pending or authorized Payment is active; failed, cancelled, captured, and refunded Payments are historical outcomes.
+_Avoid_: Current Payment, editable Payment
+
+**Payment Attempt Replacement**:
+Ending an Active Payment Attempt and starting a new one for the same Order, either with a different Payment Method or a fresh attempt using the same method.
+_Avoid_: Edit Payment, change Payment
+
+**Payment Retry**:
+The Customer-facing action for continuing Payment on an open unpaid Order. A retry may resume Payment after failure or replace an Active Payment Attempt, but those implementation details are not exposed to the Customer.
+_Avoid_: New Payment, Payment Attempt Replacement
+
+**Payment History**:
+The operational record of Payment attempts and money movements for an Order, available to the merchant for support and reconciliation. Customers see the Order Payment Status rather than attempt-level history.
+_Avoid_: Customer payment timeline
+
+**Payment Exception**:
+A confirmed Payment outcome that conflicts with the Order's lifecycle or Stock Reservation outcome and requires merchant intervention, such as Payment captured after Order cancellation. The money outcome remains recorded without automatically reopening the Order.
+_Avoid_: Payment error, failed Payment
+
 **Payment Provider**:
 The external processor for a payment. Stripe is the provider for both card and TWINT payments.
 _Avoid_: Payment method, gateway
@@ -241,5 +273,5 @@ The customer's checkout choice for how they intend to pay, such as card or TWINT
 _Avoid_: Payment provider
 
 **Order Payment Status**:
-Whether an order has been paid, is awaiting payment, has only failed payment attempts, has been refunded, or can no longer be paid. A failed payment status does not by itself prevent retry while the order remains open and unexpired.
+The summary of an Order's Payment outcomes and whether it can still accept Payment. Successful Payment takes precedence over active, failed, and cancelled attempts; a failed status remains retryable while the Payment Window is open.
 _Avoid_: Payment state

@@ -1,9 +1,5 @@
-import type {
-  OrderPaymentStatus,
-  OrderStatus,
-  Prisma,
-  PrismaClient
-} from '../../../generated/prisma'
+import type { Prisma, PrismaClient } from '../../../generated/prisma'
+import { createHash } from 'node:crypto'
 
 import {
   buildPendingPayment,
@@ -15,13 +11,22 @@ import {
 } from '~/server/commerce/order-placement'
 import {
   createOrderAccessToken,
-  hashOrderAccessToken
+  getOrderAccessExpiry,
+  verifyOrderAccessToken
 } from '~/server/commerce/order-access-token'
-import { startStripeCheckout } from '~/server/payments/stripe-checkout'
+import { publishEmailNotificationSafely } from '~/server/commerce/email-notifications'
+import { orderEmailNotificationKey } from '~/server/commerce/email-notification-key'
+import { projectOrderPaymentStatus } from '~/server/commerce/payment-outcome'
+import {
+  expireStripeCheckoutSession,
+  retrieveStripeCheckoutSession,
+  startStripeCheckout
+} from '~/server/payments/stripe-checkout'
+import { isPrismaErrorCode } from '~/server/prisma-errors'
 
 type CheckoutPaymentDb = Pick<
   PrismaClient,
-  '$transaction' | 'customer' | 'order' | 'payment'
+  '$transaction' | 'customer' | 'order' | 'payment' | 'emailNotification'
 >
 
 type CheckoutPaymentLocale = 'de' | 'en'
@@ -47,6 +52,7 @@ export type CheckoutPaymentErrorCode =
   | 'ORDER_NOT_FOUND'
   | 'ORDER_PAYMENT_NOT_RETRYABLE'
   | 'PENDING_PAYMENT_NOT_FOUND'
+  | 'CHECKOUT_SUBMISSION_CONFLICT'
 
 export class CheckoutPaymentError extends Error {
   constructor(
@@ -58,17 +64,73 @@ export class CheckoutPaymentError extends Error {
   }
 }
 
-function isRetryableOrder(order: {
-  status: OrderStatus
-  paymentStatus: OrderPaymentStatus
-  paymentExpiresAt: Date | null
-}) {
-  return (
-    order.status !== 'CANCELLED' &&
-    order.paymentStatus !== 'PAID' &&
-    order.paymentExpiresAt !== null &&
-    order.paymentExpiresAt.getTime() > Date.now()
-  )
+function checkoutSubmissionFingerprint(value: unknown) {
+  return createHash('sha256')
+    .update(JSON.stringify({ version: 1, value }))
+    .digest('hex')
+}
+
+function normalizedSubmissionInput(
+  input:
+    | Omit<
+        PlaceOrderInput,
+        'checkoutSubmissionId' | 'checkoutSubmissionFingerprint'
+      >
+    | Omit<
+        PlaceOrderInput,
+        'customerId' | 'checkoutSubmissionId' | 'checkoutSubmissionFingerprint'
+      >
+) {
+  return {
+    ...input,
+    lines: input.lines
+      ?.map((line) => ({ ...line }))
+      .sort((left, right) => left.productId.localeCompare(right.productId))
+  }
+}
+
+async function findSubmittedOrder(
+  db: Pick<PrismaClient, 'order'>,
+  checkoutSubmissionId: string,
+  fingerprint: string
+) {
+  const order = await db.order.findUnique({
+    where: { checkoutSubmissionId },
+    include: orderListInclude
+  })
+
+  if (order && order.checkoutSubmissionFingerprint !== fingerprint) {
+    throw new CheckoutPaymentError(
+      'CHECKOUT_SUBMISSION_CONFLICT',
+      'Checkout Submission was already used with different details.'
+    )
+  }
+
+  return order
+}
+
+async function placeSubmittedOrder(
+  db: CheckoutPaymentDb,
+  input: PlaceOrderInput,
+  checkoutSubmissionId: string,
+  fingerprint: string
+) {
+  try {
+    return await placeOrder(db, {
+      ...input,
+      checkoutSubmissionId,
+      checkoutSubmissionFingerprint: fingerprint
+    })
+  } catch (error) {
+    if (!isPrismaErrorCode(error, 'P2002')) throw error
+    const existing = await findSubmittedOrder(
+      db,
+      checkoutSubmissionId,
+      fingerprint
+    )
+    if (existing) return existing
+    throw error
+  }
 }
 
 async function startCheckoutForOrder({
@@ -77,7 +139,7 @@ async function startCheckoutForOrder({
   order,
   orderAccessToken
 }: {
-  db: Pick<PrismaClient, 'payment'>
+  db: Pick<PrismaClient, '$transaction' | 'payment' | 'emailNotification'>
   locale: CheckoutPaymentLocale
   order: OrderListRow
   orderAccessToken?: string
@@ -93,21 +155,68 @@ async function startCheckoutForOrder({
     )
   }
 
+  if (payment.stripeCheckoutSessionId) {
+    const existing = await retrieveStripeCheckoutSession(
+      payment.stripeCheckoutSessionId
+    )
+    if (existing.status === 'open' && existing.url) {
+      return { order, checkoutUrl: existing.url }
+    }
+  }
+
   const checkout = await startStripeCheckout({
     order,
     locale,
     orderAccessToken
   })
 
-  await db.payment.update({
-    where: { id: payment.id },
-    data: {
-      stripeCheckoutSessionId: checkout.sessionId,
-      ...(checkout.paymentIntentId
-        ? { providerReference: checkout.paymentIntentId }
-        : {})
-    }
-  })
+  const emailNotification = await db.$transaction(
+    async (tx) => {
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          stripeCheckoutSessionId: checkout.sessionId,
+          ...(checkout.paymentIntentId
+            ? { providerReference: checkout.paymentIntentId }
+            : {})
+        }
+      })
+      await tx.order.update({
+        where: { id: order.id },
+        data: { paymentExpiresAt: checkout.expiresAt }
+      })
+
+      if (order.origin !== 'STOREFRONT') return null
+
+      return tx.emailNotification.upsert({
+        where: {
+          deduplicationKey: orderEmailNotificationKey({
+            orderId: order.id,
+            type: 'ORDER_PLACED',
+            recipientEmail: order.customerEmail
+          })
+        },
+        create: {
+          deduplicationKey: orderEmailNotificationKey({
+            orderId: order.id,
+            type: 'ORDER_PLACED',
+            recipientEmail: order.customerEmail
+          }),
+          orderId: order.id,
+          type: 'ORDER_PLACED',
+          recipientEmail: order.customerEmail,
+          accessExpiresAt: order.customer?.userId
+            ? null
+            : getOrderAccessExpiry()
+        },
+        update: {}
+      })
+    },
+    { timeout: 10000 }
+  )
+
+  if (emailNotification)
+    void publishEmailNotificationSafely(emailNotification.id)
 
   return {
     order,
@@ -118,9 +227,30 @@ async function startCheckoutForOrder({
 export async function beginCheckoutPayment(
   db: CheckoutPaymentDb,
   input: PlaceOrderInput,
-  locale: CheckoutPaymentLocale
+  locale: CheckoutPaymentLocale,
+  checkoutSubmissionId: string
 ) {
-  const order = await placeOrder(db, input)
+  const normalized = normalizedSubmissionInput({
+    ...input,
+    origin: 'STOREFRONT'
+  }) as Omit<
+    PlaceOrderInput,
+    'checkoutSubmissionId' | 'checkoutSubmissionFingerprint'
+  >
+  const fingerprint = checkoutSubmissionFingerprint(normalized)
+  const existing = await findSubmittedOrder(
+    db,
+    checkoutSubmissionId,
+    fingerprint
+  )
+  const order =
+    existing ??
+    (await placeSubmittedOrder(
+      db,
+      normalized,
+      checkoutSubmissionId,
+      fingerprint
+    ))
 
   return startCheckoutForOrder({
     db,
@@ -135,27 +265,46 @@ export async function beginGuestCheckoutPayment(
     guestCustomer: GuestCustomerInput
     order: Omit<PlaceOrderInput, 'customerId'>
     locale: CheckoutPaymentLocale
+    checkoutSubmissionId: string
   }
 ) {
-  const orderAccessToken = createOrderAccessToken()
-  const guestAccessTokenHash = hashOrderAccessToken(orderAccessToken)
+  const normalized = normalizedSubmissionInput({
+    ...input.order,
+    origin: 'STOREFRONT'
+  })
+  const fingerprint = checkoutSubmissionFingerprint({
+    guestCustomer: input.guestCustomer,
+    order: normalized
+  })
+  const existing = await findSubmittedOrder(
+    db,
+    input.checkoutSubmissionId,
+    fingerprint
+  )
+  if (existing) {
+    return startCheckoutForOrder({
+      db,
+      order: existing,
+      locale: input.locale,
+      orderAccessToken: createOrderAccessToken(existing.id)
+    })
+  }
+
   const customer = await db.customer.create({
     data: input.guestCustomer,
     select: { id: true }
   })
-  const placedOrder = await placeOrder(db, {
-    ...input.order,
-    customerId: customer.id
-  })
-  const order = await db.order.update({
-    where: { id: placedOrder.id },
-    data: { guestAccessTokenHash },
-    include: orderListInclude
-  })
+  const placedOrder = await placeSubmittedOrder(
+    db,
+    { ...normalized, customerId: customer.id },
+    input.checkoutSubmissionId,
+    fingerprint
+  )
+  const orderAccessToken = createOrderAccessToken(placedOrder.id)
 
   return startCheckoutForOrder({
     db,
-    order,
+    order: placedOrder,
     locale: input.locale,
     orderAccessToken
   })
@@ -170,8 +319,9 @@ export async function retryCheckoutPayment(
     locale: CheckoutPaymentLocale
   }
 ) {
-  const accessTokenHash = input.access.accessToken
-    ? hashOrderAccessToken(input.access.accessToken)
+  const now = new Date(Date.now())
+  const access = input.access.accessToken
+    ? verifyOrderAccessToken(input.access.accessToken)
     : null
   const orderWhere: Prisma.OrderWhereInput = {
     orderNumber: input.orderNumber,
@@ -179,37 +329,131 @@ export async function retryCheckoutPayment(
       ...(input.access.customerId
         ? [{ customerId: input.access.customerId }]
         : []),
-      ...(accessTokenHash ? [{ guestAccessTokenHash: accessTokenHash }] : [])
+      ...(access ? [{ id: access.orderId }] : [])
     ]
   }
 
+  const existingOrder = await db.order.findFirst({
+    where: orderWhere,
+    include: orderListInclude
+  })
+
+  if (!existingOrder) {
+    throw new CheckoutPaymentError('ORDER_NOT_FOUND', 'Order not found.')
+  }
+  if (
+    existingOrder.status === 'CANCELLED' ||
+    existingOrder.paymentExpiresAt === null ||
+    existingOrder.paymentExpiresAt.getTime() <= now.getTime() ||
+    existingOrder.paymentExpiryStartedAt
+  ) {
+    throw new CheckoutPaymentError(
+      'ORDER_PAYMENT_NOT_RETRYABLE',
+      'Order payment can no longer be retried.'
+    )
+  }
+
+  const activePayment = existingOrder.payments.find(
+    (payment) => payment.status === 'PENDING'
+  )
+  if (
+    activePayment?.paymentMethod === input.paymentMethod &&
+    !activePayment.stripeCheckoutSessionId
+  ) {
+    return startCheckoutForOrder({
+      db,
+      order: existingOrder,
+      locale: input.locale,
+      orderAccessToken: input.access.accessToken
+    })
+  }
+  if (
+    activePayment?.paymentMethod === input.paymentMethod &&
+    activePayment.stripeCheckoutSessionId
+  ) {
+    const session = await retrieveStripeCheckoutSession(
+      activePayment.stripeCheckoutSessionId
+    )
+    if (session.payment_status === 'paid') {
+      throw new CheckoutPaymentError(
+        'ORDER_PAYMENT_NOT_RETRYABLE',
+        'Payment has already succeeded.'
+      )
+    }
+    if (session.status === 'open' && session.url) {
+      return { order: existingOrder, checkoutUrl: session.url }
+    }
+  }
+
+  if (activePayment?.stripeCheckoutSessionId) {
+    const session = await retrieveStripeCheckoutSession(
+      activePayment.stripeCheckoutSessionId
+    )
+    if (session.payment_status === 'paid' || session.status === 'complete') {
+      throw new CheckoutPaymentError(
+        'ORDER_PAYMENT_NOT_RETRYABLE',
+        'Payment is already completing.'
+      )
+    }
+    if (session.status === 'open') {
+      await expireStripeCheckoutSession(activePayment.stripeCheckoutSessionId)
+    }
+  }
+
   const order = await db.$transaction(async (tx) => {
-    const existingOrder = await tx.order.findFirst({
+    await tx.$queryRaw`
+      SELECT "id" FROM "Order"
+      WHERE "id" = ${existingOrder.id}
+      FOR UPDATE
+    `
+    const lockedOrder = await tx.order.findFirst({
       where: orderWhere,
       include: orderListInclude
     })
 
-    if (!existingOrder) {
+    if (!lockedOrder) {
       throw new CheckoutPaymentError('ORDER_NOT_FOUND', 'Order not found.')
     }
 
-    if (!isRetryableOrder(existingOrder)) {
+    if (
+      lockedOrder.status === 'CANCELLED' ||
+      lockedOrder.paymentStatus === 'PAID' ||
+      lockedOrder.paymentExpiryStartedAt ||
+      !lockedOrder.paymentExpiresAt ||
+      lockedOrder.paymentExpiresAt.getTime() <= now.getTime()
+    ) {
       throw new CheckoutPaymentError(
         'ORDER_PAYMENT_NOT_RETRYABLE',
         'Order payment can no longer be retried.'
       )
     }
 
+    const lockedActivePayment = lockedOrder.payments.find(
+      (payment) => payment.status === 'PENDING'
+    )
+    if (lockedActivePayment && !lockedActivePayment.stripeCheckoutSessionId) {
+      throw new CheckoutPaymentError(
+        'ORDER_PAYMENT_NOT_RETRYABLE',
+        'A Payment attempt is already being started.'
+      )
+    }
+
+    await tx.payment.updateMany({
+      where: { orderId: lockedOrder.id, status: 'PENDING' },
+      data: { status: 'CANCELLED', failureReason: 'Payment attempt replaced.' }
+    })
+
     await tx.payment.create({
       data: {
         orderId: existingOrder.id,
-        ...buildPendingPayment(input.paymentMethod, existingOrder.totalCents)
+        ...buildPendingPayment(input.paymentMethod, lockedOrder.totalCents)
       }
     })
 
+    await projectOrderPaymentStatus(tx, lockedOrder.id, now)
     return tx.order.update({
-      where: { id: existingOrder.id },
-      data: { paymentStatus: 'PENDING' },
+      where: { id: lockedOrder.id },
+      data: {},
       include: orderListInclude
     })
   })

@@ -24,6 +24,7 @@ import {
   type CreateCustomerFormValues,
 } from "~/lib/form-schemas";
 import { api } from "~/trpc/react";
+import { getSwissPostTrackingUrl } from "~/lib/order-tracking";
 
 type AddressFormValues = CreateCustomerFormValues & {
   company: string;
@@ -441,6 +442,7 @@ function AddressBookEntryRow({
 function CustomerOrderDetails({ order }: { order: CustomerOrder }) {
   const t = useTranslations("CustomerArea");
   const format = useFormatter();
+  const trackingUrl = getSwissPostTrackingUrl(order.trackingNumber);
 
   return (
     <details className="py-4">
@@ -467,6 +469,29 @@ function CustomerOrderDetails({ order }: { order: CustomerOrder }) {
         <p>
           {order.status} · {order.paymentStatus} · {order.fulfillmentStatus}
         </p>
+        {order.dispatchedAt ? (
+          <div className="border-store-border bg-store-paper border-l-2 px-4 py-3">
+            <p className="text-store-ink font-semibold">
+              {t("orders.dispatchedWithSwissPost")}
+            </p>
+            <p>
+              {format.dateTime(order.dispatchedAt, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </p>
+            {trackingUrl ? (
+              <a
+                className="text-store-accent mt-2 inline-flex font-semibold underline underline-offset-4"
+                href={trackingUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {t("orders.trackShipment")}
+              </a>
+            ) : null}
+          </div>
+        ) : null}
         {order.lines.map((line) => (
           <CustomerOrderLineRow
             key={line.id}

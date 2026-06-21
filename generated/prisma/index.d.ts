@@ -3,7 +3,7 @@
  * Client
 **/
 
-import * as runtime from './runtime/library.js';
+import * as runtime from './runtime/client.js';
 import $Types = runtime.Types // general types
 import $Public = runtime.Types.Public
 import $Utils = runtime.Types.Utils
@@ -94,6 +94,11 @@ export type ProductSkuSequence = $Result.DefaultSelection<Prisma.$ProductSkuSequ
  */
 export type Order = $Result.DefaultSelection<Prisma.$OrderPayload>
 /**
+ * Model EmailNotification
+ * 
+ */
+export type EmailNotification = $Result.DefaultSelection<Prisma.$EmailNotificationPayload>
+/**
  * Model OrderLine
  * 
  */
@@ -156,11 +161,19 @@ export type OrderPaymentStatus = (typeof OrderPaymentStatus)[keyof typeof OrderP
 
 export const FulfillmentStatus: {
   UNFULFILLED: 'UNFULFILLED',
+  DISPATCHED: 'DISPATCHED',
   FULFILLED: 'FULFILLED',
   CANCELLED: 'CANCELLED'
 };
 
 export type FulfillmentStatus = (typeof FulfillmentStatus)[keyof typeof FulfillmentStatus]
+
+
+export const ShippingCarrier: {
+  SWISS_POST: 'SWISS_POST'
+};
+
+export type ShippingCarrier = (typeof ShippingCarrier)[keyof typeof ShippingCarrier]
 
 
 export const PaymentType: {
@@ -173,7 +186,6 @@ export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
 
 export const PaymentStatus: {
   PENDING: 'PENDING',
-  AUTHORIZED: 'AUTHORIZED',
   CAPTURED: 'CAPTURED',
   FAILED: 'FAILED',
   CANCELLED: 'CANCELLED',
@@ -206,6 +218,33 @@ export const ReviewStatus: {
 
 export type ReviewStatus = (typeof ReviewStatus)[keyof typeof ReviewStatus]
 
+
+export const OrderOrigin: {
+  STOREFRONT: 'STOREFRONT',
+  OWNER_DASHBOARD: 'OWNER_DASHBOARD'
+};
+
+export type OrderOrigin = (typeof OrderOrigin)[keyof typeof OrderOrigin]
+
+
+export const EmailNotificationType: {
+  ORDER_PLACED: 'ORDER_PLACED',
+  ORDER_PAYMENT_CONFIRMED: 'ORDER_PAYMENT_CONFIRMED',
+  NEW_PAID_ORDER: 'NEW_PAID_ORDER',
+  ORDER_CANCELLED: 'ORDER_CANCELLED',
+  ORDER_DISPATCHED: 'ORDER_DISPATCHED'
+};
+
+export type EmailNotificationType = (typeof EmailNotificationType)[keyof typeof EmailNotificationType]
+
+
+export const EmailNotificationStatus: {
+  PENDING: 'PENDING',
+  SENT: 'SENT'
+};
+
+export type EmailNotificationStatus = (typeof EmailNotificationStatus)[keyof typeof EmailNotificationStatus]
+
 }
 
 export type UserRole = $Enums.UserRole
@@ -228,6 +267,10 @@ export type FulfillmentStatus = $Enums.FulfillmentStatus
 
 export const FulfillmentStatus: typeof $Enums.FulfillmentStatus
 
+export type ShippingCarrier = $Enums.ShippingCarrier
+
+export const ShippingCarrier: typeof $Enums.ShippingCarrier
+
 export type PaymentType = $Enums.PaymentType
 
 export const PaymentType: typeof $Enums.PaymentType
@@ -248,19 +291,33 @@ export type ReviewStatus = $Enums.ReviewStatus
 
 export const ReviewStatus: typeof $Enums.ReviewStatus
 
+export type OrderOrigin = $Enums.OrderOrigin
+
+export const OrderOrigin: typeof $Enums.OrderOrigin
+
+export type EmailNotificationType = $Enums.EmailNotificationType
+
+export const EmailNotificationType: typeof $Enums.EmailNotificationType
+
+export type EmailNotificationStatus = $Enums.EmailNotificationStatus
+
+export const EmailNotificationStatus: typeof $Enums.EmailNotificationStatus
+
 /**
  * ##  Prisma Client ʲˢ
  *
  * Type-safe database client for TypeScript & Node.js
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Posts
  * const posts = await prisma.post.findMany()
  * ```
  *
  *
- * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+ * Read more in our [docs](https://pris.ly/d/client).
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
@@ -275,13 +332,15 @@ export class PrismaClient<
    * Type-safe database client for TypeScript & Node.js
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Posts
    * const posts = await prisma.post.findMany()
    * ```
    *
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client).
+   * Read more in our [docs](https://pris.ly/d/client).
    */
 
   constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
@@ -304,7 +363,7 @@ export class PrismaClient<
    * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -316,7 +375,7 @@ export class PrismaClient<
    * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
 
@@ -327,7 +386,7 @@ export class PrismaClient<
    * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
 
@@ -339,7 +398,7 @@ export class PrismaClient<
    * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
    * ```
    *
-   * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/raw-database-access).
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
   $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
 
@@ -355,12 +414,11 @@ export class PrismaClient<
    * ])
    * ```
    * 
-   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
   $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
-
 
   $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb<ClientOptions>, ExtArgs, $Utils.Call<Prisma.TypeMapCb<ClientOptions>, {
     extArgs: ExtArgs
@@ -527,6 +585,16 @@ export class PrismaClient<
   get order(): Prisma.OrderDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.emailNotification`: Exposes CRUD operations for the **EmailNotification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EmailNotifications
+    * const emailNotifications = await prisma.emailNotification.findMany()
+    * ```
+    */
+  get emailNotification(): Prisma.EmailNotificationDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.orderLine`: Exposes CRUD operations for the **OrderLine** model.
     * Example usage:
     * ```ts
@@ -605,14 +673,6 @@ export namespace Prisma {
   export type DecimalJsLike = runtime.DecimalJsLike
 
   /**
-   * Metrics
-   */
-  export type Metrics = runtime.Metrics
-  export type Metric<T> = runtime.Metric<T>
-  export type MetricHistogram = runtime.MetricHistogram
-  export type MetricHistogramBucket = runtime.MetricHistogramBucket
-
-  /**
   * Extensions
   */
   export import Extension = $Extensions.UserArgs
@@ -623,11 +683,12 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 6.19.3
-   * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
+   * Prisma Client JS version: 7.8.0
+   * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
    */
   export type PrismaVersion = {
     client: string
+    engine: string
   }
 
   export const prismaVersion: PrismaVersion
@@ -1022,6 +1083,7 @@ export namespace Prisma {
     OrderNumberSequence: 'OrderNumberSequence',
     ProductSkuSequence: 'ProductSkuSequence',
     Order: 'Order',
+    EmailNotification: 'EmailNotification',
     OrderLine: 'OrderLine',
     Payment: 'Payment',
     Review: 'Review',
@@ -1031,9 +1093,6 @@ export namespace Prisma {
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
 
 
-  export type Datasources = {
-    db?: Datasource
-  }
 
   interface TypeMapCb<ClientOptions = {}> extends $Utils.Fn<{extArgs: $Extensions.InternalArgs }, $Utils.Record<string, any>> {
     returns: Prisma.TypeMap<this['params']['extArgs'], ClientOptions extends { omit: infer OmitOptions } ? OmitOptions : {}>
@@ -1044,7 +1103,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "orderLine" | "payment" | "review" | "reviewInvite"
+      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "emailNotification" | "orderLine" | "payment" | "review" | "reviewInvite"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2216,6 +2275,80 @@ export namespace Prisma {
           }
         }
       }
+      EmailNotification: {
+        payload: Prisma.$EmailNotificationPayload<ExtArgs>
+        fields: Prisma.EmailNotificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EmailNotificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EmailNotificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>
+          }
+          findFirst: {
+            args: Prisma.EmailNotificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EmailNotificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>
+          }
+          findMany: {
+            args: Prisma.EmailNotificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>[]
+          }
+          create: {
+            args: Prisma.EmailNotificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>
+          }
+          createMany: {
+            args: Prisma.EmailNotificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.EmailNotificationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>[]
+          }
+          delete: {
+            args: Prisma.EmailNotificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>
+          }
+          update: {
+            args: Prisma.EmailNotificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.EmailNotificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EmailNotificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.EmailNotificationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>[]
+          }
+          upsert: {
+            args: Prisma.EmailNotificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailNotificationPayload>
+          }
+          aggregate: {
+            args: Prisma.EmailNotificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEmailNotification>
+          }
+          groupBy: {
+            args: Prisma.EmailNotificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EmailNotificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EmailNotificationCountArgs<ExtArgs>
+            result: $Utils.Optional<EmailNotificationCountAggregateOutputType> | number
+          }
+        }
+      }
       OrderLine: {
         payload: Prisma.$OrderLinePayload<ExtArgs>
         fields: Prisma.OrderLineFieldRefs
@@ -2541,14 +2674,6 @@ export namespace Prisma {
   export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
   export interface PrismaClientOptions {
     /**
-     * Overwrites the datasource url from your schema.prisma file
-     */
-    datasources?: Datasources
-    /**
-     * Overwrites the datasource url from your schema.prisma file
-     */
-    datasourceUrl?: string
-    /**
      * @default "colorless"
      */
     errorFormat?: ErrorFormat
@@ -2574,7 +2699,7 @@ export namespace Prisma {
      *  { emit: 'stdout', level: 'error' }
      * 
      * ```
-     * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
+     * Read more in our [docs](https://pris.ly/d/logging).
      */
     log?: (LogLevel | LogDefinition)[]
     /**
@@ -2590,7 +2715,11 @@ export namespace Prisma {
     /**
      * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-planetscale`
      */
-    adapter?: runtime.SqlDriverAdapterFactory | null
+    adapter?: runtime.SqlDriverAdapterFactory
+    /**
+     * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
+     */
+    accelerateUrl?: string
     /**
      * Global configuration for omitting model fields by default.
      * 
@@ -2606,6 +2735,22 @@ export namespace Prisma {
      * ```
      */
     omit?: Prisma.GlobalOmitConfig
+    /**
+     * SQL commenter plugins that add metadata to SQL queries as comments.
+     * Comments follow the sqlcommenter format: https://google.github.io/sqlcommenter/
+     * 
+     * @example
+     * ```
+     * const prisma = new PrismaClient({
+     *   adapter,
+     *   comments: [
+     *     traceContext(),
+     *     queryInsights(),
+     *   ],
+     * })
+     * ```
+     */
+    comments?: runtime.SqlCommenterPlugin[]
   }
   export type GlobalOmitConfig = {
     post?: PostOmit
@@ -2624,6 +2769,7 @@ export namespace Prisma {
     orderNumberSequence?: OrderNumberSequenceOmit
     productSkuSequence?: ProductSkuSequenceOmit
     order?: OrderOmit
+    emailNotification?: EmailNotificationOmit
     orderLine?: OrderLineOmit
     payment?: PaymentOmit
     review?: ReviewOmit
@@ -2937,11 +3083,13 @@ export namespace Prisma {
   export type OrderCountOutputType = {
     lines: number
     payments: number
+    emailNotifications: number
   }
 
   export type OrderCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     lines?: boolean | OrderCountOutputTypeCountLinesArgs
     payments?: boolean | OrderCountOutputTypeCountPaymentsArgs
+    emailNotifications?: boolean | OrderCountOutputTypeCountEmailNotificationsArgs
   }
 
   // Custom InputTypes
@@ -2967,6 +3115,44 @@ export namespace Prisma {
    */
   export type OrderCountOutputTypeCountPaymentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PaymentWhereInput
+  }
+
+  /**
+   * OrderCountOutputType without action
+   */
+  export type OrderCountOutputTypeCountEmailNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EmailNotificationWhereInput
+  }
+
+
+  /**
+   * Count Type PaymentCountOutputType
+   */
+
+  export type PaymentCountOutputType = {
+    emailNotifications: number
+  }
+
+  export type PaymentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    emailNotifications?: boolean | PaymentCountOutputTypeCountEmailNotificationsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PaymentCountOutputType without action
+   */
+  export type PaymentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentCountOutputType
+     */
+    select?: PaymentCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PaymentCountOutputType without action
+   */
+  export type PaymentCountOutputTypeCountEmailNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EmailNotificationWhereInput
   }
 
 
@@ -3814,6 +4000,11 @@ export namespace Prisma {
      * Skip the first `n` Posts.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Posts.
+     */
     distinct?: PostScalarFieldEnum | PostScalarFieldEnum[]
   }
 
@@ -4919,6 +5110,11 @@ export namespace Prisma {
      * Skip the first `n` Users.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Users.
+     */
     distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
   }
 
@@ -6099,6 +6295,11 @@ export namespace Prisma {
      * Skip the first `n` Sessions.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Sessions.
+     */
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[]
   }
 
@@ -7261,6 +7462,11 @@ export namespace Prisma {
      * Skip the first `n` Accounts.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Accounts.
+     */
     distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[]
   }
 
@@ -8297,6 +8503,11 @@ export namespace Prisma {
      * Skip the first `n` Verifications.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Verifications.
+     */
     distinct?: VerificationScalarFieldEnum | VerificationScalarFieldEnum[]
   }
 
@@ -9380,6 +9591,11 @@ export namespace Prisma {
      * Skip the first `n` Customers.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Customers.
+     */
     distinct?: CustomerScalarFieldEnum | CustomerScalarFieldEnum[]
   }
 
@@ -10659,6 +10875,11 @@ export namespace Prisma {
      * Skip the first `n` Addresses.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Addresses.
+     */
     distinct?: AddressScalarFieldEnum | AddressScalarFieldEnum[]
   }
 
@@ -11713,6 +11934,11 @@ export namespace Prisma {
      * Skip the first `n` Manufacturers.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Manufacturers.
+     */
     distinct?: ManufacturerScalarFieldEnum | ManufacturerScalarFieldEnum[]
   }
 
@@ -13019,6 +13245,11 @@ export namespace Prisma {
      * Skip the first `n` Products.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Products.
+     */
     distinct?: ProductScalarFieldEnum | ProductScalarFieldEnum[]
   }
 
@@ -14146,6 +14377,11 @@ export namespace Prisma {
      * Skip the first `n` ProductSearchDocuments.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSearchDocuments.
+     */
     distinct?: ProductSearchDocumentScalarFieldEnum | ProductSearchDocumentScalarFieldEnum[]
   }
 
@@ -15178,6 +15414,11 @@ export namespace Prisma {
      * Skip the first `n` ProductImages.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductImages.
+     */
     distinct?: ProductImageScalarFieldEnum | ProductImageScalarFieldEnum[]
   }
 
@@ -16319,6 +16560,11 @@ export namespace Prisma {
      * Skip the first `n` Categories.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Categories.
+     */
     distinct?: CategoryScalarFieldEnum | CategoryScalarFieldEnum[]
   }
 
@@ -17499,6 +17745,11 @@ export namespace Prisma {
      * Skip the first `n` ProductCategories.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductCategories.
+     */
     distinct?: ProductCategoryScalarFieldEnum | ProductCategoryScalarFieldEnum[]
   }
 
@@ -18534,6 +18785,11 @@ export namespace Prisma {
      * Skip the first `n` OrderNumberSequences.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OrderNumberSequences.
+     */
     distinct?: OrderNumberSequenceScalarFieldEnum | OrderNumberSequenceScalarFieldEnum[]
   }
 
@@ -19537,6 +19793,11 @@ export namespace Prisma {
      * Skip the first `n` ProductSkuSequences.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSkuSequences.
+     */
     distinct?: ProductSkuSequenceScalarFieldEnum | ProductSkuSequenceScalarFieldEnum[]
   }
 
@@ -19764,8 +20025,16 @@ export namespace Prisma {
     status: $Enums.OrderStatus | null
     paymentStatus: $Enums.OrderPaymentStatus | null
     fulfillmentStatus: $Enums.FulfillmentStatus | null
-    guestAccessTokenHash: string | null
+    origin: $Enums.OrderOrigin | null
+    dispatchCarrier: $Enums.ShippingCarrier | null
+    trackingNumber: string | null
+    dispatchedAt: Date | null
     paymentExpiresAt: Date | null
+    paymentExpiryStartedAt: Date | null
+    checkoutSubmissionId: string | null
+    checkoutSubmissionFingerprint: string | null
+    paymentExceptionAt: Date | null
+    paymentExceptionReason: string | null
     subtotalCents: number | null
     shippingCents: number | null
     discountCents: number | null
@@ -19810,8 +20079,16 @@ export namespace Prisma {
     status: $Enums.OrderStatus | null
     paymentStatus: $Enums.OrderPaymentStatus | null
     fulfillmentStatus: $Enums.FulfillmentStatus | null
-    guestAccessTokenHash: string | null
+    origin: $Enums.OrderOrigin | null
+    dispatchCarrier: $Enums.ShippingCarrier | null
+    trackingNumber: string | null
+    dispatchedAt: Date | null
     paymentExpiresAt: Date | null
+    paymentExpiryStartedAt: Date | null
+    checkoutSubmissionId: string | null
+    checkoutSubmissionFingerprint: string | null
+    paymentExceptionAt: Date | null
+    paymentExceptionReason: string | null
     subtotalCents: number | null
     shippingCents: number | null
     discountCents: number | null
@@ -19856,8 +20133,16 @@ export namespace Prisma {
     status: number
     paymentStatus: number
     fulfillmentStatus: number
-    guestAccessTokenHash: number
+    origin: number
+    dispatchCarrier: number
+    trackingNumber: number
+    dispatchedAt: number
     paymentExpiresAt: number
+    paymentExpiryStartedAt: number
+    checkoutSubmissionId: number
+    checkoutSubmissionFingerprint: number
+    paymentExceptionAt: number
+    paymentExceptionReason: number
     subtotalCents: number
     shippingCents: number
     discountCents: number
@@ -19918,8 +20203,16 @@ export namespace Prisma {
     status?: true
     paymentStatus?: true
     fulfillmentStatus?: true
-    guestAccessTokenHash?: true
+    origin?: true
+    dispatchCarrier?: true
+    trackingNumber?: true
+    dispatchedAt?: true
     paymentExpiresAt?: true
+    paymentExpiryStartedAt?: true
+    checkoutSubmissionId?: true
+    checkoutSubmissionFingerprint?: true
+    paymentExceptionAt?: true
+    paymentExceptionReason?: true
     subtotalCents?: true
     shippingCents?: true
     discountCents?: true
@@ -19964,8 +20257,16 @@ export namespace Prisma {
     status?: true
     paymentStatus?: true
     fulfillmentStatus?: true
-    guestAccessTokenHash?: true
+    origin?: true
+    dispatchCarrier?: true
+    trackingNumber?: true
+    dispatchedAt?: true
     paymentExpiresAt?: true
+    paymentExpiryStartedAt?: true
+    checkoutSubmissionId?: true
+    checkoutSubmissionFingerprint?: true
+    paymentExceptionAt?: true
+    paymentExceptionReason?: true
     subtotalCents?: true
     shippingCents?: true
     discountCents?: true
@@ -20010,8 +20311,16 @@ export namespace Prisma {
     status?: true
     paymentStatus?: true
     fulfillmentStatus?: true
-    guestAccessTokenHash?: true
+    origin?: true
+    dispatchCarrier?: true
+    trackingNumber?: true
+    dispatchedAt?: true
     paymentExpiresAt?: true
+    paymentExpiryStartedAt?: true
+    checkoutSubmissionId?: true
+    checkoutSubmissionFingerprint?: true
+    paymentExceptionAt?: true
+    paymentExceptionReason?: true
     subtotalCents?: true
     shippingCents?: true
     discountCents?: true
@@ -20143,8 +20452,16 @@ export namespace Prisma {
     status: $Enums.OrderStatus
     paymentStatus: $Enums.OrderPaymentStatus
     fulfillmentStatus: $Enums.FulfillmentStatus
-    guestAccessTokenHash: string | null
+    origin: $Enums.OrderOrigin
+    dispatchCarrier: $Enums.ShippingCarrier | null
+    trackingNumber: string | null
+    dispatchedAt: Date | null
     paymentExpiresAt: Date | null
+    paymentExpiryStartedAt: Date | null
+    checkoutSubmissionId: string | null
+    checkoutSubmissionFingerprint: string | null
+    paymentExceptionAt: Date | null
+    paymentExceptionReason: string | null
     subtotalCents: number
     shippingCents: number
     discountCents: number
@@ -20208,8 +20525,16 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
-    guestAccessTokenHash?: boolean
+    origin?: boolean
+    dispatchCarrier?: boolean
+    trackingNumber?: boolean
+    dispatchedAt?: boolean
     paymentExpiresAt?: boolean
+    paymentExpiryStartedAt?: boolean
+    checkoutSubmissionId?: boolean
+    checkoutSubmissionFingerprint?: boolean
+    paymentExceptionAt?: boolean
+    paymentExceptionReason?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
     discountCents?: boolean
@@ -20244,6 +20569,7 @@ export namespace Prisma {
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
     lines?: boolean | Order$linesArgs<ExtArgs>
     payments?: boolean | Order$paymentsArgs<ExtArgs>
+    emailNotifications?: boolean | Order$emailNotificationsArgs<ExtArgs>
     _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["order"]>
 
@@ -20258,8 +20584,16 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
-    guestAccessTokenHash?: boolean
+    origin?: boolean
+    dispatchCarrier?: boolean
+    trackingNumber?: boolean
+    dispatchedAt?: boolean
     paymentExpiresAt?: boolean
+    paymentExpiryStartedAt?: boolean
+    checkoutSubmissionId?: boolean
+    checkoutSubmissionFingerprint?: boolean
+    paymentExceptionAt?: boolean
+    paymentExceptionReason?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
     discountCents?: boolean
@@ -20305,8 +20639,16 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
-    guestAccessTokenHash?: boolean
+    origin?: boolean
+    dispatchCarrier?: boolean
+    trackingNumber?: boolean
+    dispatchedAt?: boolean
     paymentExpiresAt?: boolean
+    paymentExpiryStartedAt?: boolean
+    checkoutSubmissionId?: boolean
+    checkoutSubmissionFingerprint?: boolean
+    paymentExceptionAt?: boolean
+    paymentExceptionReason?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
     discountCents?: boolean
@@ -20352,8 +20694,16 @@ export namespace Prisma {
     status?: boolean
     paymentStatus?: boolean
     fulfillmentStatus?: boolean
-    guestAccessTokenHash?: boolean
+    origin?: boolean
+    dispatchCarrier?: boolean
+    trackingNumber?: boolean
+    dispatchedAt?: boolean
     paymentExpiresAt?: boolean
+    paymentExpiryStartedAt?: boolean
+    checkoutSubmissionId?: boolean
+    checkoutSubmissionFingerprint?: boolean
+    paymentExceptionAt?: boolean
+    paymentExceptionReason?: boolean
     subtotalCents?: boolean
     shippingCents?: boolean
     discountCents?: boolean
@@ -20387,11 +20737,12 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "guestAccessTokenHash" | "paymentExpiresAt" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "origin" | "dispatchCarrier" | "trackingNumber" | "dispatchedAt" | "paymentExpiresAt" | "paymentExpiryStartedAt" | "checkoutSubmissionId" | "checkoutSubmissionFingerprint" | "paymentExceptionAt" | "paymentExceptionReason" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
     lines?: boolean | Order$linesArgs<ExtArgs>
     payments?: boolean | Order$paymentsArgs<ExtArgs>
+    emailNotifications?: boolean | Order$emailNotificationsArgs<ExtArgs>
     _count?: boolean | OrderCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrderIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -20407,6 +20758,7 @@ export namespace Prisma {
       customer: Prisma.$CustomerPayload<ExtArgs>
       lines: Prisma.$OrderLinePayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
+      emailNotifications: Prisma.$EmailNotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -20419,8 +20771,16 @@ export namespace Prisma {
       status: $Enums.OrderStatus
       paymentStatus: $Enums.OrderPaymentStatus
       fulfillmentStatus: $Enums.FulfillmentStatus
-      guestAccessTokenHash: string | null
+      origin: $Enums.OrderOrigin
+      dispatchCarrier: $Enums.ShippingCarrier | null
+      trackingNumber: string | null
+      dispatchedAt: Date | null
       paymentExpiresAt: Date | null
+      paymentExpiryStartedAt: Date | null
+      checkoutSubmissionId: string | null
+      checkoutSubmissionFingerprint: string | null
+      paymentExceptionAt: Date | null
+      paymentExceptionReason: string | null
       subtotalCents: number
       shippingCents: number
       discountCents: number
@@ -20849,6 +21209,7 @@ export namespace Prisma {
     customer<T extends CustomerDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CustomerDefaultArgs<ExtArgs>>): Prisma__CustomerClient<$Result.GetResult<Prisma.$CustomerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     lines<T extends Order$linesArgs<ExtArgs> = {}>(args?: Subset<T, Order$linesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderLinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     payments<T extends Order$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, Order$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    emailNotifications<T extends Order$emailNotificationsArgs<ExtArgs> = {}>(args?: Subset<T, Order$emailNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20888,8 +21249,16 @@ export namespace Prisma {
     readonly status: FieldRef<"Order", 'OrderStatus'>
     readonly paymentStatus: FieldRef<"Order", 'OrderPaymentStatus'>
     readonly fulfillmentStatus: FieldRef<"Order", 'FulfillmentStatus'>
-    readonly guestAccessTokenHash: FieldRef<"Order", 'String'>
+    readonly origin: FieldRef<"Order", 'OrderOrigin'>
+    readonly dispatchCarrier: FieldRef<"Order", 'ShippingCarrier'>
+    readonly trackingNumber: FieldRef<"Order", 'String'>
+    readonly dispatchedAt: FieldRef<"Order", 'DateTime'>
     readonly paymentExpiresAt: FieldRef<"Order", 'DateTime'>
+    readonly paymentExpiryStartedAt: FieldRef<"Order", 'DateTime'>
+    readonly checkoutSubmissionId: FieldRef<"Order", 'String'>
+    readonly checkoutSubmissionFingerprint: FieldRef<"Order", 'String'>
+    readonly paymentExceptionAt: FieldRef<"Order", 'DateTime'>
+    readonly paymentExceptionReason: FieldRef<"Order", 'String'>
     readonly subtotalCents: FieldRef<"Order", 'Int'>
     readonly shippingCents: FieldRef<"Order", 'Int'>
     readonly discountCents: FieldRef<"Order", 'Int'>
@@ -21117,6 +21486,11 @@ export namespace Prisma {
      * Skip the first `n` Orders.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Orders.
+     */
     distinct?: OrderScalarFieldEnum | OrderScalarFieldEnum[]
   }
 
@@ -21365,6 +21739,30 @@ export namespace Prisma {
   }
 
   /**
+   * Order.emailNotifications
+   */
+  export type Order$emailNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    where?: EmailNotificationWhereInput
+    orderBy?: EmailNotificationOrderByWithRelationInput | EmailNotificationOrderByWithRelationInput[]
+    cursor?: EmailNotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EmailNotificationScalarFieldEnum | EmailNotificationScalarFieldEnum[]
+  }
+
+  /**
    * Order without action
    */
   export type OrderDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21380,6 +21778,1260 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: OrderInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model EmailNotification
+   */
+
+  export type AggregateEmailNotification = {
+    _count: EmailNotificationCountAggregateOutputType | null
+    _avg: EmailNotificationAvgAggregateOutputType | null
+    _sum: EmailNotificationSumAggregateOutputType | null
+    _min: EmailNotificationMinAggregateOutputType | null
+    _max: EmailNotificationMaxAggregateOutputType | null
+  }
+
+  export type EmailNotificationAvgAggregateOutputType = {
+    attemptCount: number | null
+  }
+
+  export type EmailNotificationSumAggregateOutputType = {
+    attemptCount: number | null
+  }
+
+  export type EmailNotificationMinAggregateOutputType = {
+    id: string | null
+    orderId: string | null
+    paymentId: string | null
+    deduplicationKey: string | null
+    type: $Enums.EmailNotificationType | null
+    status: $Enums.EmailNotificationStatus | null
+    recipientEmail: string | null
+    accessExpiresAt: Date | null
+    attemptCount: number | null
+    lastAttemptAt: Date | null
+    lastError: string | null
+    providerId: string | null
+    sentAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type EmailNotificationMaxAggregateOutputType = {
+    id: string | null
+    orderId: string | null
+    paymentId: string | null
+    deduplicationKey: string | null
+    type: $Enums.EmailNotificationType | null
+    status: $Enums.EmailNotificationStatus | null
+    recipientEmail: string | null
+    accessExpiresAt: Date | null
+    attemptCount: number | null
+    lastAttemptAt: Date | null
+    lastError: string | null
+    providerId: string | null
+    sentAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type EmailNotificationCountAggregateOutputType = {
+    id: number
+    orderId: number
+    paymentId: number
+    deduplicationKey: number
+    type: number
+    status: number
+    recipientEmail: number
+    accessExpiresAt: number
+    attemptCount: number
+    lastAttemptAt: number
+    lastError: number
+    providerId: number
+    sentAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type EmailNotificationAvgAggregateInputType = {
+    attemptCount?: true
+  }
+
+  export type EmailNotificationSumAggregateInputType = {
+    attemptCount?: true
+  }
+
+  export type EmailNotificationMinAggregateInputType = {
+    id?: true
+    orderId?: true
+    paymentId?: true
+    deduplicationKey?: true
+    type?: true
+    status?: true
+    recipientEmail?: true
+    accessExpiresAt?: true
+    attemptCount?: true
+    lastAttemptAt?: true
+    lastError?: true
+    providerId?: true
+    sentAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type EmailNotificationMaxAggregateInputType = {
+    id?: true
+    orderId?: true
+    paymentId?: true
+    deduplicationKey?: true
+    type?: true
+    status?: true
+    recipientEmail?: true
+    accessExpiresAt?: true
+    attemptCount?: true
+    lastAttemptAt?: true
+    lastError?: true
+    providerId?: true
+    sentAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type EmailNotificationCountAggregateInputType = {
+    id?: true
+    orderId?: true
+    paymentId?: true
+    deduplicationKey?: true
+    type?: true
+    status?: true
+    recipientEmail?: true
+    accessExpiresAt?: true
+    attemptCount?: true
+    lastAttemptAt?: true
+    lastError?: true
+    providerId?: true
+    sentAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type EmailNotificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EmailNotification to aggregate.
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailNotifications to fetch.
+     */
+    orderBy?: EmailNotificationOrderByWithRelationInput | EmailNotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EmailNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EmailNotifications
+    **/
+    _count?: true | EmailNotificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: EmailNotificationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: EmailNotificationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EmailNotificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EmailNotificationMaxAggregateInputType
+  }
+
+  export type GetEmailNotificationAggregateType<T extends EmailNotificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateEmailNotification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEmailNotification[P]>
+      : GetScalarType<T[P], AggregateEmailNotification[P]>
+  }
+
+
+
+
+  export type EmailNotificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EmailNotificationWhereInput
+    orderBy?: EmailNotificationOrderByWithAggregationInput | EmailNotificationOrderByWithAggregationInput[]
+    by: EmailNotificationScalarFieldEnum[] | EmailNotificationScalarFieldEnum
+    having?: EmailNotificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EmailNotificationCountAggregateInputType | true
+    _avg?: EmailNotificationAvgAggregateInputType
+    _sum?: EmailNotificationSumAggregateInputType
+    _min?: EmailNotificationMinAggregateInputType
+    _max?: EmailNotificationMaxAggregateInputType
+  }
+
+  export type EmailNotificationGroupByOutputType = {
+    id: string
+    orderId: string
+    paymentId: string | null
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt: Date | null
+    attemptCount: number
+    lastAttemptAt: Date | null
+    lastError: string | null
+    providerId: string | null
+    sentAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: EmailNotificationCountAggregateOutputType | null
+    _avg: EmailNotificationAvgAggregateOutputType | null
+    _sum: EmailNotificationSumAggregateOutputType | null
+    _min: EmailNotificationMinAggregateOutputType | null
+    _max: EmailNotificationMaxAggregateOutputType | null
+  }
+
+  type GetEmailNotificationGroupByPayload<T extends EmailNotificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EmailNotificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EmailNotificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EmailNotificationGroupByOutputType[P]>
+            : GetScalarType<T[P], EmailNotificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EmailNotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    orderId?: boolean
+    paymentId?: boolean
+    deduplicationKey?: boolean
+    type?: boolean
+    status?: boolean
+    recipientEmail?: boolean
+    accessExpiresAt?: boolean
+    attemptCount?: boolean
+    lastAttemptAt?: boolean
+    lastError?: boolean
+    providerId?: boolean
+    sentAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+  }, ExtArgs["result"]["emailNotification"]>
+
+  export type EmailNotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    orderId?: boolean
+    paymentId?: boolean
+    deduplicationKey?: boolean
+    type?: boolean
+    status?: boolean
+    recipientEmail?: boolean
+    accessExpiresAt?: boolean
+    attemptCount?: boolean
+    lastAttemptAt?: boolean
+    lastError?: boolean
+    providerId?: boolean
+    sentAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+  }, ExtArgs["result"]["emailNotification"]>
+
+  export type EmailNotificationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    orderId?: boolean
+    paymentId?: boolean
+    deduplicationKey?: boolean
+    type?: boolean
+    status?: boolean
+    recipientEmail?: boolean
+    accessExpiresAt?: boolean
+    attemptCount?: boolean
+    lastAttemptAt?: boolean
+    lastError?: boolean
+    providerId?: boolean
+    sentAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+  }, ExtArgs["result"]["emailNotification"]>
+
+  export type EmailNotificationSelectScalar = {
+    id?: boolean
+    orderId?: boolean
+    paymentId?: boolean
+    deduplicationKey?: boolean
+    type?: boolean
+    status?: boolean
+    recipientEmail?: boolean
+    accessExpiresAt?: boolean
+    attemptCount?: boolean
+    lastAttemptAt?: boolean
+    lastError?: boolean
+    providerId?: boolean
+    sentAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type EmailNotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "paymentId" | "deduplicationKey" | "type" | "status" | "recipientEmail" | "accessExpiresAt" | "attemptCount" | "lastAttemptAt" | "lastError" | "providerId" | "sentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["emailNotification"]>
+  export type EmailNotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+  }
+  export type EmailNotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+  }
+  export type EmailNotificationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    order?: boolean | OrderDefaultArgs<ExtArgs>
+    payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+  }
+
+  export type $EmailNotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EmailNotification"
+    objects: {
+      order: Prisma.$OrderPayload<ExtArgs>
+      payment: Prisma.$PaymentPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      orderId: string
+      paymentId: string | null
+      deduplicationKey: string
+      type: $Enums.EmailNotificationType
+      status: $Enums.EmailNotificationStatus
+      recipientEmail: string
+      accessExpiresAt: Date | null
+      attemptCount: number
+      lastAttemptAt: Date | null
+      lastError: string | null
+      providerId: string | null
+      sentAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["emailNotification"]>
+    composites: {}
+  }
+
+  type EmailNotificationGetPayload<S extends boolean | null | undefined | EmailNotificationDefaultArgs> = $Result.GetResult<Prisma.$EmailNotificationPayload, S>
+
+  type EmailNotificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<EmailNotificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: EmailNotificationCountAggregateInputType | true
+    }
+
+  export interface EmailNotificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EmailNotification'], meta: { name: 'EmailNotification' } }
+    /**
+     * Find zero or one EmailNotification that matches the filter.
+     * @param {EmailNotificationFindUniqueArgs} args - Arguments to find a EmailNotification
+     * @example
+     * // Get one EmailNotification
+     * const emailNotification = await prisma.emailNotification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EmailNotificationFindUniqueArgs>(args: SelectSubset<T, EmailNotificationFindUniqueArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one EmailNotification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {EmailNotificationFindUniqueOrThrowArgs} args - Arguments to find a EmailNotification
+     * @example
+     * // Get one EmailNotification
+     * const emailNotification = await prisma.emailNotification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EmailNotificationFindUniqueOrThrowArgs>(args: SelectSubset<T, EmailNotificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EmailNotification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationFindFirstArgs} args - Arguments to find a EmailNotification
+     * @example
+     * // Get one EmailNotification
+     * const emailNotification = await prisma.emailNotification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EmailNotificationFindFirstArgs>(args?: SelectSubset<T, EmailNotificationFindFirstArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EmailNotification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationFindFirstOrThrowArgs} args - Arguments to find a EmailNotification
+     * @example
+     * // Get one EmailNotification
+     * const emailNotification = await prisma.emailNotification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EmailNotificationFindFirstOrThrowArgs>(args?: SelectSubset<T, EmailNotificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more EmailNotifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EmailNotifications
+     * const emailNotifications = await prisma.emailNotification.findMany()
+     * 
+     * // Get first 10 EmailNotifications
+     * const emailNotifications = await prisma.emailNotification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const emailNotificationWithIdOnly = await prisma.emailNotification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EmailNotificationFindManyArgs>(args?: SelectSubset<T, EmailNotificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a EmailNotification.
+     * @param {EmailNotificationCreateArgs} args - Arguments to create a EmailNotification.
+     * @example
+     * // Create one EmailNotification
+     * const EmailNotification = await prisma.emailNotification.create({
+     *   data: {
+     *     // ... data to create a EmailNotification
+     *   }
+     * })
+     * 
+     */
+    create<T extends EmailNotificationCreateArgs>(args: SelectSubset<T, EmailNotificationCreateArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many EmailNotifications.
+     * @param {EmailNotificationCreateManyArgs} args - Arguments to create many EmailNotifications.
+     * @example
+     * // Create many EmailNotifications
+     * const emailNotification = await prisma.emailNotification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EmailNotificationCreateManyArgs>(args?: SelectSubset<T, EmailNotificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many EmailNotifications and returns the data saved in the database.
+     * @param {EmailNotificationCreateManyAndReturnArgs} args - Arguments to create many EmailNotifications.
+     * @example
+     * // Create many EmailNotifications
+     * const emailNotification = await prisma.emailNotification.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many EmailNotifications and only return the `id`
+     * const emailNotificationWithIdOnly = await prisma.emailNotification.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends EmailNotificationCreateManyAndReturnArgs>(args?: SelectSubset<T, EmailNotificationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a EmailNotification.
+     * @param {EmailNotificationDeleteArgs} args - Arguments to delete one EmailNotification.
+     * @example
+     * // Delete one EmailNotification
+     * const EmailNotification = await prisma.emailNotification.delete({
+     *   where: {
+     *     // ... filter to delete one EmailNotification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EmailNotificationDeleteArgs>(args: SelectSubset<T, EmailNotificationDeleteArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one EmailNotification.
+     * @param {EmailNotificationUpdateArgs} args - Arguments to update one EmailNotification.
+     * @example
+     * // Update one EmailNotification
+     * const emailNotification = await prisma.emailNotification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EmailNotificationUpdateArgs>(args: SelectSubset<T, EmailNotificationUpdateArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more EmailNotifications.
+     * @param {EmailNotificationDeleteManyArgs} args - Arguments to filter EmailNotifications to delete.
+     * @example
+     * // Delete a few EmailNotifications
+     * const { count } = await prisma.emailNotification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EmailNotificationDeleteManyArgs>(args?: SelectSubset<T, EmailNotificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EmailNotifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EmailNotifications
+     * const emailNotification = await prisma.emailNotification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EmailNotificationUpdateManyArgs>(args: SelectSubset<T, EmailNotificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EmailNotifications and returns the data updated in the database.
+     * @param {EmailNotificationUpdateManyAndReturnArgs} args - Arguments to update many EmailNotifications.
+     * @example
+     * // Update many EmailNotifications
+     * const emailNotification = await prisma.emailNotification.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more EmailNotifications and only return the `id`
+     * const emailNotificationWithIdOnly = await prisma.emailNotification.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends EmailNotificationUpdateManyAndReturnArgs>(args: SelectSubset<T, EmailNotificationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one EmailNotification.
+     * @param {EmailNotificationUpsertArgs} args - Arguments to update or create a EmailNotification.
+     * @example
+     * // Update or create a EmailNotification
+     * const emailNotification = await prisma.emailNotification.upsert({
+     *   create: {
+     *     // ... data to create a EmailNotification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EmailNotification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EmailNotificationUpsertArgs>(args: SelectSubset<T, EmailNotificationUpsertArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of EmailNotifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationCountArgs} args - Arguments to filter EmailNotifications to count.
+     * @example
+     * // Count the number of EmailNotifications
+     * const count = await prisma.emailNotification.count({
+     *   where: {
+     *     // ... the filter for the EmailNotifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends EmailNotificationCountArgs>(
+      args?: Subset<T, EmailNotificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EmailNotificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EmailNotification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EmailNotificationAggregateArgs>(args: Subset<T, EmailNotificationAggregateArgs>): Prisma.PrismaPromise<GetEmailNotificationAggregateType<T>>
+
+    /**
+     * Group by EmailNotification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailNotificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EmailNotificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EmailNotificationGroupByArgs['orderBy'] }
+        : { orderBy?: EmailNotificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EmailNotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEmailNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EmailNotification model
+   */
+  readonly fields: EmailNotificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EmailNotification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EmailNotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    payment<T extends EmailNotification$paymentArgs<ExtArgs> = {}>(args?: Subset<T, EmailNotification$paymentArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EmailNotification model
+   */
+  interface EmailNotificationFieldRefs {
+    readonly id: FieldRef<"EmailNotification", 'String'>
+    readonly orderId: FieldRef<"EmailNotification", 'String'>
+    readonly paymentId: FieldRef<"EmailNotification", 'String'>
+    readonly deduplicationKey: FieldRef<"EmailNotification", 'String'>
+    readonly type: FieldRef<"EmailNotification", 'EmailNotificationType'>
+    readonly status: FieldRef<"EmailNotification", 'EmailNotificationStatus'>
+    readonly recipientEmail: FieldRef<"EmailNotification", 'String'>
+    readonly accessExpiresAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly attemptCount: FieldRef<"EmailNotification", 'Int'>
+    readonly lastAttemptAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly lastError: FieldRef<"EmailNotification", 'String'>
+    readonly providerId: FieldRef<"EmailNotification", 'String'>
+    readonly sentAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly createdAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly updatedAt: FieldRef<"EmailNotification", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EmailNotification findUnique
+   */
+  export type EmailNotificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailNotification to fetch.
+     */
+    where: EmailNotificationWhereUniqueInput
+  }
+
+  /**
+   * EmailNotification findUniqueOrThrow
+   */
+  export type EmailNotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailNotification to fetch.
+     */
+    where: EmailNotificationWhereUniqueInput
+  }
+
+  /**
+   * EmailNotification findFirst
+   */
+  export type EmailNotificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailNotification to fetch.
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailNotifications to fetch.
+     */
+    orderBy?: EmailNotificationOrderByWithRelationInput | EmailNotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EmailNotifications.
+     */
+    cursor?: EmailNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailNotifications.
+     */
+    distinct?: EmailNotificationScalarFieldEnum | EmailNotificationScalarFieldEnum[]
+  }
+
+  /**
+   * EmailNotification findFirstOrThrow
+   */
+  export type EmailNotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailNotification to fetch.
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailNotifications to fetch.
+     */
+    orderBy?: EmailNotificationOrderByWithRelationInput | EmailNotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EmailNotifications.
+     */
+    cursor?: EmailNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailNotifications.
+     */
+    distinct?: EmailNotificationScalarFieldEnum | EmailNotificationScalarFieldEnum[]
+  }
+
+  /**
+   * EmailNotification findMany
+   */
+  export type EmailNotificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailNotifications to fetch.
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailNotifications to fetch.
+     */
+    orderBy?: EmailNotificationOrderByWithRelationInput | EmailNotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EmailNotifications.
+     */
+    cursor?: EmailNotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailNotifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailNotifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailNotifications.
+     */
+    distinct?: EmailNotificationScalarFieldEnum | EmailNotificationScalarFieldEnum[]
+  }
+
+  /**
+   * EmailNotification create
+   */
+  export type EmailNotificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EmailNotification.
+     */
+    data: XOR<EmailNotificationCreateInput, EmailNotificationUncheckedCreateInput>
+  }
+
+  /**
+   * EmailNotification createMany
+   */
+  export type EmailNotificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EmailNotifications.
+     */
+    data: EmailNotificationCreateManyInput | EmailNotificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EmailNotification createManyAndReturn
+   */
+  export type EmailNotificationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * The data used to create many EmailNotifications.
+     */
+    data: EmailNotificationCreateManyInput | EmailNotificationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EmailNotification update
+   */
+  export type EmailNotificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EmailNotification.
+     */
+    data: XOR<EmailNotificationUpdateInput, EmailNotificationUncheckedUpdateInput>
+    /**
+     * Choose, which EmailNotification to update.
+     */
+    where: EmailNotificationWhereUniqueInput
+  }
+
+  /**
+   * EmailNotification updateMany
+   */
+  export type EmailNotificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EmailNotifications.
+     */
+    data: XOR<EmailNotificationUpdateManyMutationInput, EmailNotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which EmailNotifications to update
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * Limit how many EmailNotifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * EmailNotification updateManyAndReturn
+   */
+  export type EmailNotificationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * The data used to update EmailNotifications.
+     */
+    data: XOR<EmailNotificationUpdateManyMutationInput, EmailNotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which EmailNotifications to update
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * Limit how many EmailNotifications to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EmailNotification upsert
+   */
+  export type EmailNotificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EmailNotification to update in case it exists.
+     */
+    where: EmailNotificationWhereUniqueInput
+    /**
+     * In case the EmailNotification found by the `where` argument doesn't exist, create a new EmailNotification with this data.
+     */
+    create: XOR<EmailNotificationCreateInput, EmailNotificationUncheckedCreateInput>
+    /**
+     * In case the EmailNotification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EmailNotificationUpdateInput, EmailNotificationUncheckedUpdateInput>
+  }
+
+  /**
+   * EmailNotification delete
+   */
+  export type EmailNotificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    /**
+     * Filter which EmailNotification to delete.
+     */
+    where: EmailNotificationWhereUniqueInput
+  }
+
+  /**
+   * EmailNotification deleteMany
+   */
+  export type EmailNotificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EmailNotifications to delete
+     */
+    where?: EmailNotificationWhereInput
+    /**
+     * Limit how many EmailNotifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * EmailNotification.payment
+   */
+  export type EmailNotification$paymentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+  }
+
+  /**
+   * EmailNotification without action
+   */
+  export type EmailNotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
   }
 
 
@@ -22397,6 +24049,11 @@ export namespace Prisma {
      * Skip the first `n` OrderLines.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of OrderLines.
+     */
     distinct?: OrderLineScalarFieldEnum | OrderLineScalarFieldEnum[]
   }
 
@@ -22916,6 +24573,8 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    emailNotifications?: boolean | Payment$emailNotificationsArgs<ExtArgs>
+    _count?: boolean | PaymentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["payment"]>
 
   export type PaymentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -22971,6 +24630,8 @@ export namespace Prisma {
   export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "type" | "status" | "provider" | "paymentMethod" | "amountCents" | "currencyCode" | "providerReference" | "stripeCheckoutSessionId" | "failureReason" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
+    emailNotifications?: boolean | Payment$emailNotificationsArgs<ExtArgs>
+    _count?: boolean | PaymentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PaymentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
@@ -22983,6 +24644,7 @@ export namespace Prisma {
     name: "Payment"
     objects: {
       order: Prisma.$OrderPayload<ExtArgs>
+      emailNotifications: Prisma.$EmailNotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -23393,6 +25055,7 @@ export namespace Prisma {
   export interface Prisma__PaymentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    emailNotifications<T extends Payment$emailNotificationsArgs<ExtArgs> = {}>(args?: Subset<T, Payment$emailNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -23631,6 +25294,11 @@ export namespace Prisma {
      * Skip the first `n` Payments.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Payments.
+     */
     distinct?: PaymentScalarFieldEnum | PaymentScalarFieldEnum[]
   }
 
@@ -23828,6 +25496,30 @@ export namespace Prisma {
      * Limit how many Payments to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Payment.emailNotifications
+   */
+  export type Payment$emailNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotification
+     */
+    select?: EmailNotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailNotification
+     */
+    omit?: EmailNotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailNotificationInclude<ExtArgs> | null
+    where?: EmailNotificationWhereInput
+    orderBy?: EmailNotificationOrderByWithRelationInput | EmailNotificationOrderByWithRelationInput[]
+    cursor?: EmailNotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EmailNotificationScalarFieldEnum | EmailNotificationScalarFieldEnum[]
   }
 
   /**
@@ -24817,6 +26509,11 @@ export namespace Prisma {
      * Skip the first `n` Reviews.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reviews.
+     */
     distinct?: ReviewScalarFieldEnum | ReviewScalarFieldEnum[]
   }
 
@@ -25914,6 +27611,11 @@ export namespace Prisma {
      * Skip the first `n` ReviewInvites.
      */
     skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ReviewInvites.
+     */
     distinct?: ReviewInviteScalarFieldEnum | ReviewInviteScalarFieldEnum[]
   }
 
@@ -26367,8 +28069,16 @@ export namespace Prisma {
     status: 'status',
     paymentStatus: 'paymentStatus',
     fulfillmentStatus: 'fulfillmentStatus',
-    guestAccessTokenHash: 'guestAccessTokenHash',
+    origin: 'origin',
+    dispatchCarrier: 'dispatchCarrier',
+    trackingNumber: 'trackingNumber',
+    dispatchedAt: 'dispatchedAt',
     paymentExpiresAt: 'paymentExpiresAt',
+    paymentExpiryStartedAt: 'paymentExpiryStartedAt',
+    checkoutSubmissionId: 'checkoutSubmissionId',
+    checkoutSubmissionFingerprint: 'checkoutSubmissionFingerprint',
+    paymentExceptionAt: 'paymentExceptionAt',
+    paymentExceptionReason: 'paymentExceptionReason',
     subtotalCents: 'subtotalCents',
     shippingCents: 'shippingCents',
     discountCents: 'discountCents',
@@ -26403,6 +28113,27 @@ export namespace Prisma {
   };
 
   export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+  export const EmailNotificationScalarFieldEnum: {
+    id: 'id',
+    orderId: 'orderId',
+    paymentId: 'paymentId',
+    deduplicationKey: 'deduplicationKey',
+    type: 'type',
+    status: 'status',
+    recipientEmail: 'recipientEmail',
+    accessExpiresAt: 'accessExpiresAt',
+    attemptCount: 'attemptCount',
+    lastAttemptAt: 'lastAttemptAt',
+    lastError: 'lastError',
+    providerId: 'providerId',
+    sentAt: 'sentAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type EmailNotificationScalarFieldEnum = (typeof EmailNotificationScalarFieldEnum)[keyof typeof EmailNotificationScalarFieldEnum]
 
 
   export const OrderLineScalarFieldEnum: {
@@ -26650,6 +28381,62 @@ export namespace Prisma {
    * Reference to a field of type 'FulfillmentStatus[]'
    */
   export type ListEnumFulfillmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FulfillmentStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'OrderOrigin'
+   */
+  export type EnumOrderOriginFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderOrigin'>
+    
+
+
+  /**
+   * Reference to a field of type 'OrderOrigin[]'
+   */
+  export type ListEnumOrderOriginFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OrderOrigin[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ShippingCarrier'
+   */
+  export type EnumShippingCarrierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShippingCarrier'>
+    
+
+
+  /**
+   * Reference to a field of type 'ShippingCarrier[]'
+   */
+  export type ListEnumShippingCarrierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ShippingCarrier[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailNotificationType'
+   */
+  export type EnumEmailNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailNotificationType'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailNotificationType[]'
+   */
+  export type ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailNotificationType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailNotificationStatus'
+   */
+  export type EnumEmailNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailNotificationStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailNotificationStatus[]'
+   */
+  export type ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailNotificationStatus[]'>
     
 
 
@@ -27850,8 +29637,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFilter<"Order"> | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: StringNullableFilter<"Order"> | string | null
+    origin?: EnumOrderOriginFilter<"Order"> | $Enums.OrderOrigin
+    dispatchCarrier?: EnumShippingCarrierNullableFilter<"Order"> | $Enums.ShippingCarrier | null
+    trackingNumber?: StringNullableFilter<"Order"> | string | null
+    dispatchedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExpiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paymentExpiryStartedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    checkoutSubmissionId?: StringNullableFilter<"Order"> | string | null
+    checkoutSubmissionFingerprint?: StringNullableFilter<"Order"> | string | null
+    paymentExceptionAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paymentExceptionReason?: StringNullableFilter<"Order"> | string | null
     subtotalCents?: IntFilter<"Order"> | number
     shippingCents?: IntFilter<"Order"> | number
     discountCents?: IntFilter<"Order"> | number
@@ -27886,6 +29681,7 @@ export namespace Prisma {
     customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
     lines?: OrderLineListRelationFilter
     payments?: PaymentListRelationFilter
+    emailNotifications?: EmailNotificationListRelationFilter
   }
 
   export type OrderOrderByWithRelationInput = {
@@ -27899,8 +29695,16 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
-    guestAccessTokenHash?: SortOrderInput | SortOrder
+    origin?: SortOrder
+    dispatchCarrier?: SortOrderInput | SortOrder
+    trackingNumber?: SortOrderInput | SortOrder
+    dispatchedAt?: SortOrderInput | SortOrder
     paymentExpiresAt?: SortOrderInput | SortOrder
+    paymentExpiryStartedAt?: SortOrderInput | SortOrder
+    checkoutSubmissionId?: SortOrderInput | SortOrder
+    checkoutSubmissionFingerprint?: SortOrderInput | SortOrder
+    paymentExceptionAt?: SortOrderInput | SortOrder
+    paymentExceptionReason?: SortOrderInput | SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
     discountCents?: SortOrder
@@ -27935,12 +29739,13 @@ export namespace Prisma {
     customer?: CustomerOrderByWithRelationInput
     lines?: OrderLineOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
+    emailNotifications?: EmailNotificationOrderByRelationAggregateInput
   }
 
   export type OrderWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     orderNumber?: string
-    guestAccessTokenHash?: string
+    checkoutSubmissionId?: string
     AND?: OrderWhereInput | OrderWhereInput[]
     OR?: OrderWhereInput[]
     NOT?: OrderWhereInput | OrderWhereInput[]
@@ -27952,7 +29757,15 @@ export namespace Prisma {
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFilter<"Order"> | $Enums.FulfillmentStatus
+    origin?: EnumOrderOriginFilter<"Order"> | $Enums.OrderOrigin
+    dispatchCarrier?: EnumShippingCarrierNullableFilter<"Order"> | $Enums.ShippingCarrier | null
+    trackingNumber?: StringNullableFilter<"Order"> | string | null
+    dispatchedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExpiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paymentExpiryStartedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    checkoutSubmissionFingerprint?: StringNullableFilter<"Order"> | string | null
+    paymentExceptionAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paymentExceptionReason?: StringNullableFilter<"Order"> | string | null
     subtotalCents?: IntFilter<"Order"> | number
     shippingCents?: IntFilter<"Order"> | number
     discountCents?: IntFilter<"Order"> | number
@@ -27987,7 +29800,8 @@ export namespace Prisma {
     customer?: XOR<CustomerScalarRelationFilter, CustomerWhereInput>
     lines?: OrderLineListRelationFilter
     payments?: PaymentListRelationFilter
-  }, "id" | "orderNumber" | "guestAccessTokenHash">
+    emailNotifications?: EmailNotificationListRelationFilter
+  }, "id" | "orderNumber" | "checkoutSubmissionId">
 
   export type OrderOrderByWithAggregationInput = {
     id?: SortOrder
@@ -28000,8 +29814,16 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
-    guestAccessTokenHash?: SortOrderInput | SortOrder
+    origin?: SortOrder
+    dispatchCarrier?: SortOrderInput | SortOrder
+    trackingNumber?: SortOrderInput | SortOrder
+    dispatchedAt?: SortOrderInput | SortOrder
     paymentExpiresAt?: SortOrderInput | SortOrder
+    paymentExpiryStartedAt?: SortOrderInput | SortOrder
+    checkoutSubmissionId?: SortOrderInput | SortOrder
+    checkoutSubmissionFingerprint?: SortOrderInput | SortOrder
+    paymentExceptionAt?: SortOrderInput | SortOrder
+    paymentExceptionReason?: SortOrderInput | SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
     discountCents?: SortOrder
@@ -28054,8 +29876,16 @@ export namespace Prisma {
     status?: EnumOrderStatusWithAggregatesFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusWithAggregatesFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusWithAggregatesFilter<"Order"> | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    origin?: EnumOrderOriginWithAggregatesFilter<"Order"> | $Enums.OrderOrigin
+    dispatchCarrier?: EnumShippingCarrierNullableWithAggregatesFilter<"Order"> | $Enums.ShippingCarrier | null
+    trackingNumber?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    dispatchedAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
     paymentExpiresAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+    paymentExpiryStartedAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+    checkoutSubmissionId?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    checkoutSubmissionFingerprint?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    paymentExceptionAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+    paymentExceptionReason?: StringNullableWithAggregatesFilter<"Order"> | string | null
     subtotalCents?: IntWithAggregatesFilter<"Order"> | number
     shippingCents?: IntWithAggregatesFilter<"Order"> | number
     discountCents?: IntWithAggregatesFilter<"Order"> | number
@@ -28087,6 +29917,116 @@ export namespace Prisma {
     cancelledAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Order"> | Date | string
+  }
+
+  export type EmailNotificationWhereInput = {
+    AND?: EmailNotificationWhereInput | EmailNotificationWhereInput[]
+    OR?: EmailNotificationWhereInput[]
+    NOT?: EmailNotificationWhereInput | EmailNotificationWhereInput[]
+    id?: StringFilter<"EmailNotification"> | string
+    orderId?: StringFilter<"EmailNotification"> | string
+    paymentId?: StringNullableFilter<"EmailNotification"> | string | null
+    deduplicationKey?: StringFilter<"EmailNotification"> | string
+    type?: EnumEmailNotificationTypeFilter<"EmailNotification"> | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFilter<"EmailNotification"> | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFilter<"EmailNotification"> | string
+    accessExpiresAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    attemptCount?: IntFilter<"EmailNotification"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    lastError?: StringNullableFilter<"EmailNotification"> | string | null
+    providerId?: StringNullableFilter<"EmailNotification"> | string | null
+    sentAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    createdAt?: DateTimeFilter<"EmailNotification"> | Date | string
+    updatedAt?: DateTimeFilter<"EmailNotification"> | Date | string
+    order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
+  }
+
+  export type EmailNotificationOrderByWithRelationInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentId?: SortOrderInput | SortOrder
+    deduplicationKey?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    recipientEmail?: SortOrder
+    accessExpiresAt?: SortOrderInput | SortOrder
+    attemptCount?: SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    providerId?: SortOrderInput | SortOrder
+    sentAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    order?: OrderOrderByWithRelationInput
+    payment?: PaymentOrderByWithRelationInput
+  }
+
+  export type EmailNotificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    deduplicationKey?: string
+    AND?: EmailNotificationWhereInput | EmailNotificationWhereInput[]
+    OR?: EmailNotificationWhereInput[]
+    NOT?: EmailNotificationWhereInput | EmailNotificationWhereInput[]
+    orderId?: StringFilter<"EmailNotification"> | string
+    paymentId?: StringNullableFilter<"EmailNotification"> | string | null
+    type?: EnumEmailNotificationTypeFilter<"EmailNotification"> | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFilter<"EmailNotification"> | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFilter<"EmailNotification"> | string
+    accessExpiresAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    attemptCount?: IntFilter<"EmailNotification"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    lastError?: StringNullableFilter<"EmailNotification"> | string | null
+    providerId?: StringNullableFilter<"EmailNotification"> | string | null
+    sentAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    createdAt?: DateTimeFilter<"EmailNotification"> | Date | string
+    updatedAt?: DateTimeFilter<"EmailNotification"> | Date | string
+    order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
+  }, "id" | "deduplicationKey">
+
+  export type EmailNotificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentId?: SortOrderInput | SortOrder
+    deduplicationKey?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    recipientEmail?: SortOrder
+    accessExpiresAt?: SortOrderInput | SortOrder
+    attemptCount?: SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    providerId?: SortOrderInput | SortOrder
+    sentAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: EmailNotificationCountOrderByAggregateInput
+    _avg?: EmailNotificationAvgOrderByAggregateInput
+    _max?: EmailNotificationMaxOrderByAggregateInput
+    _min?: EmailNotificationMinOrderByAggregateInput
+    _sum?: EmailNotificationSumOrderByAggregateInput
+  }
+
+  export type EmailNotificationScalarWhereWithAggregatesInput = {
+    AND?: EmailNotificationScalarWhereWithAggregatesInput | EmailNotificationScalarWhereWithAggregatesInput[]
+    OR?: EmailNotificationScalarWhereWithAggregatesInput[]
+    NOT?: EmailNotificationScalarWhereWithAggregatesInput | EmailNotificationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"EmailNotification"> | string
+    orderId?: StringWithAggregatesFilter<"EmailNotification"> | string
+    paymentId?: StringNullableWithAggregatesFilter<"EmailNotification"> | string | null
+    deduplicationKey?: StringWithAggregatesFilter<"EmailNotification"> | string
+    type?: EnumEmailNotificationTypeWithAggregatesFilter<"EmailNotification"> | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusWithAggregatesFilter<"EmailNotification"> | $Enums.EmailNotificationStatus
+    recipientEmail?: StringWithAggregatesFilter<"EmailNotification"> | string
+    accessExpiresAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
+    attemptCount?: IntWithAggregatesFilter<"EmailNotification"> | number
+    lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
+    lastError?: StringNullableWithAggregatesFilter<"EmailNotification"> | string | null
+    providerId?: StringNullableWithAggregatesFilter<"EmailNotification"> | string | null
+    sentAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"EmailNotification"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"EmailNotification"> | Date | string
   }
 
   export type OrderLineWhereInput = {
@@ -28213,6 +30153,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    emailNotifications?: EmailNotificationListRelationFilter
   }
 
   export type PaymentOrderByWithRelationInput = {
@@ -28230,6 +30171,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     order?: OrderOrderByWithRelationInput
+    emailNotifications?: EmailNotificationOrderByRelationAggregateInput
   }
 
   export type PaymentWhereUniqueInput = Prisma.AtLeast<{
@@ -28250,6 +30192,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
+    emailNotifications?: EmailNotificationListRelationFilter
   }, "id">
 
   export type PaymentOrderByWithAggregationInput = {
@@ -29636,8 +31579,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -29672,6 +31623,7 @@ export namespace Prisma {
     customer: CustomerCreateNestedOneWithoutOrdersInput
     lines?: OrderLineCreateNestedManyWithoutOrderInput
     payments?: PaymentCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateInput = {
@@ -29685,8 +31637,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -29720,6 +31680,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lines?: OrderLineUncheckedCreateNestedManyWithoutOrderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUpdateInput = {
@@ -29732,8 +31693,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -29768,6 +31737,7 @@ export namespace Prisma {
     customer?: CustomerUpdateOneRequiredWithoutOrdersNestedInput
     lines?: OrderLineUpdateManyWithoutOrderNestedInput
     payments?: PaymentUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateInput = {
@@ -29781,8 +31751,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -29816,6 +31794,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lines?: OrderLineUncheckedUpdateManyWithoutOrderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderCreateManyInput = {
@@ -29829,8 +31808,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -29874,8 +31861,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -29920,8 +31915,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -29951,6 +31954,130 @@ export namespace Prisma {
     placedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationCreateInput = {
+    id?: string
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutEmailNotificationsInput
+    payment?: PaymentCreateNestedOneWithoutEmailNotificationsInput
+  }
+
+  export type EmailNotificationUncheckedCreateInput = {
+    id?: string
+    orderId: string
+    paymentId?: string | null
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailNotificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutEmailNotificationsNestedInput
+    payment?: PaymentUpdateOneWithoutEmailNotificationsNestedInput
+  }
+
+  export type EmailNotificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationCreateManyInput = {
+    id?: string
+    orderId: string
+    paymentId?: string | null
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailNotificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30087,6 +32214,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutPaymentsInput
+    emailNotifications?: EmailNotificationCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentUncheckedCreateInput = {
@@ -30103,6 +32231,7 @@ export namespace Prisma {
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    emailNotifications?: EmailNotificationUncheckedCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentUpdateInput = {
@@ -30119,6 +32248,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutPaymentsNestedInput
+    emailNotifications?: EmailNotificationUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentUncheckedUpdateInput = {
@@ -30135,6 +32265,7 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailNotifications?: EmailNotificationUncheckedUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentCreateManyInput = {
@@ -31362,13 +33493,37 @@ export namespace Prisma {
     not?: NestedEnumFulfillmentStatusFilter<$PrismaModel> | $Enums.FulfillmentStatus
   }
 
+  export type EnumOrderOriginFilter<$PrismaModel = never> = {
+    equals?: $Enums.OrderOrigin | EnumOrderOriginFieldRefInput<$PrismaModel>
+    in?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    not?: NestedEnumOrderOriginFilter<$PrismaModel> | $Enums.OrderOrigin
+  }
+
+  export type EnumShippingCarrierNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShippingCarrier | EnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumShippingCarrierNullableFilter<$PrismaModel> | $Enums.ShippingCarrier | null
+  }
+
   export type PaymentListRelationFilter = {
     every?: PaymentWhereInput
     some?: PaymentWhereInput
     none?: PaymentWhereInput
   }
 
+  export type EmailNotificationListRelationFilter = {
+    every?: EmailNotificationWhereInput
+    some?: EmailNotificationWhereInput
+    none?: EmailNotificationWhereInput
+  }
+
   export type PaymentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type EmailNotificationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31383,8 +33538,16 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
-    guestAccessTokenHash?: SortOrder
+    origin?: SortOrder
+    dispatchCarrier?: SortOrder
+    trackingNumber?: SortOrder
+    dispatchedAt?: SortOrder
     paymentExpiresAt?: SortOrder
+    paymentExpiryStartedAt?: SortOrder
+    checkoutSubmissionId?: SortOrder
+    checkoutSubmissionFingerprint?: SortOrder
+    paymentExceptionAt?: SortOrder
+    paymentExceptionReason?: SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
     discountCents?: SortOrder
@@ -31436,8 +33599,16 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
-    guestAccessTokenHash?: SortOrder
+    origin?: SortOrder
+    dispatchCarrier?: SortOrder
+    trackingNumber?: SortOrder
+    dispatchedAt?: SortOrder
     paymentExpiresAt?: SortOrder
+    paymentExpiryStartedAt?: SortOrder
+    checkoutSubmissionId?: SortOrder
+    checkoutSubmissionFingerprint?: SortOrder
+    paymentExceptionAt?: SortOrder
+    paymentExceptionReason?: SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
     discountCents?: SortOrder
@@ -31482,8 +33653,16 @@ export namespace Prisma {
     status?: SortOrder
     paymentStatus?: SortOrder
     fulfillmentStatus?: SortOrder
-    guestAccessTokenHash?: SortOrder
+    origin?: SortOrder
+    dispatchCarrier?: SortOrder
+    trackingNumber?: SortOrder
+    dispatchedAt?: SortOrder
     paymentExpiresAt?: SortOrder
+    paymentExpiryStartedAt?: SortOrder
+    checkoutSubmissionId?: SortOrder
+    checkoutSubmissionFingerprint?: SortOrder
+    paymentExceptionAt?: SortOrder
+    paymentExceptionReason?: SortOrder
     subtotalCents?: SortOrder
     shippingCents?: SortOrder
     discountCents?: SortOrder
@@ -31554,9 +33733,130 @@ export namespace Prisma {
     _max?: NestedEnumFulfillmentStatusFilter<$PrismaModel>
   }
 
+  export type EnumOrderOriginWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.OrderOrigin | EnumOrderOriginFieldRefInput<$PrismaModel>
+    in?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    not?: NestedEnumOrderOriginWithAggregatesFilter<$PrismaModel> | $Enums.OrderOrigin
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumOrderOriginFilter<$PrismaModel>
+    _max?: NestedEnumOrderOriginFilter<$PrismaModel>
+  }
+
+  export type EnumShippingCarrierNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShippingCarrier | EnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumShippingCarrierNullableWithAggregatesFilter<$PrismaModel> | $Enums.ShippingCarrier | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumShippingCarrierNullableFilter<$PrismaModel>
+    _max?: NestedEnumShippingCarrierNullableFilter<$PrismaModel>
+  }
+
+  export type EnumEmailNotificationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationType | EnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationTypeFilter<$PrismaModel> | $Enums.EmailNotificationType
+  }
+
+  export type EnumEmailNotificationStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationStatus | EnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationStatusFilter<$PrismaModel> | $Enums.EmailNotificationStatus
+  }
+
   export type OrderScalarRelationFilter = {
     is?: OrderWhereInput
     isNot?: OrderWhereInput
+  }
+
+  export type PaymentNullableScalarRelationFilter = {
+    is?: PaymentWhereInput | null
+    isNot?: PaymentWhereInput | null
+  }
+
+  export type EmailNotificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentId?: SortOrder
+    deduplicationKey?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    recipientEmail?: SortOrder
+    accessExpiresAt?: SortOrder
+    attemptCount?: SortOrder
+    lastAttemptAt?: SortOrder
+    lastError?: SortOrder
+    providerId?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EmailNotificationAvgOrderByAggregateInput = {
+    attemptCount?: SortOrder
+  }
+
+  export type EmailNotificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentId?: SortOrder
+    deduplicationKey?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    recipientEmail?: SortOrder
+    accessExpiresAt?: SortOrder
+    attemptCount?: SortOrder
+    lastAttemptAt?: SortOrder
+    lastError?: SortOrder
+    providerId?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EmailNotificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    orderId?: SortOrder
+    paymentId?: SortOrder
+    deduplicationKey?: SortOrder
+    type?: SortOrder
+    status?: SortOrder
+    recipientEmail?: SortOrder
+    accessExpiresAt?: SortOrder
+    attemptCount?: SortOrder
+    lastAttemptAt?: SortOrder
+    lastError?: SortOrder
+    providerId?: SortOrder
+    sentAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EmailNotificationSumOrderByAggregateInput = {
+    attemptCount?: SortOrder
+  }
+
+  export type EnumEmailNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationType | EnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.EmailNotificationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEmailNotificationTypeFilter<$PrismaModel>
+    _max?: NestedEnumEmailNotificationTypeFilter<$PrismaModel>
+  }
+
+  export type EnumEmailNotificationStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationStatus | EnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationStatusWithAggregatesFilter<$PrismaModel> | $Enums.EmailNotificationStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
+    _max?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
   }
 
   export type ReviewNullableScalarRelationFilter = {
@@ -32680,6 +34980,13 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
+  export type EmailNotificationCreateNestedManyWithoutOrderInput = {
+    create?: XOR<EmailNotificationCreateWithoutOrderInput, EmailNotificationUncheckedCreateWithoutOrderInput> | EmailNotificationCreateWithoutOrderInput[] | EmailNotificationUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutOrderInput | EmailNotificationCreateOrConnectWithoutOrderInput[]
+    createMany?: EmailNotificationCreateManyOrderInputEnvelope
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+  }
+
   export type OrderLineUncheckedCreateNestedManyWithoutOrderInput = {
     create?: XOR<OrderLineCreateWithoutOrderInput, OrderLineUncheckedCreateWithoutOrderInput> | OrderLineCreateWithoutOrderInput[] | OrderLineUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: OrderLineCreateOrConnectWithoutOrderInput | OrderLineCreateOrConnectWithoutOrderInput[]
@@ -32694,6 +35001,13 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput | PaymentWhereUniqueInput[]
   }
 
+  export type EmailNotificationUncheckedCreateNestedManyWithoutOrderInput = {
+    create?: XOR<EmailNotificationCreateWithoutOrderInput, EmailNotificationUncheckedCreateWithoutOrderInput> | EmailNotificationCreateWithoutOrderInput[] | EmailNotificationUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutOrderInput | EmailNotificationCreateOrConnectWithoutOrderInput[]
+    createMany?: EmailNotificationCreateManyOrderInputEnvelope
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+  }
+
   export type EnumOrderStatusFieldUpdateOperationsInput = {
     set?: $Enums.OrderStatus
   }
@@ -32704,6 +35018,14 @@ export namespace Prisma {
 
   export type EnumFulfillmentStatusFieldUpdateOperationsInput = {
     set?: $Enums.FulfillmentStatus
+  }
+
+  export type EnumOrderOriginFieldUpdateOperationsInput = {
+    set?: $Enums.OrderOrigin
+  }
+
+  export type NullableEnumShippingCarrierFieldUpdateOperationsInput = {
+    set?: $Enums.ShippingCarrier | null
   }
 
   export type CustomerUpdateOneRequiredWithoutOrdersNestedInput = {
@@ -32742,6 +35064,20 @@ export namespace Prisma {
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
   }
 
+  export type EmailNotificationUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<EmailNotificationCreateWithoutOrderInput, EmailNotificationUncheckedCreateWithoutOrderInput> | EmailNotificationCreateWithoutOrderInput[] | EmailNotificationUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutOrderInput | EmailNotificationCreateOrConnectWithoutOrderInput[]
+    upsert?: EmailNotificationUpsertWithWhereUniqueWithoutOrderInput | EmailNotificationUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: EmailNotificationCreateManyOrderInputEnvelope
+    set?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    disconnect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    delete?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    update?: EmailNotificationUpdateWithWhereUniqueWithoutOrderInput | EmailNotificationUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: EmailNotificationUpdateManyWithWhereWithoutOrderInput | EmailNotificationUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: EmailNotificationScalarWhereInput | EmailNotificationScalarWhereInput[]
+  }
+
   export type OrderLineUncheckedUpdateManyWithoutOrderNestedInput = {
     create?: XOR<OrderLineCreateWithoutOrderInput, OrderLineUncheckedCreateWithoutOrderInput> | OrderLineCreateWithoutOrderInput[] | OrderLineUncheckedCreateWithoutOrderInput[]
     connectOrCreate?: OrderLineCreateOrConnectWithoutOrderInput | OrderLineCreateOrConnectWithoutOrderInput[]
@@ -32768,6 +35104,58 @@ export namespace Prisma {
     update?: PaymentUpdateWithWhereUniqueWithoutOrderInput | PaymentUpdateWithWhereUniqueWithoutOrderInput[]
     updateMany?: PaymentUpdateManyWithWhereWithoutOrderInput | PaymentUpdateManyWithWhereWithoutOrderInput[]
     deleteMany?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
+  }
+
+  export type EmailNotificationUncheckedUpdateManyWithoutOrderNestedInput = {
+    create?: XOR<EmailNotificationCreateWithoutOrderInput, EmailNotificationUncheckedCreateWithoutOrderInput> | EmailNotificationCreateWithoutOrderInput[] | EmailNotificationUncheckedCreateWithoutOrderInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutOrderInput | EmailNotificationCreateOrConnectWithoutOrderInput[]
+    upsert?: EmailNotificationUpsertWithWhereUniqueWithoutOrderInput | EmailNotificationUpsertWithWhereUniqueWithoutOrderInput[]
+    createMany?: EmailNotificationCreateManyOrderInputEnvelope
+    set?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    disconnect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    delete?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    update?: EmailNotificationUpdateWithWhereUniqueWithoutOrderInput | EmailNotificationUpdateWithWhereUniqueWithoutOrderInput[]
+    updateMany?: EmailNotificationUpdateManyWithWhereWithoutOrderInput | EmailNotificationUpdateManyWithWhereWithoutOrderInput[]
+    deleteMany?: EmailNotificationScalarWhereInput | EmailNotificationScalarWhereInput[]
+  }
+
+  export type OrderCreateNestedOneWithoutEmailNotificationsInput = {
+    create?: XOR<OrderCreateWithoutEmailNotificationsInput, OrderUncheckedCreateWithoutEmailNotificationsInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutEmailNotificationsInput
+    connect?: OrderWhereUniqueInput
+  }
+
+  export type PaymentCreateNestedOneWithoutEmailNotificationsInput = {
+    create?: XOR<PaymentCreateWithoutEmailNotificationsInput, PaymentUncheckedCreateWithoutEmailNotificationsInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutEmailNotificationsInput
+    connect?: PaymentWhereUniqueInput
+  }
+
+  export type EnumEmailNotificationTypeFieldUpdateOperationsInput = {
+    set?: $Enums.EmailNotificationType
+  }
+
+  export type EnumEmailNotificationStatusFieldUpdateOperationsInput = {
+    set?: $Enums.EmailNotificationStatus
+  }
+
+  export type OrderUpdateOneRequiredWithoutEmailNotificationsNestedInput = {
+    create?: XOR<OrderCreateWithoutEmailNotificationsInput, OrderUncheckedCreateWithoutEmailNotificationsInput>
+    connectOrCreate?: OrderCreateOrConnectWithoutEmailNotificationsInput
+    upsert?: OrderUpsertWithoutEmailNotificationsInput
+    connect?: OrderWhereUniqueInput
+    update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutEmailNotificationsInput, OrderUpdateWithoutEmailNotificationsInput>, OrderUncheckedUpdateWithoutEmailNotificationsInput>
+  }
+
+  export type PaymentUpdateOneWithoutEmailNotificationsNestedInput = {
+    create?: XOR<PaymentCreateWithoutEmailNotificationsInput, PaymentUncheckedCreateWithoutEmailNotificationsInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutEmailNotificationsInput
+    upsert?: PaymentUpsertWithoutEmailNotificationsInput
+    disconnect?: PaymentWhereInput | boolean
+    delete?: PaymentWhereInput | boolean
+    connect?: PaymentWhereUniqueInput
+    update?: XOR<XOR<PaymentUpdateToOneWithWhereWithoutEmailNotificationsInput, PaymentUpdateWithoutEmailNotificationsInput>, PaymentUncheckedUpdateWithoutEmailNotificationsInput>
   }
 
   export type OrderCreateNestedOneWithoutLinesInput = {
@@ -32868,6 +35256,20 @@ export namespace Prisma {
     connect?: OrderWhereUniqueInput
   }
 
+  export type EmailNotificationCreateNestedManyWithoutPaymentInput = {
+    create?: XOR<EmailNotificationCreateWithoutPaymentInput, EmailNotificationUncheckedCreateWithoutPaymentInput> | EmailNotificationCreateWithoutPaymentInput[] | EmailNotificationUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutPaymentInput | EmailNotificationCreateOrConnectWithoutPaymentInput[]
+    createMany?: EmailNotificationCreateManyPaymentInputEnvelope
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+  }
+
+  export type EmailNotificationUncheckedCreateNestedManyWithoutPaymentInput = {
+    create?: XOR<EmailNotificationCreateWithoutPaymentInput, EmailNotificationUncheckedCreateWithoutPaymentInput> | EmailNotificationCreateWithoutPaymentInput[] | EmailNotificationUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutPaymentInput | EmailNotificationCreateOrConnectWithoutPaymentInput[]
+    createMany?: EmailNotificationCreateManyPaymentInputEnvelope
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+  }
+
   export type EnumPaymentTypeFieldUpdateOperationsInput = {
     set?: $Enums.PaymentType
   }
@@ -32890,6 +35292,34 @@ export namespace Prisma {
     upsert?: OrderUpsertWithoutPaymentsInput
     connect?: OrderWhereUniqueInput
     update?: XOR<XOR<OrderUpdateToOneWithWhereWithoutPaymentsInput, OrderUpdateWithoutPaymentsInput>, OrderUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type EmailNotificationUpdateManyWithoutPaymentNestedInput = {
+    create?: XOR<EmailNotificationCreateWithoutPaymentInput, EmailNotificationUncheckedCreateWithoutPaymentInput> | EmailNotificationCreateWithoutPaymentInput[] | EmailNotificationUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutPaymentInput | EmailNotificationCreateOrConnectWithoutPaymentInput[]
+    upsert?: EmailNotificationUpsertWithWhereUniqueWithoutPaymentInput | EmailNotificationUpsertWithWhereUniqueWithoutPaymentInput[]
+    createMany?: EmailNotificationCreateManyPaymentInputEnvelope
+    set?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    disconnect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    delete?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    update?: EmailNotificationUpdateWithWhereUniqueWithoutPaymentInput | EmailNotificationUpdateWithWhereUniqueWithoutPaymentInput[]
+    updateMany?: EmailNotificationUpdateManyWithWhereWithoutPaymentInput | EmailNotificationUpdateManyWithWhereWithoutPaymentInput[]
+    deleteMany?: EmailNotificationScalarWhereInput | EmailNotificationScalarWhereInput[]
+  }
+
+  export type EmailNotificationUncheckedUpdateManyWithoutPaymentNestedInput = {
+    create?: XOR<EmailNotificationCreateWithoutPaymentInput, EmailNotificationUncheckedCreateWithoutPaymentInput> | EmailNotificationCreateWithoutPaymentInput[] | EmailNotificationUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutPaymentInput | EmailNotificationCreateOrConnectWithoutPaymentInput[]
+    upsert?: EmailNotificationUpsertWithWhereUniqueWithoutPaymentInput | EmailNotificationUpsertWithWhereUniqueWithoutPaymentInput[]
+    createMany?: EmailNotificationCreateManyPaymentInputEnvelope
+    set?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    disconnect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    delete?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    connect?: EmailNotificationWhereUniqueInput | EmailNotificationWhereUniqueInput[]
+    update?: EmailNotificationUpdateWithWhereUniqueWithoutPaymentInput | EmailNotificationUpdateWithWhereUniqueWithoutPaymentInput[]
+    updateMany?: EmailNotificationUpdateManyWithWhereWithoutPaymentInput | EmailNotificationUpdateManyWithWhereWithoutPaymentInput[]
+    deleteMany?: EmailNotificationScalarWhereInput | EmailNotificationScalarWhereInput[]
   }
 
   export type ProductCreateNestedOneWithoutReviewsInput = {
@@ -33231,6 +35661,20 @@ export namespace Prisma {
     not?: NestedEnumFulfillmentStatusFilter<$PrismaModel> | $Enums.FulfillmentStatus
   }
 
+  export type NestedEnumOrderOriginFilter<$PrismaModel = never> = {
+    equals?: $Enums.OrderOrigin | EnumOrderOriginFieldRefInput<$PrismaModel>
+    in?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    not?: NestedEnumOrderOriginFilter<$PrismaModel> | $Enums.OrderOrigin
+  }
+
+  export type NestedEnumShippingCarrierNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShippingCarrier | EnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumShippingCarrierNullableFilter<$PrismaModel> | $Enums.ShippingCarrier | null
+  }
+
   export type NestedEnumOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.OrderStatus | EnumOrderStatusFieldRefInput<$PrismaModel>
     in?: $Enums.OrderStatus[] | ListEnumOrderStatusFieldRefInput<$PrismaModel>
@@ -33259,6 +35703,60 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumFulfillmentStatusFilter<$PrismaModel>
     _max?: NestedEnumFulfillmentStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumOrderOriginWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.OrderOrigin | EnumOrderOriginFieldRefInput<$PrismaModel>
+    in?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OrderOrigin[] | ListEnumOrderOriginFieldRefInput<$PrismaModel>
+    not?: NestedEnumOrderOriginWithAggregatesFilter<$PrismaModel> | $Enums.OrderOrigin
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumOrderOriginFilter<$PrismaModel>
+    _max?: NestedEnumOrderOriginFilter<$PrismaModel>
+  }
+
+  export type NestedEnumShippingCarrierNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ShippingCarrier | EnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ShippingCarrier[] | ListEnumShippingCarrierFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumShippingCarrierNullableWithAggregatesFilter<$PrismaModel> | $Enums.ShippingCarrier | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumShippingCarrierNullableFilter<$PrismaModel>
+    _max?: NestedEnumShippingCarrierNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEmailNotificationTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationType | EnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationTypeFilter<$PrismaModel> | $Enums.EmailNotificationType
+  }
+
+  export type NestedEnumEmailNotificationStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationStatus | EnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationStatusFilter<$PrismaModel> | $Enums.EmailNotificationStatus
+  }
+
+  export type NestedEnumEmailNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationType | EnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationType[] | ListEnumEmailNotificationTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationTypeWithAggregatesFilter<$PrismaModel> | $Enums.EmailNotificationType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEmailNotificationTypeFilter<$PrismaModel>
+    _max?: NestedEnumEmailNotificationTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEmailNotificationStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailNotificationStatus | EnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailNotificationStatus[] | ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailNotificationStatusWithAggregatesFilter<$PrismaModel> | $Enums.EmailNotificationStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
+    _max?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumPaymentTypeFilter<$PrismaModel = never> = {
@@ -33903,8 +36401,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -33938,6 +36444,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lines?: OrderLineCreateNestedManyWithoutOrderInput
     payments?: PaymentCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutCustomerInput = {
@@ -33950,8 +36457,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -33985,6 +36500,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     lines?: OrderLineUncheckedCreateNestedManyWithoutOrderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutCustomerInput = {
@@ -34139,8 +36655,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFilter<"Order"> | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFilter<"Order"> | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFilter<"Order"> | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: StringNullableFilter<"Order"> | string | null
+    origin?: EnumOrderOriginFilter<"Order"> | $Enums.OrderOrigin
+    dispatchCarrier?: EnumShippingCarrierNullableFilter<"Order"> | $Enums.ShippingCarrier | null
+    trackingNumber?: StringNullableFilter<"Order"> | string | null
+    dispatchedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExpiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paymentExpiryStartedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    checkoutSubmissionId?: StringNullableFilter<"Order"> | string | null
+    checkoutSubmissionFingerprint?: StringNullableFilter<"Order"> | string | null
+    paymentExceptionAt?: DateTimeNullableFilter<"Order"> | Date | string | null
+    paymentExceptionReason?: StringNullableFilter<"Order"> | string | null
     subtotalCents?: IntFilter<"Order"> | number
     shippingCents?: IntFilter<"Order"> | number
     discountCents?: IntFilter<"Order"> | number
@@ -35345,6 +37869,7 @@ export namespace Prisma {
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    emailNotifications?: EmailNotificationCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentUncheckedCreateWithoutOrderInput = {
@@ -35360,6 +37885,7 @@ export namespace Prisma {
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    emailNotifications?: EmailNotificationUncheckedCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentCreateOrConnectWithoutOrderInput = {
@@ -35369,6 +37895,50 @@ export namespace Prisma {
 
   export type PaymentCreateManyOrderInputEnvelope = {
     data: PaymentCreateManyOrderInput | PaymentCreateManyOrderInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type EmailNotificationCreateWithoutOrderInput = {
+    id?: string
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    payment?: PaymentCreateNestedOneWithoutEmailNotificationsInput
+  }
+
+  export type EmailNotificationUncheckedCreateWithoutOrderInput = {
+    id?: string
+    paymentId?: string | null
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailNotificationCreateOrConnectWithoutOrderInput = {
+    where: EmailNotificationWhereUniqueInput
+    create: XOR<EmailNotificationCreateWithoutOrderInput, EmailNotificationUncheckedCreateWithoutOrderInput>
+  }
+
+  export type EmailNotificationCreateManyOrderInputEnvelope = {
+    data: EmailNotificationCreateManyOrderInput | EmailNotificationCreateManyOrderInput[]
     skipDuplicates?: boolean
   }
 
@@ -35460,6 +38030,363 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
   }
 
+  export type EmailNotificationUpsertWithWhereUniqueWithoutOrderInput = {
+    where: EmailNotificationWhereUniqueInput
+    update: XOR<EmailNotificationUpdateWithoutOrderInput, EmailNotificationUncheckedUpdateWithoutOrderInput>
+    create: XOR<EmailNotificationCreateWithoutOrderInput, EmailNotificationUncheckedCreateWithoutOrderInput>
+  }
+
+  export type EmailNotificationUpdateWithWhereUniqueWithoutOrderInput = {
+    where: EmailNotificationWhereUniqueInput
+    data: XOR<EmailNotificationUpdateWithoutOrderInput, EmailNotificationUncheckedUpdateWithoutOrderInput>
+  }
+
+  export type EmailNotificationUpdateManyWithWhereWithoutOrderInput = {
+    where: EmailNotificationScalarWhereInput
+    data: XOR<EmailNotificationUpdateManyMutationInput, EmailNotificationUncheckedUpdateManyWithoutOrderInput>
+  }
+
+  export type EmailNotificationScalarWhereInput = {
+    AND?: EmailNotificationScalarWhereInput | EmailNotificationScalarWhereInput[]
+    OR?: EmailNotificationScalarWhereInput[]
+    NOT?: EmailNotificationScalarWhereInput | EmailNotificationScalarWhereInput[]
+    id?: StringFilter<"EmailNotification"> | string
+    orderId?: StringFilter<"EmailNotification"> | string
+    paymentId?: StringNullableFilter<"EmailNotification"> | string | null
+    deduplicationKey?: StringFilter<"EmailNotification"> | string
+    type?: EnumEmailNotificationTypeFilter<"EmailNotification"> | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFilter<"EmailNotification"> | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFilter<"EmailNotification"> | string
+    accessExpiresAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    attemptCount?: IntFilter<"EmailNotification"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    lastError?: StringNullableFilter<"EmailNotification"> | string | null
+    providerId?: StringNullableFilter<"EmailNotification"> | string | null
+    sentAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    createdAt?: DateTimeFilter<"EmailNotification"> | Date | string
+    updatedAt?: DateTimeFilter<"EmailNotification"> | Date | string
+  }
+
+  export type OrderCreateWithoutEmailNotificationsInput = {
+    id?: string
+    orderNumber: string
+    customerSalutation?: $Enums.Salutation | null
+    customerFirstName: string
+    customerLastName: string
+    customerEmail: string
+    status?: $Enums.OrderStatus
+    paymentStatus?: $Enums.OrderPaymentStatus
+    fulfillmentStatus?: $Enums.FulfillmentStatus
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
+    paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
+    subtotalCents: number
+    shippingCents: number
+    discountCents?: number
+    totalCents: number
+    currencyCode?: string
+    shippingSalutation?: $Enums.Salutation | null
+    shippingFirstName: string
+    shippingLastName: string
+    shippingCompany?: string | null
+    shippingStreetLine1: string
+    shippingStreetLine2?: string | null
+    shippingPostalCode: string
+    shippingCity: string
+    shippingCountryCode: string
+    shippingPhone?: string | null
+    billingSameAsShipping?: boolean
+    billingSalutation?: $Enums.Salutation | null
+    billingFirstName: string
+    billingLastName: string
+    billingCompany?: string | null
+    billingStreetLine1: string
+    billingStreetLine2?: string | null
+    billingPostalCode: string
+    billingCity: string
+    billingCountryCode: string
+    billingPhone?: string | null
+    placedAt?: Date | string
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    customer: CustomerCreateNestedOneWithoutOrdersInput
+    lines?: OrderLineCreateNestedManyWithoutOrderInput
+    payments?: PaymentCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderUncheckedCreateWithoutEmailNotificationsInput = {
+    id?: string
+    orderNumber: string
+    customerId: string
+    customerSalutation?: $Enums.Salutation | null
+    customerFirstName: string
+    customerLastName: string
+    customerEmail: string
+    status?: $Enums.OrderStatus
+    paymentStatus?: $Enums.OrderPaymentStatus
+    fulfillmentStatus?: $Enums.FulfillmentStatus
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
+    paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
+    subtotalCents: number
+    shippingCents: number
+    discountCents?: number
+    totalCents: number
+    currencyCode?: string
+    shippingSalutation?: $Enums.Salutation | null
+    shippingFirstName: string
+    shippingLastName: string
+    shippingCompany?: string | null
+    shippingStreetLine1: string
+    shippingStreetLine2?: string | null
+    shippingPostalCode: string
+    shippingCity: string
+    shippingCountryCode: string
+    shippingPhone?: string | null
+    billingSameAsShipping?: boolean
+    billingSalutation?: $Enums.Salutation | null
+    billingFirstName: string
+    billingLastName: string
+    billingCompany?: string | null
+    billingStreetLine1: string
+    billingStreetLine2?: string | null
+    billingPostalCode: string
+    billingCity: string
+    billingCountryCode: string
+    billingPhone?: string | null
+    placedAt?: Date | string
+    completedAt?: Date | string | null
+    cancelledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    lines?: OrderLineUncheckedCreateNestedManyWithoutOrderInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutOrderInput
+  }
+
+  export type OrderCreateOrConnectWithoutEmailNotificationsInput = {
+    where: OrderWhereUniqueInput
+    create: XOR<OrderCreateWithoutEmailNotificationsInput, OrderUncheckedCreateWithoutEmailNotificationsInput>
+  }
+
+  export type PaymentCreateWithoutEmailNotificationsInput = {
+    id?: string
+    type: $Enums.PaymentType
+    status?: $Enums.PaymentStatus
+    provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
+    amountCents: number
+    currencyCode?: string
+    providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutPaymentsInput
+  }
+
+  export type PaymentUncheckedCreateWithoutEmailNotificationsInput = {
+    id?: string
+    orderId: string
+    type: $Enums.PaymentType
+    status?: $Enums.PaymentStatus
+    provider: $Enums.PaymentProvider
+    paymentMethod: $Enums.PaymentMethod
+    amountCents: number
+    currencyCode?: string
+    providerReference?: string | null
+    stripeCheckoutSessionId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PaymentCreateOrConnectWithoutEmailNotificationsInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutEmailNotificationsInput, PaymentUncheckedCreateWithoutEmailNotificationsInput>
+  }
+
+  export type OrderUpsertWithoutEmailNotificationsInput = {
+    update: XOR<OrderUpdateWithoutEmailNotificationsInput, OrderUncheckedUpdateWithoutEmailNotificationsInput>
+    create: XOR<OrderCreateWithoutEmailNotificationsInput, OrderUncheckedCreateWithoutEmailNotificationsInput>
+    where?: OrderWhereInput
+  }
+
+  export type OrderUpdateToOneWithWhereWithoutEmailNotificationsInput = {
+    where?: OrderWhereInput
+    data: XOR<OrderUpdateWithoutEmailNotificationsInput, OrderUncheckedUpdateWithoutEmailNotificationsInput>
+  }
+
+  export type OrderUpdateWithoutEmailNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    customerSalutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
+    customerFirstName?: StringFieldUpdateOperationsInput | string
+    customerLastName?: StringFieldUpdateOperationsInput | string
+    customerEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
+    fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    subtotalCents?: IntFieldUpdateOperationsInput | number
+    shippingCents?: IntFieldUpdateOperationsInput | number
+    discountCents?: IntFieldUpdateOperationsInput | number
+    totalCents?: IntFieldUpdateOperationsInput | number
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    shippingSalutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
+    shippingFirstName?: StringFieldUpdateOperationsInput | string
+    shippingLastName?: StringFieldUpdateOperationsInput | string
+    shippingCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingStreetLine1?: StringFieldUpdateOperationsInput | string
+    shippingStreetLine2?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPostalCode?: StringFieldUpdateOperationsInput | string
+    shippingCity?: StringFieldUpdateOperationsInput | string
+    shippingCountryCode?: StringFieldUpdateOperationsInput | string
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    billingSameAsShipping?: BoolFieldUpdateOperationsInput | boolean
+    billingSalutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
+    billingFirstName?: StringFieldUpdateOperationsInput | string
+    billingLastName?: StringFieldUpdateOperationsInput | string
+    billingCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    billingStreetLine1?: StringFieldUpdateOperationsInput | string
+    billingStreetLine2?: NullableStringFieldUpdateOperationsInput | string | null
+    billingPostalCode?: StringFieldUpdateOperationsInput | string
+    billingCity?: StringFieldUpdateOperationsInput | string
+    billingCountryCode?: StringFieldUpdateOperationsInput | string
+    billingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    placedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    customer?: CustomerUpdateOneRequiredWithoutOrdersNestedInput
+    lines?: OrderLineUpdateManyWithoutOrderNestedInput
+    payments?: PaymentUpdateManyWithoutOrderNestedInput
+  }
+
+  export type OrderUncheckedUpdateWithoutEmailNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderNumber?: StringFieldUpdateOperationsInput | string
+    customerId?: StringFieldUpdateOperationsInput | string
+    customerSalutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
+    customerFirstName?: StringFieldUpdateOperationsInput | string
+    customerLastName?: StringFieldUpdateOperationsInput | string
+    customerEmail?: StringFieldUpdateOperationsInput | string
+    status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+    paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
+    fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    subtotalCents?: IntFieldUpdateOperationsInput | number
+    shippingCents?: IntFieldUpdateOperationsInput | number
+    discountCents?: IntFieldUpdateOperationsInput | number
+    totalCents?: IntFieldUpdateOperationsInput | number
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    shippingSalutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
+    shippingFirstName?: StringFieldUpdateOperationsInput | string
+    shippingLastName?: StringFieldUpdateOperationsInput | string
+    shippingCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingStreetLine1?: StringFieldUpdateOperationsInput | string
+    shippingStreetLine2?: NullableStringFieldUpdateOperationsInput | string | null
+    shippingPostalCode?: StringFieldUpdateOperationsInput | string
+    shippingCity?: StringFieldUpdateOperationsInput | string
+    shippingCountryCode?: StringFieldUpdateOperationsInput | string
+    shippingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    billingSameAsShipping?: BoolFieldUpdateOperationsInput | boolean
+    billingSalutation?: NullableEnumSalutationFieldUpdateOperationsInput | $Enums.Salutation | null
+    billingFirstName?: StringFieldUpdateOperationsInput | string
+    billingLastName?: StringFieldUpdateOperationsInput | string
+    billingCompany?: NullableStringFieldUpdateOperationsInput | string | null
+    billingStreetLine1?: StringFieldUpdateOperationsInput | string
+    billingStreetLine2?: NullableStringFieldUpdateOperationsInput | string | null
+    billingPostalCode?: StringFieldUpdateOperationsInput | string
+    billingCity?: StringFieldUpdateOperationsInput | string
+    billingCountryCode?: StringFieldUpdateOperationsInput | string
+    billingPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    placedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    cancelledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    lines?: OrderLineUncheckedUpdateManyWithoutOrderNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutOrderNestedInput
+  }
+
+  export type PaymentUpsertWithoutEmailNotificationsInput = {
+    update: XOR<PaymentUpdateWithoutEmailNotificationsInput, PaymentUncheckedUpdateWithoutEmailNotificationsInput>
+    create: XOR<PaymentCreateWithoutEmailNotificationsInput, PaymentUncheckedCreateWithoutEmailNotificationsInput>
+    where?: PaymentWhereInput
+  }
+
+  export type PaymentUpdateToOneWithWhereWithoutEmailNotificationsInput = {
+    where?: PaymentWhereInput
+    data: XOR<PaymentUpdateWithoutEmailNotificationsInput, PaymentUncheckedUpdateWithoutEmailNotificationsInput>
+  }
+
+  export type PaymentUpdateWithoutEmailNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
+    status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutPaymentsNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutEmailNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    type?: EnumPaymentTypeFieldUpdateOperationsInput | $Enums.PaymentType
+    status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
+    provider?: EnumPaymentProviderFieldUpdateOperationsInput | $Enums.PaymentProvider
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    amountCents?: IntFieldUpdateOperationsInput | number
+    currencyCode?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
+    stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type OrderCreateWithoutLinesInput = {
     id?: string
     orderNumber: string
@@ -35470,8 +38397,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -35505,6 +38440,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     customer: CustomerCreateNestedOneWithoutOrdersInput
     payments?: PaymentCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutLinesInput = {
@@ -35518,8 +38454,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -35552,6 +38496,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     payments?: PaymentUncheckedCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutLinesInput = {
@@ -35689,8 +38634,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -35724,6 +38677,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneRequiredWithoutOrdersNestedInput
     payments?: PaymentUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutLinesInput = {
@@ -35737,8 +38691,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -35771,6 +38733,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     payments?: PaymentUncheckedUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type ProductUpsertWithoutOrderLinesInput = {
@@ -35910,8 +38873,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -35945,6 +38916,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     customer: CustomerCreateNestedOneWithoutOrdersInput
     lines?: OrderLineCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationCreateNestedManyWithoutOrderInput
   }
 
   export type OrderUncheckedCreateWithoutPaymentsInput = {
@@ -35958,8 +38930,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -35992,11 +38972,56 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     lines?: OrderLineUncheckedCreateNestedManyWithoutOrderInput
+    emailNotifications?: EmailNotificationUncheckedCreateNestedManyWithoutOrderInput
   }
 
   export type OrderCreateOrConnectWithoutPaymentsInput = {
     where: OrderWhereUniqueInput
     create: XOR<OrderCreateWithoutPaymentsInput, OrderUncheckedCreateWithoutPaymentsInput>
+  }
+
+  export type EmailNotificationCreateWithoutPaymentInput = {
+    id?: string
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutEmailNotificationsInput
+  }
+
+  export type EmailNotificationUncheckedCreateWithoutPaymentInput = {
+    id?: string
+    orderId: string
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailNotificationCreateOrConnectWithoutPaymentInput = {
+    where: EmailNotificationWhereUniqueInput
+    create: XOR<EmailNotificationCreateWithoutPaymentInput, EmailNotificationUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type EmailNotificationCreateManyPaymentInputEnvelope = {
+    data: EmailNotificationCreateManyPaymentInput | EmailNotificationCreateManyPaymentInput[]
+    skipDuplicates?: boolean
   }
 
   export type OrderUpsertWithoutPaymentsInput = {
@@ -36020,8 +39045,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -36055,6 +39088,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     customer?: CustomerUpdateOneRequiredWithoutOrdersNestedInput
     lines?: OrderLineUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutPaymentsInput = {
@@ -36068,8 +39102,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -36102,6 +39144,23 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lines?: OrderLineUncheckedUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUncheckedUpdateManyWithoutOrderNestedInput
+  }
+
+  export type EmailNotificationUpsertWithWhereUniqueWithoutPaymentInput = {
+    where: EmailNotificationWhereUniqueInput
+    update: XOR<EmailNotificationUpdateWithoutPaymentInput, EmailNotificationUncheckedUpdateWithoutPaymentInput>
+    create: XOR<EmailNotificationCreateWithoutPaymentInput, EmailNotificationUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type EmailNotificationUpdateWithWhereUniqueWithoutPaymentInput = {
+    where: EmailNotificationWhereUniqueInput
+    data: XOR<EmailNotificationUpdateWithoutPaymentInput, EmailNotificationUncheckedUpdateWithoutPaymentInput>
+  }
+
+  export type EmailNotificationUpdateManyWithWhereWithoutPaymentInput = {
+    where: EmailNotificationScalarWhereInput
+    data: XOR<EmailNotificationUpdateManyMutationInput, EmailNotificationUncheckedUpdateManyWithoutPaymentInput>
   }
 
   export type ProductCreateWithoutReviewsInput = {
@@ -36607,8 +39666,16 @@ export namespace Prisma {
     status?: $Enums.OrderStatus
     paymentStatus?: $Enums.OrderPaymentStatus
     fulfillmentStatus?: $Enums.FulfillmentStatus
-    guestAccessTokenHash?: string | null
+    origin?: $Enums.OrderOrigin
+    dispatchCarrier?: $Enums.ShippingCarrier | null
+    trackingNumber?: string | null
+    dispatchedAt?: Date | string | null
     paymentExpiresAt?: Date | string | null
+    paymentExpiryStartedAt?: Date | string | null
+    checkoutSubmissionId?: string | null
+    checkoutSubmissionFingerprint?: string | null
+    paymentExceptionAt?: Date | string | null
+    paymentExceptionReason?: string | null
     subtotalCents: number
     shippingCents: number
     discountCents?: number
@@ -36716,8 +39783,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -36751,6 +39826,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lines?: OrderLineUpdateManyWithoutOrderNestedInput
     payments?: PaymentUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateWithoutCustomerInput = {
@@ -36763,8 +39839,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -36798,6 +39882,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lines?: OrderLineUncheckedUpdateManyWithoutOrderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutOrderNestedInput
+    emailNotifications?: EmailNotificationUncheckedUpdateManyWithoutOrderNestedInput
   }
 
   export type OrderUncheckedUpdateManyWithoutCustomerInput = {
@@ -36810,8 +39895,16 @@ export namespace Prisma {
     status?: EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
     paymentStatus?: EnumOrderPaymentStatusFieldUpdateOperationsInput | $Enums.OrderPaymentStatus
     fulfillmentStatus?: EnumFulfillmentStatusFieldUpdateOperationsInput | $Enums.FulfillmentStatus
-    guestAccessTokenHash?: NullableStringFieldUpdateOperationsInput | string | null
+    origin?: EnumOrderOriginFieldUpdateOperationsInput | $Enums.OrderOrigin
+    dispatchCarrier?: NullableEnumShippingCarrierFieldUpdateOperationsInput | $Enums.ShippingCarrier | null
+    trackingNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    dispatchedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
+    checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
     shippingCents?: IntFieldUpdateOperationsInput | number
     discountCents?: IntFieldUpdateOperationsInput | number
@@ -37260,6 +40353,23 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type EmailNotificationCreateManyOrderInput = {
+    id?: string
+    paymentId?: string | null
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type OrderLineUpdateWithoutOrderInput = {
     id?: StringFieldUpdateOperationsInput | string
     productName?: StringFieldUpdateOperationsInput | string
@@ -37322,6 +40432,7 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailNotifications?: EmailNotificationUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentUncheckedUpdateWithoutOrderInput = {
@@ -37337,6 +40448,7 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailNotifications?: EmailNotificationUncheckedUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentUncheckedUpdateManyWithoutOrderInput = {
@@ -37350,6 +40462,125 @@ export namespace Prisma {
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationUpdateWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    payment?: PaymentUpdateOneWithoutEmailNotificationsNestedInput
+  }
+
+  export type EmailNotificationUncheckedUpdateWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationUncheckedUpdateManyWithoutOrderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationCreateManyPaymentInput = {
+    id?: string
+    orderId: string
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailNotificationUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutEmailNotificationsNestedInput
+  }
+
+  export type EmailNotificationUncheckedUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailNotificationUncheckedUpdateManyWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

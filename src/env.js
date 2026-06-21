@@ -61,6 +61,26 @@ export const env = createEnv({
       process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
+    ORDER_ACCESS_SECRET:
+      process.env.NODE_ENV === 'production'
+        ? z.string().min(32)
+        : z.string().min(32).optional(),
+    RESEND_API_KEY:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
+    EMAIL_FROM:
+      process.env.NODE_ENV === 'production'
+        ? z.string().email()
+        : z.string().email().optional(),
+    EMAIL_REPLY_TO:
+      process.env.NODE_ENV === 'production'
+        ? z.string().email()
+        : z.string().email().optional(),
+    EMAIL_INTERNAL_RECIPIENT:
+      process.env.NODE_ENV === 'production'
+        ? z.string().email()
+        : z.string().email().optional(),
     STRIPE_SECRET_KEY:
       process.env.NODE_ENV === 'production'
         ? z.string()
@@ -99,6 +119,11 @@ export const env = createEnv({
     QSTASH_PUBLISH_BASE_URL: process.env.QSTASH_PUBLISH_BASE_URL,
     APP_BASE_URL: process.env.APP_BASE_URL,
     CRON_SECRET: process.env.CRON_SECRET,
+    ORDER_ACCESS_SECRET: process.env.ORDER_ACCESS_SECRET,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+    EMAIL_REPLY_TO: process.env.EMAIL_REPLY_TO,
+    EMAIL_INTERNAL_RECIPIENT: process.env.EMAIL_INTERNAL_RECIPIENT,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET
   },

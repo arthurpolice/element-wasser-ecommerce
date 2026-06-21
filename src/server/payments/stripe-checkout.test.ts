@@ -43,7 +43,8 @@ describe('startStripeCheckout', () => {
     const create = vi.fn(async () => ({
       id: 'cs_test_123',
       url: 'https://checkout.stripe.com/c/pay/cs_test_123',
-      payment_intent: 'pi_test_123'
+      payment_intent: 'pi_test_123',
+      expires_at: 1778831400
     }))
 
     const started = await startStripeCheckout(
@@ -54,7 +55,8 @@ describe('startStripeCheckout', () => {
     expect(started).toEqual({
       url: 'https://checkout.stripe.com/c/pay/cs_test_123',
       sessionId: 'cs_test_123',
-      paymentIntentId: 'pi_test_123'
+      paymentIntentId: 'pi_test_123',
+      expiresAt: new Date(1778831400 * 1000)
     })
     expect(create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -106,7 +108,8 @@ describe('startStripeCheckout', () => {
             quantity: 1
           }
         ]
-      })
+      }),
+      { idempotencyKey: 'payment-1' }
     )
   })
 })

@@ -12,9 +12,12 @@ import {
   type OrderQuoteProblemCode
 } from '~/lib/order-quote'
 
-export const PAYMENT_RESERVATION_MINUTES = 15
+export const PROVISIONAL_PAYMENT_RESERVATION_MINUTES = 10
 
 export const orderListInclude = {
+  customer: {
+    select: { userId: true }
+  },
   lines: {
     orderBy: { createdAt: 'asc' as const },
     select: {
@@ -69,6 +72,9 @@ export type PlaceOrderInput = {
   shippingCity: string
   shippingCountryCode: string
   shippingPhone?: string
+  origin?: 'STOREFRONT' | 'OWNER_DASHBOARD'
+  checkoutSubmissionId?: string
+  checkoutSubmissionFingerprint?: string
 }
 
 export type PlaceOrderLineInput = {
@@ -205,7 +211,11 @@ async function resolveShippingSnapshot(
 
 function buildOrderLineSnapshot(product: ProductSnapshot, quantity: number) {
   const listPriceCents = product.priceCents
-  const quote = quoteOrderLines([product], [{ productId: product.id, quantity }], 0)
+  const quote = quoteOrderLines(
+    [product],
+    [{ productId: product.id, quantity }],
+    0
+  )
   const quotedLine = quote.lines[0]
 
   return {
@@ -267,128 +277,150 @@ export async function placeOrder(
   deps: OrderPlacementDeps = {}
 ): Promise<OrderListRow> {
   const now = deps.now?.() ?? new Date()
-  const paymentExpiresAt = addMinutes(now, PAYMENT_RESERVATION_MINUTES)
+  const paymentExpiresAt = addMinutes(
+    now,
+    PROVISIONAL_PAYMENT_RESERVATION_MINUTES
+  )
 
-  return db.$transaction(async (tx) => {
-    const requestedLines = normalizeOrderLines(input)
-    const customer = await tx.customer.findUnique({
-      where: { id: input.customerId }
-    })
-
-    if (!customer) {
-      throw new OrderPlacementError('CUSTOMER_NOT_FOUND', 'Customer not found.')
-    }
-
-    const products = await tx.product.findMany({
-      where: { id: { in: requestedLines.map((line) => line.productId) } }
-    })
-    const quote = quoteOrderLines(products, requestedLines, input.shippingCents)
-    const firstProblem = quote.problems[0]
-
-    if (firstProblem) {
-      throw toOrderPlacementError(firstProblem.code)
-    }
-
-    for (const quotedLine of quote.lines) {
-      const product = quotedLine.product
-
-      if (!product) {
-        throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
-      }
-
-      const reservation = await tx.product.updateMany({
-        where: {
-          id: product.id,
-          stockOnHand: { gte: quotedLine.quantity },
-          stockReserved: { lte: product.stockOnHand - quotedLine.quantity }
-        },
-        data: {
-          stockReserved: { increment: quotedLine.quantity }
-        }
+  return db.$transaction(
+    async (tx) => {
+      const requestedLines = normalizeOrderLines(input)
+      const customer = await tx.customer.findUnique({
+        where: { id: input.customerId }
       })
 
-      if (reservation.count !== 1) {
+      if (!customer) {
         throw new OrderPlacementError(
-          'INSUFFICIENT_STOCK',
-          'Insufficient stock available.'
+          'CUSTOMER_NOT_FOUND',
+          'Customer not found.'
         )
       }
-    }
 
-    const orderNumber = await allocateOrderNumber(tx, now)
-    const shippingSnapshot = await resolveShippingSnapshot(
-      tx,
-      input,
-      customer.id
-    )
-    const orderLines = quote.lines.map((line) => {
-      const product = line.product
+      const products = await tx.product.findMany({
+        where: { id: { in: requestedLines.map((line) => line.productId) } }
+      })
+      const quote = quoteOrderLines(
+        products,
+        requestedLines,
+        input.shippingCents
+      )
+      const firstProblem = quote.problems[0]
 
-      if (!product) {
-        throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
+      if (firstProblem) {
+        throw toOrderPlacementError(firstProblem.code)
       }
 
-      return buildOrderLineSnapshot(product, line.quantity)
-    })
-    const totals = {
-      subtotalCents: quote.subtotalCents,
-      discountCents: quote.discountCents,
-      totalCents: quote.totalCents
-    }
-    const snapshotCountryCode = shippingSnapshot.countryCode.toUpperCase()
-    const pendingPayment = input.paymentMethod
-      ? buildPendingPayment(input.paymentMethod, totals.totalCents)
-      : undefined
+      for (const quotedLine of quote.lines) {
+        const product = quotedLine.product
 
-    const created = await tx.order.create({
-      data: {
-        orderNumber,
-        customerId: customer.id,
-        customerSalutation: customer.salutation,
-        customerFirstName: customer.firstName,
-        customerLastName: customer.lastName,
-        customerEmail: customer.email,
-        paymentExpiresAt,
-        subtotalCents: totals.subtotalCents,
-        shippingCents: input.shippingCents,
-        discountCents: totals.discountCents,
-        totalCents: totals.totalCents,
-        currencyCode: 'CHF',
-        shippingSalutation: shippingSnapshot.salutation,
-        shippingFirstName: shippingSnapshot.firstName,
-        shippingLastName: shippingSnapshot.lastName,
-        shippingCompany: shippingSnapshot.company,
-        shippingStreetLine1: shippingSnapshot.streetLine1,
-        shippingStreetLine2: shippingSnapshot.streetLine2,
-        shippingPostalCode: shippingSnapshot.postalCode,
-        shippingCity: shippingSnapshot.city,
-        shippingCountryCode: snapshotCountryCode,
-        shippingPhone: shippingSnapshot.phone,
-        billingSameAsShipping: true,
-        billingSalutation: shippingSnapshot.salutation,
-        billingFirstName: shippingSnapshot.firstName,
-        billingLastName: shippingSnapshot.lastName,
-        billingCompany: shippingSnapshot.company,
-        billingStreetLine1: shippingSnapshot.streetLine1,
-        billingStreetLine2: shippingSnapshot.streetLine2,
-        billingPostalCode: shippingSnapshot.postalCode,
-        billingCity: shippingSnapshot.city,
-        billingCountryCode: snapshotCountryCode,
-        billingPhone: shippingSnapshot.phone,
-        lines: {
-          create: orderLines
-        },
-        ...(pendingPayment
-          ? {
-              payments: {
-                create: pendingPayment
+        if (!product) {
+          throw new OrderPlacementError(
+            'PRODUCT_NOT_FOUND',
+            'Product not found.'
+          )
+        }
+
+        const reservation = await tx.product.updateMany({
+          where: {
+            id: product.id,
+            stockOnHand: { gte: quotedLine.quantity },
+            stockReserved: { lte: product.stockOnHand - quotedLine.quantity }
+          },
+          data: {
+            stockReserved: { increment: quotedLine.quantity }
+          }
+        })
+
+        if (reservation.count !== 1) {
+          throw new OrderPlacementError(
+            'INSUFFICIENT_STOCK',
+            'Insufficient stock available.'
+          )
+        }
+      }
+
+      const orderNumber = await allocateOrderNumber(tx, now)
+      const shippingSnapshot = await resolveShippingSnapshot(
+        tx,
+        input,
+        customer.id
+      )
+      const orderLines = quote.lines.map((line) => {
+        const product = line.product
+
+        if (!product) {
+          throw new OrderPlacementError(
+            'PRODUCT_NOT_FOUND',
+            'Product not found.'
+          )
+        }
+
+        return buildOrderLineSnapshot(product, line.quantity)
+      })
+      const totals = {
+        subtotalCents: quote.subtotalCents,
+        discountCents: quote.discountCents,
+        totalCents: quote.totalCents
+      }
+      const snapshotCountryCode = shippingSnapshot.countryCode.toUpperCase()
+      const pendingPayment = input.paymentMethod
+        ? buildPendingPayment(input.paymentMethod, totals.totalCents)
+        : undefined
+
+      const created = await tx.order.create({
+        data: {
+          orderNumber,
+          customerId: customer.id,
+          customerSalutation: customer.salutation,
+          customerFirstName: customer.firstName,
+          customerLastName: customer.lastName,
+          customerEmail: customer.email,
+          origin: input.origin ?? 'OWNER_DASHBOARD',
+          checkoutSubmissionId: input.checkoutSubmissionId,
+          checkoutSubmissionFingerprint: input.checkoutSubmissionFingerprint,
+          paymentExpiresAt,
+          subtotalCents: totals.subtotalCents,
+          shippingCents: input.shippingCents,
+          discountCents: totals.discountCents,
+          totalCents: totals.totalCents,
+          currencyCode: 'CHF',
+          shippingSalutation: shippingSnapshot.salutation,
+          shippingFirstName: shippingSnapshot.firstName,
+          shippingLastName: shippingSnapshot.lastName,
+          shippingCompany: shippingSnapshot.company,
+          shippingStreetLine1: shippingSnapshot.streetLine1,
+          shippingStreetLine2: shippingSnapshot.streetLine2,
+          shippingPostalCode: shippingSnapshot.postalCode,
+          shippingCity: shippingSnapshot.city,
+          shippingCountryCode: snapshotCountryCode,
+          shippingPhone: shippingSnapshot.phone,
+          billingSameAsShipping: true,
+          billingSalutation: shippingSnapshot.salutation,
+          billingFirstName: shippingSnapshot.firstName,
+          billingLastName: shippingSnapshot.lastName,
+          billingCompany: shippingSnapshot.company,
+          billingStreetLine1: shippingSnapshot.streetLine1,
+          billingStreetLine2: shippingSnapshot.streetLine2,
+          billingPostalCode: shippingSnapshot.postalCode,
+          billingCity: shippingSnapshot.city,
+          billingCountryCode: snapshotCountryCode,
+          billingPhone: shippingSnapshot.phone,
+          lines: {
+            create: orderLines
+          },
+          ...(pendingPayment
+            ? {
+                payments: {
+                  create: pendingPayment
+                }
               }
-            }
-          : {})
-      },
-      include: orderListInclude
-    })
+            : {})
+        },
+        include: orderListInclude
+      })
 
-    return created
-  }, { timeout: 10000 })
+      return created
+    },
+    { timeout: 10000 }
+  )
 }

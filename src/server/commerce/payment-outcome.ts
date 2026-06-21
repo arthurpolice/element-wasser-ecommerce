@@ -1,13 +1,23 @@
 import type { Prisma, PrismaClient } from '../../../generated/prisma'
 import type Stripe from 'stripe'
 
-type PaymentOutcomeDb = Pick<PrismaClient, '$transaction'>
+import { env } from '~/env'
+import { getOrderAccessExpiry } from '~/server/commerce/order-access-token'
+import { publishEmailNotificationSafely } from '~/server/commerce/email-notifications'
+import { orderEmailNotificationKey } from '~/server/commerce/email-notification-key'
+import { retrieveStripeCheckoutSession } from '~/server/payments/stripe-checkout'
+
+type PaymentOutcomeDb = Pick<PrismaClient, '$transaction' | 'payment'>
 
 type PaymentWithOrder = Prisma.PaymentGetPayload<{
-  include: { order: true }
+  include: { order: { include: { customer: { select: { userId: true } } } } }
 }>
 
 type PaymentOutcomeTx = Prisma.TransactionClient
+type PaymentOutcomeDeps = {
+  internalRecipient?: string
+  now?: () => Date
+}
 
 function getStringMetadataValue(
   metadata: Stripe.Metadata | null | undefined,
@@ -39,25 +49,84 @@ async function findPayment(
   if (input.paymentId) {
     return tx.payment.findUnique({
       where: { id: input.paymentId },
-      include: { order: true }
+      include: {
+        order: { include: { customer: { select: { userId: true } } } }
+      }
     })
   }
 
   if (input.stripeCheckoutSessionId) {
     return tx.payment.findFirst({
       where: { stripeCheckoutSessionId: input.stripeCheckoutSessionId },
-      include: { order: true }
+      include: {
+        order: { include: { customer: { select: { userId: true } } } }
+      }
     })
   }
 
   if (input.providerReference) {
     return tx.payment.findFirst({
       where: { provider: 'STRIPE', providerReference: input.providerReference },
-      include: { order: true }
+      include: {
+        order: { include: { customer: { select: { userId: true } } } }
+      }
     })
   }
 
   return null
+}
+
+async function lockOrder(tx: PaymentOutcomeTx, orderId: string) {
+  await tx.$queryRaw`
+    SELECT "id"
+    FROM "Order"
+    WHERE "id" = ${orderId}
+    FOR UPDATE
+  `
+}
+
+export async function projectOrderPaymentStatus(
+  tx: PaymentOutcomeTx,
+  orderId: string,
+  now = new Date()
+) {
+  await lockOrder(tx, orderId)
+  const order = await tx.order.findUniqueOrThrow({
+    where: { id: orderId },
+    select: {
+      status: true,
+      paymentStatus: true,
+      paymentExpiresAt: true,
+      payments: {
+        where: { type: 'CHARGE' },
+        select: { status: true }
+      }
+    }
+  })
+  const statuses = (order.payments ?? []).map((payment) => payment.status)
+  const paymentStatus = statuses.includes('CAPTURED')
+    ? 'PAID'
+    : statuses.includes('PENDING')
+      ? 'PENDING'
+      : order.status === 'CANCELLED' ||
+          !order.paymentExpiresAt ||
+          order.paymentExpiresAt.getTime() <= now.getTime()
+        ? 'CANCELLED'
+        : statuses.includes('FAILED')
+          ? 'FAILED'
+          : 'CANCELLED'
+
+  if (paymentStatus !== order.paymentStatus) {
+    await tx.order.update({
+      where: { id: orderId },
+      data: { paymentStatus }
+    })
+  }
+
+  return {
+    previous: order.paymentStatus,
+    current: paymentStatus
+  }
 }
 
 async function markPaymentCaptured(
@@ -66,8 +135,15 @@ async function markPaymentCaptured(
   input: {
     providerReference: string | null
     stripeCheckoutSessionId: string | null
-  }
+  },
+  deps: PaymentOutcomeDeps
 ) {
+  await lockOrder(tx, payment.orderId)
+  const currentOrder = await tx.order.findUniqueOrThrow({
+    where: { id: payment.orderId },
+    select: { status: true, paymentStatus: true }
+  })
+
   if (payment.status !== 'CAPTURED') {
     await tx.payment.update({
       where: { id: payment.id },
@@ -81,12 +157,87 @@ async function markPaymentCaptured(
     })
   }
 
-  if (payment.order.paymentStatus !== 'PAID') {
+  if (currentOrder.status === 'CANCELLED') {
     await tx.order.update({
       where: { id: payment.orderId },
-      data: { paymentStatus: 'PAID' }
+      data: {
+        paymentStatus: 'PAID',
+        paymentExpiryStartedAt: null,
+        paymentExceptionAt: deps.now?.() ?? new Date(),
+        paymentExceptionReason: 'CAPTURED_AFTER_ORDER_CANCELLATION'
+      }
     })
+    return []
   }
+
+  const projection = await projectOrderPaymentStatus(
+    tx,
+    payment.orderId,
+    deps.now?.() ?? new Date()
+  )
+  await tx.order.update({
+    where: { id: payment.orderId },
+    data: { paymentExpiryStartedAt: null }
+  })
+  const firstPaidTransition =
+    projection.previous !== 'PAID' && projection.current === 'PAID'
+
+  if (!firstPaidTransition || payment.order.origin !== 'STOREFRONT') return []
+
+  const internalRecipient =
+    deps.internalRecipient ?? env.EMAIL_INTERNAL_RECIPIENT
+  if (!internalRecipient) {
+    throw new Error('EMAIL_INTERNAL_RECIPIENT is not configured.')
+  }
+
+  const accessExpiresAt = payment.order.customer.userId
+    ? null
+    : getOrderAccessExpiry(deps.now?.() ?? new Date())
+  const [customerNotification, merchantNotification] = await Promise.all([
+    tx.emailNotification.upsert({
+      where: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: payment.orderId,
+          type: 'ORDER_PAYMENT_CONFIRMED',
+          recipientEmail: payment.order.customerEmail
+        })
+      },
+      create: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: payment.orderId,
+          type: 'ORDER_PAYMENT_CONFIRMED',
+          recipientEmail: payment.order.customerEmail
+        }),
+        orderId: payment.orderId,
+        type: 'ORDER_PAYMENT_CONFIRMED',
+        recipientEmail: payment.order.customerEmail,
+        accessExpiresAt
+      },
+      update: {}
+    }),
+    tx.emailNotification.upsert({
+      where: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: payment.orderId,
+          type: 'NEW_PAID_ORDER',
+          recipientEmail: internalRecipient
+        })
+      },
+      create: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: payment.orderId,
+          type: 'NEW_PAID_ORDER',
+          recipientEmail: internalRecipient
+        }),
+        orderId: payment.orderId,
+        type: 'NEW_PAID_ORDER',
+        recipientEmail: internalRecipient
+      },
+      update: {}
+    })
+  ])
+
+  return [customerNotification.id, merchantNotification.id]
 }
 
 async function markPaymentFailed(
@@ -98,35 +249,38 @@ async function markPaymentFailed(
     providerReference?: string | null
   }
 ) {
+  await lockOrder(tx, payment.orderId)
+
   if (payment.status === 'CAPTURED') {
     return
   }
 
-  if (payment.status !== input.status) {
-    await tx.payment.update({
-      where: { id: payment.id },
-      data: {
-        status: input.status,
-        failureReason: input.failureReason,
-        providerReference: input.providerReference ?? payment.providerReference
-      }
-    })
+  const update = await tx.payment.updateMany({
+    where: {
+      id: payment.id,
+      status: { not: 'CAPTURED' }
+    },
+    data: {
+      status: input.status,
+      failureReason: input.failureReason,
+      providerReference: input.providerReference ?? payment.providerReference
+    }
+  })
+
+  if (update.count === 0) {
+    return
   }
 
-  if (payment.order.paymentStatus !== 'PAID') {
-    await tx.order.update({
-      where: { id: payment.orderId },
-      data: { paymentStatus: 'FAILED' }
-    })
-  }
+  await projectOrderPaymentStatus(tx, payment.orderId)
 }
 
 async function handleCheckoutSessionCompleted(
   tx: PaymentOutcomeTx,
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
+  deps: PaymentOutcomeDeps
 ) {
   if (session.payment_status !== 'paid') {
-    return
+    return []
   }
 
   const paymentIntentId = getPaymentIntentId(session.payment_intent)
@@ -136,13 +290,18 @@ async function handleCheckoutSessionCompleted(
   })
 
   if (!payment) {
-    return
+    return []
   }
 
-  await markPaymentCaptured(tx, payment, {
-    providerReference: paymentIntentId,
-    stripeCheckoutSessionId: session.id
-  })
+  return markPaymentCaptured(
+    tx,
+    payment,
+    {
+      providerReference: paymentIntentId,
+      stripeCheckoutSessionId: session.id
+    },
+    deps
+  )
 }
 
 async function handleCheckoutSessionExpired(
@@ -187,19 +346,94 @@ async function handlePaymentIntentFailed(
 
 export async function handleStripeWebhookEvent(
   db: PaymentOutcomeDb,
-  event: Stripe.Event
+  event: Stripe.Event,
+  deps: PaymentOutcomeDeps = {}
 ) {
-  await db.$transaction(async (tx) => {
+  const notificationIds = await db.$transaction(async (tx) => {
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutSessionCompleted(tx, event.data.object)
-        break
+        return handleCheckoutSessionCompleted(tx, event.data.object, deps)
       case 'checkout.session.expired':
         await handleCheckoutSessionExpired(tx, event.data.object)
-        break
+        return []
       case 'payment_intent.payment_failed':
         await handlePaymentIntentFailed(tx, event.data.object)
-        break
+        return []
+      default:
+        return []
     }
   })
+
+  for (const id of notificationIds) {
+    void publishEmailNotificationSafely(id)
+  }
+}
+
+export async function reconcileStripePayment(
+  db: PaymentOutcomeDb,
+  paymentId: string,
+  deps: PaymentOutcomeDeps = {}
+) {
+  const current = await db.payment.findUnique({
+    where: { id: paymentId },
+    select: { stripeCheckoutSessionId: true, status: true }
+  })
+  if (!current?.stripeCheckoutSessionId || current.status !== 'PENDING') {
+    return current?.status ?? null
+  }
+
+  const session = await retrieveStripeCheckoutSession(
+    current.stripeCheckoutSessionId
+  )
+  const paymentIntent =
+    typeof session.payment_intent === 'object' ? session.payment_intent : null
+
+  const notificationIds = await db.$transaction(async (tx) => {
+    const payment = await findPayment(tx, { paymentId })
+    if (!payment) return []
+
+    if (
+      session.payment_status === 'paid' ||
+      paymentIntent?.status === 'succeeded'
+    ) {
+      return markPaymentCaptured(
+        tx,
+        payment,
+        {
+          providerReference: paymentIntent?.id ?? null,
+          stripeCheckoutSessionId: session.id
+        },
+        deps
+      )
+    }
+
+    if (session.status === 'expired' || paymentIntent?.status === 'canceled') {
+      await markPaymentFailed(tx, payment, {
+        status: 'CANCELLED',
+        failureReason: 'Stripe Checkout Session expired.',
+        providerReference: paymentIntent?.id
+      })
+      return []
+    }
+
+    if (
+      paymentIntent?.status === 'requires_payment_method' &&
+      paymentIntent.last_payment_error
+    ) {
+      await markPaymentFailed(tx, payment, {
+        status: 'FAILED',
+        failureReason: paymentIntent.last_payment_error.message,
+        providerReference: paymentIntent.id
+      })
+    }
+    return []
+  })
+
+  for (const id of notificationIds) {
+    void publishEmailNotificationSafely(id)
+  }
+
+  return db.payment
+    .findUnique({ where: { id: paymentId }, select: { status: true } })
+    .then((payment) => payment?.status ?? null)
 }

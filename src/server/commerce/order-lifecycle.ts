@@ -4,6 +4,12 @@ import {
   orderListInclude,
   type OrderListRow
 } from '~/server/commerce/order-placement'
+import { getOrderAccessExpiry } from '~/server/commerce/order-access-token'
+import { publishEmailNotificationSafely } from '~/server/commerce/email-notifications'
+import { orderEmailNotificationKey } from '~/server/commerce/email-notification-key'
+import { SWISS_POST_CARRIER_CODE } from '~/lib/order-tracking'
+import { expireStripeCheckoutSession } from '~/server/payments/stripe-checkout'
+import { projectOrderPaymentStatus } from '~/server/commerce/payment-outcome'
 
 export const orderLifecycleInclude = {
   ...orderListInclude
@@ -37,6 +43,12 @@ type Db = Pick<PrismaClient, '$transaction'>
 
 function nowFromDeps(deps: OrderLifecycleDeps) {
   return deps.now?.() ?? new Date()
+}
+
+function normalizeTrackingNumber(value: string | undefined) {
+  const trackingNumber = value?.trim()
+  if (!trackingNumber) return null
+  return trackingNumber
 }
 
 async function findOrder(
@@ -88,12 +100,26 @@ export async function cancelOrder(
   deps: OrderLifecycleDeps = {}
 ): Promise<OrderListRow> {
   const cancelledAt = nowFromDeps(deps)
+  const current = await db.$transaction((tx) => findOrder(tx, input.orderId))
+  const activePayment = (current.payments ?? []).find(
+    (payment) => payment.status === 'PENDING'
+  )
 
-  return db.$transaction(async (tx) => {
+  if (
+    current.paymentStatus !== 'PAID' &&
+    activePayment?.stripeCheckoutSessionId
+  ) {
+    await expireStripeCheckoutSession(activePayment.stripeCheckoutSessionId)
+  }
+
+  const result = await db.$transaction(async (tx) => {
+    await tx.$queryRaw`
+      SELECT "id" FROM "Order" WHERE "id" = ${input.orderId} FOR UPDATE
+    `
     const order = await findOrder(tx, input.orderId)
 
     if (order.status === 'CANCELLED') {
-      return order
+      return { order, emailNotificationId: null }
     }
 
     if (order.fulfillmentStatus === 'FULFILLED') {
@@ -104,18 +130,64 @@ export async function cancelOrder(
     }
 
     await releaseStockReservation(tx, order)
+    await tx.payment.updateMany({
+      where: { orderId: order.id, status: 'PENDING' },
+      data: {
+        status: 'CANCELLED',
+        failureReason: 'Order cancelled by merchant.'
+      }
+    })
 
-    return tx.order.update({
+    await tx.order.update({
       where: { id: order.id },
       data: {
         status: 'CANCELLED',
-        paymentStatus: order.paymentStatus === 'PAID' ? 'PAID' : 'CANCELLED',
         fulfillmentStatus: 'CANCELLED',
         cancelledAt
       },
       include: orderListInclude
     })
+    await projectOrderPaymentStatus(tx, order.id, cancelledAt)
+    const cancelledOrder = await tx.order.findUniqueOrThrow({
+      where: { id: order.id },
+      include: orderListInclude
+    })
+
+    const emailNotification = await tx.emailNotification.upsert({
+      where: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: order.id,
+          type: 'ORDER_CANCELLED',
+          recipientEmail: order.customerEmail
+        })
+      },
+      create: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: order.id,
+          type: 'ORDER_CANCELLED',
+          recipientEmail: order.customerEmail
+        }),
+        orderId: order.id,
+        type: 'ORDER_CANCELLED',
+        recipientEmail: order.customerEmail,
+        accessExpiresAt: order.customer.userId
+          ? null
+          : getOrderAccessExpiry(cancelledAt)
+      },
+      update: {}
+    })
+
+    return {
+      order: cancelledOrder,
+      emailNotificationId: emailNotification.id
+    }
   })
+
+  if (result.emailNotificationId) {
+    void publishEmailNotificationSafely(result.emailNotificationId)
+  }
+
+  return result.order
 }
 
 export async function fulfillOrder(
@@ -160,14 +232,97 @@ export async function fulfillOrder(
   })
 }
 
+export async function dispatchOrder(
+  db: Db,
+  input: { orderId: string; trackingNumber?: string },
+  deps: OrderLifecycleDeps = {}
+): Promise<OrderListRow> {
+  const dispatchedAt = nowFromDeps(deps)
+  const trackingNumber = normalizeTrackingNumber(input.trackingNumber)
+
+  const result = await db.$transaction(async (tx) => {
+    const order = await findOrder(tx, input.orderId)
+
+    if (order.fulfillmentStatus === 'DISPATCHED') {
+      return { order, emailNotificationId: null }
+    }
+
+    if (order.status === 'CANCELLED') {
+      throw new OrderLifecycleError(
+        'ORDER_CANCELLED',
+        'Cancelled Orders cannot be dispatched.'
+      )
+    }
+
+    if (order.fulfillmentStatus !== 'UNFULFILLED') {
+      throw new OrderLifecycleError(
+        'ORDER_ALREADY_FULFILLED',
+        'Only unfulfilled Orders can be dispatched.'
+      )
+    }
+
+    if (order.paymentStatus !== 'PAID') {
+      throw new OrderLifecycleError(
+        'ORDER_PAYMENT_NOT_PAID',
+        'Only paid Orders can be dispatched.'
+      )
+    }
+
+    const dispatchedOrder = await tx.order.update({
+      where: { id: order.id },
+      data: {
+        fulfillmentStatus: 'DISPATCHED',
+        dispatchCarrier: SWISS_POST_CARRIER_CODE,
+        trackingNumber,
+        dispatchedAt
+      },
+      include: orderListInclude
+    })
+
+    const emailNotification = await tx.emailNotification.upsert({
+      where: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: order.id,
+          type: 'ORDER_DISPATCHED',
+          recipientEmail: order.customerEmail
+        })
+      },
+      create: {
+        deduplicationKey: orderEmailNotificationKey({
+          orderId: order.id,
+          type: 'ORDER_DISPATCHED',
+          recipientEmail: order.customerEmail
+        }),
+        orderId: order.id,
+        type: 'ORDER_DISPATCHED',
+        recipientEmail: order.customerEmail,
+        accessExpiresAt: order.customer.userId
+          ? null
+          : getOrderAccessExpiry(dispatchedAt)
+      },
+      update: {}
+    })
+
+    return {
+      order: dispatchedOrder,
+      emailNotificationId: emailNotification.id
+    }
+  })
+
+  if (result.emailNotificationId) {
+    void publishEmailNotificationSafely(result.emailNotificationId)
+  }
+
+  return result.order
+}
+
 export async function expirePendingPaymentOrders(
   db: Db,
   deps: OrderLifecycleDeps = {}
 ): Promise<OrderListRow[]> {
   const cancelledAt = nowFromDeps(deps)
-
-  return db.$transaction(async (tx) => {
-    const expiredOrders = await tx.order.findMany({
+  const expiredOrders = await db.$transaction((tx) =>
+    tx.order.findMany({
       where: {
         status: 'PLACED',
         paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
@@ -176,24 +331,77 @@ export async function expirePendingPaymentOrders(
       },
       include: orderLifecycleInclude
     })
+  )
 
-    const cancelledOrders: OrderListRow[] = []
+  const cancelledOrders: OrderListRow[] = []
 
-    for (const order of expiredOrders) {
+  for (const candidate of expiredOrders) {
+    const claimed = await db.$transaction(async (tx) => {
+      const claim = await tx.order.updateMany({
+        where: {
+          id: candidate.id,
+          status: 'PLACED',
+          paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
+          fulfillmentStatus: 'UNFULFILLED',
+          paymentExpiresAt: { lte: cancelledAt }
+        },
+        data: { paymentExpiryStartedAt: cancelledAt }
+      })
+      return claim.count === 1
+    })
+
+    if (!claimed) continue
+
+    const activePayment = (candidate.payments ?? []).find(
+      (payment) => payment.status === 'PENDING'
+    )
+    if (activePayment?.stripeCheckoutSessionId) {
+      try {
+        await expireStripeCheckoutSession(activePayment.stripeCheckoutSessionId)
+      } catch {
+        continue
+      }
+    }
+
+    const cancelled = await db.$transaction(async (tx) => {
+      await tx.$queryRaw`
+        SELECT "id" FROM "Order" WHERE "id" = ${candidate.id} FOR UPDATE
+      `
+      const order = await findOrder(tx, candidate.id)
+      if (order.paymentStatus === 'PAID') {
+        await tx.order.update({
+          where: { id: order.id },
+          data: { paymentExpiryStartedAt: null }
+        })
+        return null
+      }
+
+      await tx.payment.updateMany({
+        where: { orderId: order.id, status: 'PENDING' },
+        data: {
+          status: 'CANCELLED',
+          failureReason: 'Payment Window expired.'
+        }
+      })
       await releaseStockReservation(tx, order)
-      const cancelledOrder = await tx.order.update({
+      await tx.order.update({
         where: { id: order.id },
         data: {
           status: 'CANCELLED',
-          paymentStatus: 'CANCELLED',
           fulfillmentStatus: 'CANCELLED',
+          paymentExpiryStartedAt: null,
           cancelledAt
-        },
+        }
+      })
+      await projectOrderPaymentStatus(tx, order.id, cancelledAt)
+      return tx.order.findUniqueOrThrow({
+        where: { id: order.id },
         include: orderListInclude
       })
-      cancelledOrders.push(cancelledOrder)
-    }
+    })
 
-    return cancelledOrders
-  })
+    if (cancelled) cancelledOrders.push(cancelled)
+  }
+
+  return cancelledOrders
 }

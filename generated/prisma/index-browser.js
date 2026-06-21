@@ -7,7 +7,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const {
   Decimal,
-  objectEnumValues,
+  DbNull,
+  JsonNull,
+  AnyNull,
+  NullTypes,
   makeStrictEnum,
   Public,
   getRuntime,
@@ -21,12 +24,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 6.19.3
- * Query Engine version: c2990dca591cba766e3b7ef5d9e8a84796e47ab7
+ * Prisma Client JS version: 7.8.0
+ * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
  */
 Prisma.prismaVersion = {
-  client: "6.19.3",
-  engine: "c2990dca591cba766e3b7ef5d9e8a84796e47ab7"
+  client: "7.8.0",
+  engine: "3c6e192761c0362d496ed980de936e2f3cebcd3a"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -98,15 +101,11 @@ In case this error is unexpected for you, please report it in https://pris.ly/pr
 /**
  * Shorthand utilities for JSON filtering
  */
-Prisma.DbNull = objectEnumValues.instances.DbNull
-Prisma.JsonNull = objectEnumValues.instances.JsonNull
-Prisma.AnyNull = objectEnumValues.instances.AnyNull
+Prisma.DbNull = DbNull
+Prisma.JsonNull = JsonNull
+Prisma.AnyNull = AnyNull
 
-Prisma.NullTypes = {
-  DbNull: objectEnumValues.classes.DbNull,
-  JsonNull: objectEnumValues.classes.JsonNull,
-  AnyNull: objectEnumValues.classes.AnyNull
-}
+Prisma.NullTypes = NullTypes
 
 
 
@@ -297,8 +296,16 @@ exports.Prisma.OrderScalarFieldEnum = {
   status: 'status',
   paymentStatus: 'paymentStatus',
   fulfillmentStatus: 'fulfillmentStatus',
-  guestAccessTokenHash: 'guestAccessTokenHash',
+  origin: 'origin',
+  dispatchCarrier: 'dispatchCarrier',
+  trackingNumber: 'trackingNumber',
+  dispatchedAt: 'dispatchedAt',
   paymentExpiresAt: 'paymentExpiresAt',
+  paymentExpiryStartedAt: 'paymentExpiryStartedAt',
+  checkoutSubmissionId: 'checkoutSubmissionId',
+  checkoutSubmissionFingerprint: 'checkoutSubmissionFingerprint',
+  paymentExceptionAt: 'paymentExceptionAt',
+  paymentExceptionReason: 'paymentExceptionReason',
   subtotalCents: 'subtotalCents',
   shippingCents: 'shippingCents',
   discountCents: 'discountCents',
@@ -328,6 +335,24 @@ exports.Prisma.OrderScalarFieldEnum = {
   placedAt: 'placedAt',
   completedAt: 'completedAt',
   cancelledAt: 'cancelledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EmailNotificationScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  paymentId: 'paymentId',
+  deduplicationKey: 'deduplicationKey',
+  type: 'type',
+  status: 'status',
+  recipientEmail: 'recipientEmail',
+  accessExpiresAt: 'accessExpiresAt',
+  attemptCount: 'attemptCount',
+  lastAttemptAt: 'lastAttemptAt',
+  lastError: 'lastError',
+  providerId: 'providerId',
+  sentAt: 'sentAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -440,8 +465,31 @@ exports.OrderPaymentStatus = exports.$Enums.OrderPaymentStatus = {
 
 exports.FulfillmentStatus = exports.$Enums.FulfillmentStatus = {
   UNFULFILLED: 'UNFULFILLED',
+  DISPATCHED: 'DISPATCHED',
   FULFILLED: 'FULFILLED',
   CANCELLED: 'CANCELLED'
+};
+
+exports.OrderOrigin = exports.$Enums.OrderOrigin = {
+  STOREFRONT: 'STOREFRONT',
+  OWNER_DASHBOARD: 'OWNER_DASHBOARD'
+};
+
+exports.ShippingCarrier = exports.$Enums.ShippingCarrier = {
+  SWISS_POST: 'SWISS_POST'
+};
+
+exports.EmailNotificationType = exports.$Enums.EmailNotificationType = {
+  ORDER_PLACED: 'ORDER_PLACED',
+  ORDER_PAYMENT_CONFIRMED: 'ORDER_PAYMENT_CONFIRMED',
+  NEW_PAID_ORDER: 'NEW_PAID_ORDER',
+  ORDER_CANCELLED: 'ORDER_CANCELLED',
+  ORDER_DISPATCHED: 'ORDER_DISPATCHED'
+};
+
+exports.EmailNotificationStatus = exports.$Enums.EmailNotificationStatus = {
+  PENDING: 'PENDING',
+  SENT: 'SENT'
 };
 
 exports.PaymentType = exports.$Enums.PaymentType = {
@@ -451,7 +499,6 @@ exports.PaymentType = exports.$Enums.PaymentType = {
 
 exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   PENDING: 'PENDING',
-  AUTHORIZED: 'AUTHORIZED',
   CAPTURED: 'CAPTURED',
   FAILED: 'FAILED',
   CANCELLED: 'CANCELLED',
@@ -490,6 +537,7 @@ exports.Prisma.ModelName = {
   OrderNumberSequence: 'OrderNumberSequence',
   ProductSkuSequence: 'ProductSkuSequence',
   Order: 'Order',
+  EmailNotification: 'EmailNotification',
   OrderLine: 'OrderLine',
   Payment: 'Payment',
   Review: 'Review',

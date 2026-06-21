@@ -145,7 +145,7 @@ describe('placeOrder', () => {
     const [orderCreateArgs] = firstMockCall(db.order.create)
     expect(orderCreateArgs.data).toMatchObject({
       orderNumber: 'EW-2026-00001',
-      paymentExpiresAt: new Date('2026-05-15T10:15:00Z'),
+      paymentExpiresAt: new Date('2026-05-15T10:10:00Z'),
       shippingFirstName: 'River',
       shippingLastName: 'Stone',
       shippingStreetLine1: 'Snapshotstrasse 7',

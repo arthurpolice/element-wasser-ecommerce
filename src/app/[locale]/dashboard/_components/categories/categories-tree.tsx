@@ -239,6 +239,7 @@ function CategoryTreeRow({
         }}
         onKeyDown={handleRowKeyDown}
         role="treeitem"
+        aria-selected={false}
         style={{ paddingLeft: `${depth * 1.25 + 0.75}rem` }}
         tabIndex={0}
       >

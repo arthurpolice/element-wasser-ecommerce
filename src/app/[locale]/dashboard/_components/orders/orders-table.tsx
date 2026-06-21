@@ -39,8 +39,9 @@ type OrdersTableProps = {
   sortDir: 'asc' | 'desc'
   onSortChange: (sortBy: SortField, sortDir: 'asc' | 'desc') => void
   onCancel: (order: OrderRow) => void
+  onDispatch: (order: OrderRow) => void
   onFulfill: (order: OrderRow) => void
-  pendingAction?: { orderId: string; action: 'cancel' | 'fulfill' }
+  pendingAction?: { orderId: string; action: 'cancel' | 'dispatch' | 'fulfill' }
   actionError?: string
 }
 
@@ -58,6 +59,7 @@ export function OrdersTable({
   sortDir,
   onSortChange,
   onCancel,
+  onDispatch,
   onFulfill,
   pendingAction,
   actionError
@@ -107,7 +109,19 @@ export function OrdersTable({
         id: 'paymentStatus',
         accessorKey: 'paymentStatus',
         header: t('columns.paymentStatus'),
-        cell: ({ row }) => tOrderPaymentStatus(row.original.paymentStatus)
+        cell: ({ row }) => (
+          <div>
+            <p>{tOrderPaymentStatus(row.original.paymentStatus)}</p>
+            {row.original.paymentExceptionAt ? (
+              <p
+                className="mt-1 text-xs font-semibold text-red-700"
+                title={row.original.paymentExceptionReason ?? undefined}
+              >
+                {t('paymentException')}
+              </p>
+            ) : null}
+          </div>
+        )
       },
       {
         id: 'fulfillmentStatus',
@@ -178,6 +192,10 @@ export function OrdersTable({
             order.status !== 'CANCELLED'
           const canFulfill =
             order.paymentStatus === 'PAID' &&
+            order.fulfillmentStatus === 'DISPATCHED' &&
+            order.status !== 'CANCELLED'
+          const canDispatch =
+            order.paymentStatus === 'PAID' &&
             order.fulfillmentStatus === 'UNFULFILLED' &&
             order.status !== 'CANCELLED'
           const cancelPending =
@@ -186,13 +204,28 @@ export function OrdersTable({
           const fulfillPending =
             pendingAction?.orderId === order.id &&
             pendingAction.action === 'fulfill'
+          const dispatchPending =
+            pendingAction?.orderId === order.id &&
+            pendingAction.action === 'dispatch'
 
-          if (!canCancel && !canFulfill) {
+          if (!canCancel && !canDispatch && !canFulfill) {
             return <span className="text-dash-muted">{t('noActions')}</span>
           }
 
           return (
             <div className="flex flex-wrap items-center gap-2">
+              {canDispatch ? (
+                <DashboardButton
+                  className="px-3 py-1.5 text-xs"
+                  disabled={Boolean(pendingAction)}
+                  onClick={() => onDispatch(order)}
+                  variant="secondary"
+                >
+                  {dispatchPending
+                    ? t('actions.dispatchPending')
+                    : t('actions.dispatch')}
+                </DashboardButton>
+              ) : null}
               {canFulfill ? (
                 <DashboardButton
                   className="px-3 py-1.5 text-xs"
@@ -226,6 +259,7 @@ export function OrdersTable({
     [
       format,
       onCancel,
+      onDispatch,
       onFulfill,
       pendingAction,
       t,

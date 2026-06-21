@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { CreateOrderDialog } from '~/app/[locale]/dashboard/_components/orders/create-order-modal'
+import { DispatchOrderDialog } from '~/app/[locale]/dashboard/_components/orders/dispatch-order-modal'
 import {
   OrdersTable,
   type SortField
@@ -15,6 +16,9 @@ import {
   dashInputClass
 } from '~/app/[locale]/dashboard/_components/dashboard-ui'
 import { api } from '~/trpc/react'
+import type { RouterOutputs } from '~/trpc/react'
+
+type OrderRow = RouterOutputs['order']['list']['items'][number]
 
 export function OrdersTab() {
   const t = useTranslations('Orders')
@@ -23,6 +27,7 @@ export function OrdersTab() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortField>('placedAt')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+  const [dispatchingOrder, setDispatchingOrder] = useState<OrderRow | null>(null)
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -52,6 +57,12 @@ export function OrdersTab() {
       await utils.order.list.invalidate()
     }
   })
+  const dispatchOrder = api.order.dispatch.useMutation({
+    onSuccess: async () => {
+      await utils.order.list.invalidate()
+      setDispatchingOrder(null)
+    }
+  })
 
   function handleSortChange(
     nextSortBy: SortField,
@@ -69,6 +80,11 @@ export function OrdersTab() {
     ? { orderId: cancelOrder.variables.orderId, action: 'cancel' as const }
     : fulfillOrder.isPending
       ? { orderId: fulfillOrder.variables.orderId, action: 'fulfill' as const }
+      : dispatchOrder.isPending
+        ? {
+            orderId: dispatchOrder.variables.orderId,
+            action: 'dispatch' as const
+          }
       : undefined
   const actionError =
     cancelOrder.error?.message ?? fulfillOrder.error?.message ?? undefined
@@ -111,6 +127,10 @@ export function OrdersTab() {
               fulfillOrder.reset()
               cancelOrder.mutate({ orderId: order.id })
             }}
+            onDispatch={(order) => {
+              dispatchOrder.reset()
+              setDispatchingOrder(order)
+            }}
             onFulfill={(order) => {
               cancelOrder.reset()
               fulfillOrder.mutate({ orderId: order.id })
@@ -119,6 +139,22 @@ export function OrdersTab() {
             pendingAction={pendingAction}
             sortBy={sortBy}
             sortDir={sortDir}
+          />
+
+          <DispatchOrderDialog
+            error={dispatchOrder.error?.message}
+            onClose={() => {
+              if (!dispatchOrder.isPending) setDispatchingOrder(null)
+            }}
+            onSubmit={(trackingNumber) => {
+              if (!dispatchingOrder) return
+              dispatchOrder.mutate({
+                orderId: dispatchingOrder.id,
+                trackingNumber
+              })
+            }}
+            order={dispatchingOrder}
+            pending={dispatchOrder.isPending}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

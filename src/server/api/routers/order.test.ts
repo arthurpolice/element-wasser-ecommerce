@@ -133,6 +133,7 @@ describe('order router Address Book Entry snapshots', () => {
 
     const [orderCreateArgs] = firstMockCall(db.order.create)
     expect(orderCreateArgs.data).toMatchObject({
+      origin: 'OWNER_DASHBOARD',
       shippingFirstName: 'River',
       shippingLastName: 'Stone',
       shippingStreetLine1: 'Snapshotstrasse 7',

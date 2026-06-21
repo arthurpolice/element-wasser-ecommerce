@@ -16,7 +16,7 @@ import {
   OrderPlacementError,
   type PlaceOrderInput
 } from '~/server/commerce/order-placement'
-import { hashOrderAccessToken } from '~/server/commerce/order-access-token'
+import { verifyOrderAccessToken } from '~/server/commerce/order-access-token'
 import {
   beginCheckoutPayment,
   beginGuestCheckoutPayment,
@@ -28,6 +28,7 @@ import {
   quoteOrderLines,
   type OrderQuoteProblemCode
 } from '~/lib/order-quote'
+import { reconcileStripePayment } from '~/server/commerce/payment-outcome'
 
 export const checkoutShippingCents = 900
 const checkoutCurrencyCode = 'CHF'
@@ -64,6 +65,10 @@ const addressInputSchema = z.object({
 
 const placeOrderInputSchema = previewInputSchema
   .extend({
+    checkoutSubmissionId: z
+      .string()
+      .uuid()
+      .default(() => crypto.randomUUID()),
     paymentMethod: paymentMethodSchema,
     addressId: z.string().trim().min(1).optional(),
     locale: z.enum(['de', 'en']).default('de')
@@ -72,6 +77,10 @@ const placeOrderInputSchema = previewInputSchema
 
 const placeGuestOrderInputSchema = previewInputSchema
   .extend({
+    checkoutSubmissionId: z
+      .string()
+      .uuid()
+      .default(() => crypto.randomUUID()),
     email: z.string().trim().email(),
     paymentMethod: paymentMethodSchema,
     locale: z.enum(['de', 'en']).default('de')
@@ -123,10 +132,12 @@ function canRetryPayment(order: {
   status: OrderStatus
   paymentStatus: OrderPaymentStatus
   paymentExpiresAt: Date | null
+  paymentExpiryStartedAt: Date | null
 }) {
   return (
     order.status !== 'CANCELLED' &&
     order.paymentStatus !== 'PAID' &&
+    order.paymentExpiryStartedAt === null &&
     order.paymentExpiresAt !== null &&
     order.paymentExpiresAt.getTime() > Date.now()
   )
@@ -159,8 +170,12 @@ function toCheckoutPaymentTrpcError(error: CheckoutPaymentError): TRPCError {
         message: error.message
       })
     case 'ORDER_PAYMENT_NOT_RETRYABLE':
+    case 'CHECKOUT_SUBMISSION_CONFLICT':
       return new TRPCError({
-        code: 'BAD_REQUEST',
+        code:
+          error.code === 'CHECKOUT_SUBMISSION_CONFLICT'
+            ? 'CONFLICT'
+            : 'BAD_REQUEST',
         message: error.message
       })
     case 'PENDING_PAYMENT_NOT_FOUND':
@@ -309,8 +324,8 @@ export const checkoutRouter = createTRPCRouter({
   orderConfirmation: publicProcedure
     .input(orderConfirmationInputSchema)
     .query(async ({ ctx, input }) => {
-      const accessTokenHash = input.accessToken
-        ? hashOrderAccessToken(input.accessToken)
+      const access = input.accessToken
+        ? verifyOrderAccessToken(input.accessToken)
         : null
       const customer = ctx.session?.user
         ? await ctx.db.customer.findUnique({
@@ -319,7 +334,7 @@ export const checkoutRouter = createTRPCRouter({
           })
         : null
 
-      if (!customer && !accessTokenHash) {
+      if (!customer && !access) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'Order access is required.'
@@ -331,7 +346,7 @@ export const checkoutRouter = createTRPCRouter({
           orderNumber: input.orderNumber,
           OR: [
             ...(customer ? [{ customerId: customer.id }] : []),
-            ...(accessTokenHash ? [{ guestAccessTokenHash: accessTokenHash }] : [])
+            ...(access ? [{ id: access.orderId }] : [])
           ]
         },
         select: {
@@ -340,7 +355,11 @@ export const checkoutRouter = createTRPCRouter({
           status: true,
           paymentStatus: true,
           fulfillmentStatus: true,
+          dispatchCarrier: true,
+          trackingNumber: true,
+          dispatchedAt: true,
           paymentExpiresAt: true,
+          paymentExpiryStartedAt: true,
           totalCents: true,
           currencyCode: true,
           placedAt: true,
@@ -368,18 +387,6 @@ export const checkoutRouter = createTRPCRouter({
               unitPriceCents: true,
               lineTotalCents: true
             }
-          },
-          payments: {
-            orderBy: { createdAt: 'desc' },
-            select: {
-              id: true,
-              paymentMethod: true,
-              status: true,
-              amountCents: true,
-              currencyCode: true,
-              failureReason: true,
-              createdAt: true
-            }
           }
         }
       })
@@ -400,8 +407,8 @@ export const checkoutRouter = createTRPCRouter({
   retryPayment: publicProcedure
     .input(retryPaymentInputSchema)
     .mutation(async ({ ctx, input }) => {
-      const accessTokenHash = input.accessToken
-        ? hashOrderAccessToken(input.accessToken)
+      const access = input.accessToken
+        ? verifyOrderAccessToken(input.accessToken)
         : null
       const customer = ctx.session?.user
         ? await ctx.db.customer.findUnique({
@@ -410,7 +417,7 @@ export const checkoutRouter = createTRPCRouter({
           })
         : null
 
-      if (!customer && !accessTokenHash) {
+      if (!customer && !access) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'Order access is required.'
@@ -436,6 +443,50 @@ export const checkoutRouter = createTRPCRouter({
       }
     }),
 
+  reconcilePayment: publicProcedure
+    .input(orderConfirmationInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      const access = input.accessToken
+        ? verifyOrderAccessToken(input.accessToken)
+        : null
+      const customer = ctx.session?.user
+        ? await ctx.db.customer.findUnique({
+            where: { userId: ctx.session.user.id },
+            select: { id: true }
+          })
+        : null
+      if (!customer && !access) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Order access is required.'
+        })
+      }
+
+      const order = await ctx.db.order.findFirst({
+        where: {
+          orderNumber: input.orderNumber,
+          OR: [
+            ...(customer ? [{ customerId: customer.id }] : []),
+            ...(access ? [{ id: access.orderId }] : [])
+          ]
+        },
+        select: {
+          payments: {
+            where: { status: 'PENDING' },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
+            select: { id: true }
+          }
+        }
+      })
+      const payment = order?.payments[0]
+      if (!payment) return { status: null }
+
+      return {
+        status: await reconcileStripePayment(ctx.db, payment.id)
+      }
+    }),
+
   placeOrder: protectedProcedure
     .input(placeOrderInputSchema)
     .mutation(async ({ ctx, input }) => {
@@ -455,7 +506,8 @@ export const checkoutRouter = createTRPCRouter({
         return await beginCheckoutPayment(
           ctx.db,
           toPlaceOrderInput(customer.id, input),
-          input.locale
+          input.locale,
+          input.checkoutSubmissionId
         )
       } catch (error) {
         if (error instanceof OrderPlacementError) {
@@ -481,7 +533,8 @@ export const checkoutRouter = createTRPCRouter({
             lastName: input.lastName
           },
           order: toGuestOrderInput(input),
-          locale: input.locale
+          locale: input.locale,
+          checkoutSubmissionId: input.checkoutSubmissionId
         })
       } catch (error) {
         if (error instanceof OrderPlacementError) {

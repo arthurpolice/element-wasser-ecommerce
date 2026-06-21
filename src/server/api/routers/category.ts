@@ -1,4 +1,4 @@
-import { Prisma } from '../../../../generated/prisma'
+import type { Prisma } from '../../../../generated/prisma'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
@@ -14,6 +14,7 @@ import {
 } from '~/lib/product-categories'
 import { toSlug } from '~/lib/slug'
 import { syncProductSearchDocumentsForMutation } from '~/server/commerce/product-search'
+import { isPrismaErrorCode } from '~/server/prisma-errors'
 
 const createInputSchema = z.object({
   name: z.string().trim().min(1),
@@ -360,10 +361,7 @@ export const categoryRouter = createTRPCRouter({
 
         return mapCategoryRow(category)
       } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
+        if (isPrismaErrorCode(error, 'P2002')) {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'Could not create the category.'

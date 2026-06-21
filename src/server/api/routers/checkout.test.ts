@@ -5,14 +5,27 @@ import { checkoutRouter } from '~/server/api/routers/checkout'
 import { createCallerFactory } from '~/server/api/trpc'
 import { startStripeCheckout } from '~/server/payments/stripe-checkout'
 import { firstMockCall } from '~/test/mock-calls'
-import { hashOrderAccessToken } from '~/server/commerce/order-access-token'
+import { createOrderAccessToken } from '~/server/commerce/order-access-token'
 import type { Salutation } from '../../../../generated/prisma'
 
 vi.mock('~/server/payments/stripe-checkout', () => ({
   startStripeCheckout: vi.fn(async () => ({
     url: 'https://checkout.stripe.com/c/pay/cs_test_123',
     sessionId: 'cs_test_123',
-    paymentIntentId: 'pi_test_123'
+    paymentIntentId: 'pi_test_123',
+    expiresAt: new Date('2026-05-15T10:30:00Z')
+  })),
+  retrieveStripeCheckoutSession: vi.fn(async () => ({
+    id: 'cs_test_123',
+    status: 'open',
+    payment_status: 'unpaid',
+    url: 'https://checkout.stripe.com/c/pay/cs_test_123',
+    payment_intent: null
+  })),
+  expireStripeCheckoutSession: vi.fn(async () => ({
+    id: 'cs_test_123',
+    status: 'expired',
+    payment_status: 'unpaid'
   }))
 }))
 
@@ -97,6 +110,7 @@ type ProductLookupArgs = {
 type CheckoutProduct = typeof filter | typeof refill
 
 type MockDb = {
+  $queryRaw: Mock<(...args: unknown[]) => Promise<unknown[]>>
   address: {
     updateMany: Mock<() => Promise<{ count: number }>>
     create: Mock<
@@ -121,7 +135,15 @@ type MockDb = {
   }
   order: {
     create: Mock<(args: { data: MockRecord }) => Promise<MockRecord>>
+    findUnique: Mock<(args: MockRecord) => Promise<MockRecord | null>>
+    findUniqueOrThrow: Mock<(args: MockRecord) => Promise<MockRecord>>
     findFirst: Mock<(args: MockRecord) => Promise<MockRecord | null>>
+    updateMany: Mock<
+      (args: {
+        where: MockRecord
+        data: MockRecord
+      }) => Promise<{ count: number }>
+    >
     update: Mock<
       (args: {
         where?: MockRecord
@@ -132,9 +154,18 @@ type MockDb = {
   }
   payment: {
     create: Mock<(args: { data: MockRecord }) => Promise<MockRecord>>
+    updateMany: Mock<
+      (args: {
+        where: MockRecord
+        data: MockRecord
+      }) => Promise<{ count: number }>
+    >
     update: Mock<
       (args: { where: MockRecord; data: MockRecord }) => Promise<MockRecord>
     >
+  }
+  emailNotification: {
+    upsert: Mock<(args: MockRecord) => Promise<MockRecord>>
   }
   $transaction: Mock<
     (callback: (tx: MockDb) => Promise<unknown>) => Promise<unknown>
@@ -143,6 +174,7 @@ type MockDb = {
 
 function createMockDb(): MockDb {
   const db: MockDb = {
+    $queryRaw: vi.fn(async () => []),
     address: {
       updateMany: vi.fn(async () => ({ count: 0 })),
       create: vi.fn(async ({ data }) => ({
@@ -170,9 +202,16 @@ function createMockDb(): MockDb {
       upsert: vi.fn(async () => ({ nextNumber: 2 }))
     },
     order: {
+      findUnique: vi.fn(async () => null),
+      findUniqueOrThrow: vi.fn(async () => {
+        const order = await db.order.findFirst({})
+        if (!order) throw new Error('Order not found.')
+        return order
+      }),
       create: vi.fn(async ({ data }) => ({
         id: 'order-1',
         ...data,
+        customer: { userId: null },
         placedAt: new Date('2026-05-15T10:00:00Z'),
         lines: data.lines ? (data.lines as { create: unknown[] }).create : [],
         payments: data.payments
@@ -227,6 +266,7 @@ function createMockDb(): MockDb {
           }
         ]
       })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
       update: vi.fn(async ({ data }) => ({
         id: 'order-1',
         orderNumber: 'EW-2026-00001',
@@ -287,7 +327,14 @@ function createMockDb(): MockDb {
         stripeCheckoutSessionId: null,
         ...data
       })),
+      updateMany: vi.fn(async () => ({ count: 1 })),
       update: vi.fn(async ({ data }) => ({ id: 'payment-1', ...data }))
+    },
+    emailNotification: {
+      upsert: vi.fn(async () => ({
+        id: 'email-notification-1',
+        status: 'PENDING'
+      }))
     },
     $transaction: vi.fn(async (callback) => callback(db))
   }
@@ -614,7 +661,7 @@ describe('checkout router', () => {
 
   it('loads guest Order Confirmation with the non-guessable access token', async () => {
     const caller = createPublicCaller(db)
-    const accessToken = 'guest-access-token'
+    const accessToken = createOrderAccessToken('order-1')
 
     await caller.orderConfirmation({
       orderNumber: 'EW-2026-00001',
@@ -625,7 +672,7 @@ describe('checkout router', () => {
     expect(orderFindArgs).toMatchObject({
       where: {
         orderNumber: 'EW-2026-00001',
-        OR: [{ guestAccessTokenHash: hashOrderAccessToken(accessToken) }]
+        OR: [{ id: 'order-1' }]
       }
     })
   })
@@ -637,45 +684,6 @@ describe('checkout router', () => {
       salutation: null,
       firstName: 'Guest',
       lastName: 'River'
-    }))
-    db.order.update = vi.fn(async ({ data }) => ({
-      id: 'order-1',
-      orderNumber: 'EW-2026-00001',
-      status: 'PLACED',
-      paymentStatus: 'PENDING',
-      paymentExpiresAt: new Date('2026-05-15T10:15:00Z'),
-      totalCents: 11700,
-      currencyCode: 'CHF',
-      customerEmail: 'guest@example.com',
-      shippingCents: 900,
-      guestAccessTokenHash: data.guestAccessTokenHash,
-      lines: [
-        {
-          id: 'line-1',
-          productId: filter.id,
-          productName: filter.name,
-          productSku: 'EW-FIL-00001',
-          quantity: 1,
-          listPriceCents: 12000,
-          discountPercent: 10,
-          unitPriceCents: 10800,
-          lineTotalCents: 10800
-        }
-      ],
-      payments: [
-        {
-          id: 'payment-1',
-          type: 'CHARGE',
-          provider: 'STRIPE',
-          paymentMethod: 'CARD',
-          status: 'PENDING',
-          amountCents: 11700,
-          currencyCode: 'CHF',
-          providerReference: null,
-          stripeCheckoutSessionId: null,
-          createdAt: new Date('2026-05-15T10:00:00Z')
-        }
-      ]
     }))
     db.product.findMany = vi.fn(async () => [
       {
@@ -720,6 +728,7 @@ describe('checkout router', () => {
     expect(orderCreateArgs.data).toMatchObject({
       customerId: 'guest-customer-1',
       customerEmail: 'guest@example.com',
+      origin: 'STOREFRONT',
       payments: {
         create: {
           type: 'CHARGE',
@@ -730,8 +739,6 @@ describe('checkout router', () => {
         }
       }
     })
-    const [orderUpdateArgs] = firstMockCall(db.order.update)
-    expect(typeof orderUpdateArgs.data.guestAccessTokenHash).toBe('string')
     const [stripeCheckoutInput] = firstMockCall(vi.mocked(startStripeCheckout))
     expect(typeof stripeCheckoutInput.orderAccessToken).toBe('string')
     expect(stripeCheckoutInput).toMatchObject({
@@ -811,10 +818,17 @@ describe('checkout router', () => {
         currencyCode: 'CHF'
       }
     })
+    expect(db.payment.updateMany).toHaveBeenCalledWith({
+      where: { orderId: 'order-1', status: 'PENDING' },
+      data: {
+        status: 'CANCELLED',
+        failureReason: 'Payment attempt replaced.'
+      }
+    })
     const [orderUpdateArgs] = firstMockCall(db.order.update)
     expect(orderUpdateArgs).toMatchObject({
       where: { id: 'order-1' },
-      data: { paymentStatus: 'PENDING' }
+      data: {}
     })
     expect(orderUpdateArgs.include).toMatchObject({
       payments: { take: 1 }
@@ -845,8 +859,71 @@ describe('checkout router', () => {
     )
   })
 
+  it('allows only one concurrent retry to claim an Order', async () => {
+    db.customer.findUnique = vi.fn(async () => ({ id: 'customer-1' }))
+    let activePayment: MockRecord | null = null
+    const order = () => ({
+      id: 'order-1',
+      orderNumber: 'EW-2026-00001',
+      status: 'PLACED',
+      paymentStatus: activePayment ? 'PENDING' : 'FAILED',
+      fulfillmentStatus: 'UNFULFILLED',
+      paymentExpiresAt: new Date('2026-05-15T10:15:00Z'),
+      totalCents: 16700,
+      currencyCode: 'CHF',
+      customerEmail: 'river@example.com',
+      shippingCents: 900,
+      lines: [],
+      payments: activePayment ? [activePayment] : []
+    })
+    db.order.findFirst = vi.fn(async () => order())
+    db.payment.create = vi.fn(async ({ data }) => {
+      activePayment = {
+        id: 'payment-retry-1',
+        ...data,
+        status: 'PENDING',
+        stripeCheckoutSessionId: null,
+        providerReference: null
+      }
+      return activePayment
+    })
+    db.order.update = vi.fn(async () => order())
+    let transactionChain = Promise.resolve()
+    db.$transaction = vi.fn((callback) => {
+      const result = transactionChain.then(() => callback(db))
+      transactionChain = result.then(
+        () => undefined,
+        () => undefined
+      )
+      return result
+    }) as never
+    const { caller } = createRegisteredCaller(db)
+
+    const results = await Promise.allSettled([
+      caller.retryPayment({
+        orderNumber: 'EW-2026-00001',
+        paymentMethod: 'CARD',
+        locale: 'en'
+      }),
+      caller.retryPayment({
+        orderNumber: 'EW-2026-00001',
+        paymentMethod: 'TWINT',
+        locale: 'en'
+      })
+    ])
+
+    expect(
+      results.filter((result) => result.status === 'fulfilled')
+    ).toHaveLength(1)
+    expect(
+      results.filter((result) => result.status === 'rejected')
+    ).toHaveLength(1)
+    expect(db.payment.create).toHaveBeenCalledTimes(1)
+    expect(startStripeCheckout).toHaveBeenCalledTimes(1)
+  })
+
   it('retries guest payment with the Order access token', async () => {
-    const accessToken = 'guest-access-token'
+    const accessToken = createOrderAccessToken('order-1')
     db.order.findFirst = vi.fn(async () => ({
       id: 'order-1',
       orderNumber: 'EW-2026-00001',
@@ -886,7 +963,7 @@ describe('checkout router', () => {
     expect(orderFindArgs).toMatchObject({
       where: {
         orderNumber: 'EW-2026-00001',
-        OR: [{ guestAccessTokenHash: hashOrderAccessToken(accessToken) }]
+        OR: [{ id: 'order-1' }]
       }
     })
     const [stripeCheckoutInput] = firstMockCall(vi.mocked(startStripeCheckout))
@@ -1069,6 +1146,13 @@ describe('checkout router', () => {
         providerReference: 'pi_test_123'
       }
     })
+    expect(db.emailNotification.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          deduplicationKey: 'order:order-1:ORDER_PLACED:river@example.com'
+        }
+      })
+    )
     expect(result.checkoutUrl).toBe(
       'https://checkout.stripe.com/c/pay/cs_test_123'
     )

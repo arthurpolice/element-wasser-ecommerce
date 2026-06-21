@@ -1,4 +1,4 @@
-import { Prisma, Salutation } from '../../../../generated/prisma'
+import { Salutation, type Prisma } from '../../../../generated/prisma'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
@@ -7,6 +7,7 @@ import {
   ownerProcedure,
   protectedProcedure
 } from '~/server/api/trpc'
+import { isPrismaErrorCode } from '~/server/prisma-errors'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -136,6 +137,9 @@ const customerAreaOrderSelect = {
   status: true,
   paymentStatus: true,
   fulfillmentStatus: true,
+  dispatchCarrier: true,
+  trackingNumber: true,
+  dispatchedAt: true,
   currencyCode: true,
   subtotalCents: true,
   shippingCents: true,
@@ -278,10 +282,7 @@ export const customerRouter = createTRPCRouter({
           }
         })
       } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
+        if (isPrismaErrorCode(error, 'P2002')) {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'A customer with this email already exists.'
@@ -326,10 +327,7 @@ export const customerRouter = createTRPCRouter({
           })
         })
       } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
+        if (isPrismaErrorCode(error, 'P2002')) {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'A customer with this email already exists.'
@@ -466,10 +464,7 @@ export const customerRouter = createTRPCRouter({
           return updated
         })
         .catch((error) => {
-          if (
-            error instanceof Prisma.PrismaClientKnownRequestError &&
-            error.code === 'P2025'
-          ) {
+          if (isPrismaErrorCode(error, 'P2025')) {
             throw new TRPCError({ code: 'NOT_FOUND' })
           }
 
@@ -538,10 +533,7 @@ export const customerRouter = createTRPCRouter({
 
         return mapCustomerRow(customer)
       } catch (error) {
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
+        if (isPrismaErrorCode(error, 'P2002')) {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'A customer with this email already exists.'

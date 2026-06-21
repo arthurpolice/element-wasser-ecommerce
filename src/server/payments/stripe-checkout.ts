@@ -11,12 +11,19 @@ import { getStripeClient } from '~/server/payments/stripe'
 
 type StripeCheckoutClient = {
   create(
-    params: Stripe.Checkout.SessionCreateParams
+    params: Stripe.Checkout.SessionCreateParams,
+    options?: Stripe.RequestOptions
   ): Promise<Stripe.Checkout.Session>
+  retrieve(
+    id: string,
+    params?: Stripe.Checkout.SessionRetrieveParams
+  ): Promise<Stripe.Checkout.Session>
+  expire(id: string): Promise<Stripe.Checkout.Session>
 }
 
 type StartStripeCheckoutDeps = {
   stripe?: StripeCheckoutClient
+  now?: () => Date
 }
 
 export type StartStripeCheckoutInput = {
@@ -29,6 +36,7 @@ export type StartedStripeCheckout = {
   url: string
   sessionId: string
   paymentIntentId: string | null
+  expiresAt: Date
 }
 
 function getAppBaseUrl() {
@@ -134,6 +142,9 @@ export async function startStripeCheckout(
   const payment = getPendingPayment(order)
   const paymentMethod = payment.paymentMethod
   const stripe = deps.stripe ?? getStripeClient().checkout.sessions
+  const expiresAt = new Date(
+    (deps.now?.() ?? new Date()).getTime() + 30 * 60 * 1000 + 5000
+  )
   const metadata = {
     orderId: order.id,
     orderNumber: order.orderNumber,
@@ -141,29 +152,33 @@ export async function startStripeCheckout(
     paymentMethod
   }
 
-  const session = await stripe.create({
-    mode: 'payment',
-    payment_method_types: [toStripePaymentMethodType(paymentMethod)],
-    customer_email: order.customerEmail,
-    client_reference_id: order.id,
-    line_items: buildLineItems(order),
-    success_url: getCheckoutReturnUrl(
-      order,
-      locale,
-      'success',
-      orderAccessToken
-    ),
-    cancel_url: getCheckoutReturnUrl(
-      order,
-      locale,
-      'cancel',
-      orderAccessToken
-    ),
-    metadata,
-    payment_intent_data: {
-      metadata
-    }
-  })
+  const session = await stripe.create(
+    {
+      mode: 'payment',
+      expires_at: Math.floor(expiresAt.getTime() / 1000),
+      payment_method_types: [toStripePaymentMethodType(paymentMethod)],
+      customer_email: order.customerEmail,
+      client_reference_id: order.id,
+      line_items: buildLineItems(order),
+      success_url: getCheckoutReturnUrl(
+        order,
+        locale,
+        'success',
+        orderAccessToken
+      ),
+      cancel_url: getCheckoutReturnUrl(
+        order,
+        locale,
+        'cancel',
+        orderAccessToken
+      ),
+      metadata,
+      payment_intent_data: {
+        metadata
+      }
+    },
+    { idempotencyKey: payment.id }
+  )
 
   if (!session.url) {
     throw new Error('Stripe Checkout Session did not include a redirect URL.')
@@ -172,6 +187,25 @@ export async function startStripeCheckout(
   return {
     url: session.url,
     sessionId: session.id,
-    paymentIntentId: getPaymentIntentId(session.payment_intent)
+    paymentIntentId: getPaymentIntentId(session.payment_intent),
+    expiresAt: new Date(
+      (session.expires_at ?? expiresAt.getTime() / 1000) * 1000
+    )
   }
+}
+
+export async function retrieveStripeCheckoutSession(
+  sessionId: string,
+  deps: StartStripeCheckoutDeps = {}
+) {
+  const stripe = deps.stripe ?? getStripeClient().checkout.sessions
+  return stripe.retrieve(sessionId, { expand: ['payment_intent'] })
+}
+
+export async function expireStripeCheckoutSession(
+  sessionId: string,
+  deps: StartStripeCheckoutDeps = {}
+) {
+  const stripe = deps.stripe ?? getStripeClient().checkout.sessions
+  return stripe.expire(sessionId)
 }

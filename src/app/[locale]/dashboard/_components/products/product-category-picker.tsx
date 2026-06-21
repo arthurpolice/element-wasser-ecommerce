@@ -1,103 +1,108 @@
-"use client";
+'use client'
 
-import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 
-import { dashInputClass } from "~/app/[locale]/dashboard/_components/dashboard-ui";
-import { api } from "~/trpc/react";
+import { dashInputClass } from '~/app/[locale]/dashboard/_components/dashboard-ui'
+import { api } from '~/trpc/react'
 
 type ProductCategoryPickerProps = {
-  enabled: boolean;
-  selectedCategoryIds: string[];
-  onChange: (categoryIds: string[]) => void;
-};
+  enabled: boolean
+  selectedCategoryIds: string[]
+  onChange: (categoryIds: string[]) => void
+}
 
 function buildCategoryLabel(
   categories: Array<{ id: string; name: string; parentId: string | null }>,
-  categoryId: string,
+  categoryId: string
 ): string {
-  const labels: string[] = [];
-  let current = categories.find((category) => category.id === categoryId);
+  const labels: string[] = []
+  let current = categories.find((category) => category.id === categoryId)
 
   while (current) {
-    labels.unshift(current.name);
+    labels.unshift(current.name)
     current = current.parentId
       ? categories.find((category) => category.id === current?.parentId)
-      : undefined;
+      : undefined
   }
 
-  return labels.join(" / ");
+  return labels.join(' / ')
 }
 
 export function ProductCategoryPicker({
   enabled,
   selectedCategoryIds,
-  onChange,
+  onChange
 }: ProductCategoryPickerProps) {
-  const t = useTranslations("Products.form.categories");
-  const [search, setSearch] = useState("");
+  const t = useTranslations('Products.form.categories')
+  const [search, setSearch] = useState('')
   const categoriesQuery = api.category.listFlat.useQuery(undefined, {
-    enabled,
-  });
+    enabled
+  })
 
   useEffect(() => {
     if (!enabled) {
-      setSearch("");
+      setSearch('')
     }
-  }, [enabled]);
+  }, [enabled])
 
-  const categories = categoriesQuery.data ?? [];
+  const categories = useMemo(
+    () => categoriesQuery.data ?? [],
+    [categoriesQuery.data]
+  )
 
   const filteredCategories = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = search.trim().toLowerCase()
     if (!query) {
-      return categories;
+      return categories
     }
 
     return categories.filter((category) => {
-      const label = buildCategoryLabel(categories, category.id).toLowerCase();
+      const label = buildCategoryLabel(categories, category.id).toLowerCase()
       return (
         label.includes(query) ||
         category.name.toLowerCase().includes(query) ||
         category.slug.toLowerCase().includes(query)
-      );
-    });
-  }, [categories, search]);
+      )
+    })
+  }, [categories, search])
 
   function toggleCategory(categoryId: string) {
     onChange(
       selectedCategoryIds.includes(categoryId)
         ? selectedCategoryIds.filter((id) => id !== categoryId)
-        : [...selectedCategoryIds, categoryId],
-    );
+        : [...selectedCategoryIds, categoryId]
+    )
   }
 
   return (
     <div className="grid gap-2 text-sm">
       <div>
-        <span className="font-medium text-dash-ink">{t("label")}</span>
-        <p className="mt-1 text-xs text-dash-muted">{t("description")}</p>
+        <span className="text-dash-ink font-medium">{t('label')}</span>
+        <p className="text-dash-muted mt-1 text-xs">{t('description')}</p>
       </div>
 
       {categoriesQuery.isLoading ? (
-        <p className="text-sm text-dash-muted">{t("loading")}</p>
+        <p className="text-dash-muted text-sm">{t('loading')}</p>
       ) : !categoriesQuery.data?.length ? (
-        <p className="rounded-lg border border-dashed border-dash-border px-3 py-4 text-sm text-dash-muted">
-          {t("empty")}
+        <p className="border-dash-border text-dash-muted rounded-lg border border-dashed px-3 py-4 text-sm">
+          {t('empty')}
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-dash-border">
-          <div className="border-b border-dash-border bg-[#f6f9fc]/80 p-2">
+        <div className="border-dash-border overflow-hidden rounded-lg border">
+          <div className="border-dash-border border-b bg-[#f6f9fc]/80 p-2">
             <input
               className={dashInputClass}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={t("searchPlaceholder")}
+              placeholder={t('searchPlaceholder')}
               type="search"
               value={search}
             />
           </div>
           {!filteredCategories.length ? (
-            <p className="px-3 py-4 text-sm text-dash-muted">{t("emptySearch")}</p>
+            <p className="text-dash-muted px-3 py-4 text-sm">
+              {t('emptySearch')}
+            </p>
           ) : (
             <div className="max-h-48 space-y-2 overflow-y-auto p-2">
               {filteredCategories.map((category) => (
@@ -110,11 +115,13 @@ export function ProductCategoryPicker({
                     onChange={() => toggleCategory(category.id)}
                     type="checkbox"
                   />
-                  <span className="flex-1 text-dash-ink">
+                  <span className="text-dash-ink flex-1">
                     {buildCategoryLabel(categories, category.id)}
                   </span>
                   {!category.active ? (
-                    <span className="text-xs text-dash-muted">{t("inactive")}</span>
+                    <span className="text-dash-muted text-xs">
+                      {t('inactive')}
+                    </span>
                   ) : null}
                 </label>
               ))}
@@ -123,5 +130,5 @@ export function ProductCategoryPicker({
         </div>
       )}
     </div>
-  );
+  )
 }

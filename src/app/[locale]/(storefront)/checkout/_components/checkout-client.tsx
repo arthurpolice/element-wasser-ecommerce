@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   FaCheck,
   FaCreditCard,
@@ -91,6 +91,7 @@ export function CheckoutClient() {
   const [showNewAddressForm, setShowNewAddressForm] = useState(false)
   const [paymentMethod, setPaymentMethod] =
     useState<CheckoutPaymentMethod | null>(null)
+  const checkoutSubmissionId = useRef<string | null>(null)
   const bootstrapQuery = api.checkout.bootstrap.useQuery()
   const createAddress = api.checkout.createAddress.useMutation({
     onSuccess: async (createdAddress) => {
@@ -203,6 +204,15 @@ export function CheckoutClient() {
       setPaymentMethod(null)
     }
   }, [paymentMethod, progression.paymentUnlocked])
+
+  useEffect(() => {
+    checkoutSubmissionId.current = null
+  }, [address, items, newAddress, paymentMethod, selectedAddressId])
+
+  function currentCheckoutSubmissionId() {
+    checkoutSubmissionId.current ??= crypto.randomUUID()
+    return checkoutSubmissionId.current
+  }
 
   function updateAddressField(
     field: keyof GuestCheckoutAddress,
@@ -351,6 +361,7 @@ export function CheckoutClient() {
 
                     if (registeredCustomer && selectedAddress) {
                       placeOrder.mutate({
+                        checkoutSubmissionId: currentCheckoutSubmissionId(),
                         lines,
                         paymentMethod,
                         locale: checkoutLocale,
@@ -371,6 +382,7 @@ export function CheckoutClient() {
 
                     if (bootstrap?.status === 'guest') {
                       placeGuestOrder.mutate({
+                        checkoutSubmissionId: currentCheckoutSubmissionId(),
                         lines,
                         paymentMethod,
                         locale: checkoutLocale,

@@ -1,4 +1,4 @@
-import { Prisma, Salutation } from '../../../../generated/prisma'
+import { Salutation, type Prisma } from '../../../../generated/prisma'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 
@@ -12,9 +12,11 @@ import {
 import {
   OrderLifecycleError,
   cancelOrder,
+  dispatchOrder,
   expirePendingPaymentOrders,
   fulfillOrder
 } from '~/server/commerce/order-lifecycle'
+import { isPrismaErrorCode } from '~/server/prisma-errors'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -62,6 +64,10 @@ const createInputSchema = z
 
 const orderIdInputSchema = z.object({
   orderId: z.string().min(1)
+})
+
+const dispatchInputSchema = orderIdInputSchema.extend({
+  trackingNumber: z.string().trim().max(64).optional()
 })
 
 function buildSearchFilter(
@@ -126,6 +132,11 @@ function mapOrderRow(order: OrderListRow) {
     status: order.status,
     paymentStatus: order.paymentStatus,
     fulfillmentStatus: order.fulfillmentStatus,
+    dispatchCarrier: order.dispatchCarrier,
+    trackingNumber: order.trackingNumber,
+    dispatchedAt: order.dispatchedAt,
+    paymentExceptionAt: order.paymentExceptionAt,
+    paymentExceptionReason: order.paymentExceptionReason,
     totalCents: order.totalCents,
     currencyCode: order.currencyCode,
     shippingCity: order.shippingCity,
@@ -259,10 +270,7 @@ export const orderRouter = createTRPCRouter({
           throw toOrderPlacementTrpcError(error)
         }
 
-        if (
-          error instanceof Prisma.PrismaClientKnownRequestError &&
-          error.code === 'P2002'
-        ) {
+        if (isPrismaErrorCode(error, 'P2002')) {
           throw new TRPCError({
             code: 'CONFLICT',
             message: 'Order number conflict. Please try again.'
@@ -278,6 +286,21 @@ export const orderRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const order = await cancelOrder(ctx.db, input)
+        return mapOrderRow(order)
+      } catch (error) {
+        if (error instanceof OrderLifecycleError) {
+          throw toOrderLifecycleTrpcError(error)
+        }
+
+        throw error
+      }
+    }),
+
+  dispatch: ownerProcedure
+    .input(dispatchInputSchema)
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const order = await dispatchOrder(ctx.db, input)
         return mapOrderRow(order)
       } catch (error) {
         if (error instanceof OrderLifecycleError) {

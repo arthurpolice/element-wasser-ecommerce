@@ -1,4 +1,4 @@
-import { Prisma, type PrismaClient } from '../../../generated/prisma'
+import type { Prisma, PrismaClient } from '../../../generated/prisma'
 import {
   mapStorefrontProduct,
   storefrontProductInclude,
@@ -338,20 +338,29 @@ export async function findProductSearchRebuildProductIds(
   db: Pick<PrismaClient, '$queryRaw'>,
   mode: ProductSearchRebuildMode
 ) {
-  const staleFilter =
+  const rows =
     mode === 'missing'
-      ? Prisma.sql`document."productId" IS NULL`
+      ? await db.$queryRaw<ProductSearchProductIdRow[]>`
+          SELECT p."id" AS "productId"
+          FROM "Product" p
+          LEFT JOIN "ProductSearchDocument" document ON document."productId" = p."id"
+          WHERE document."productId" IS NULL
+          ORDER BY p."id" ASC
+        `
       : mode === 'stale'
-        ? Prisma.sql`document."productId" IS NULL OR document."updatedAt" < p."updatedAt"`
-        : Prisma.sql`true`
-
-  const rows = await db.$queryRaw<ProductSearchProductIdRow[]>`
-    SELECT p."id" AS "productId"
-    FROM "Product" p
-    LEFT JOIN "ProductSearchDocument" document ON document."productId" = p."id"
-    WHERE ${staleFilter}
-    ORDER BY p."id" ASC
-  `
+        ? await db.$queryRaw<ProductSearchProductIdRow[]>`
+            SELECT p."id" AS "productId"
+            FROM "Product" p
+            LEFT JOIN "ProductSearchDocument" document ON document."productId" = p."id"
+            WHERE document."productId" IS NULL
+              OR document."updatedAt" < p."updatedAt"
+            ORDER BY p."id" ASC
+          `
+        : await db.$queryRaw<ProductSearchProductIdRow[]>`
+            SELECT p."id" AS "productId"
+            FROM "Product" p
+            ORDER BY p."id" ASC
+          `
 
   return rows.map((row) => row.productId)
 }
@@ -390,7 +399,11 @@ export async function requestProductSearchDocumentRebuild(
     let refreshedCount = 0
 
     for (const batch of batches) {
-      const result = await processProductSearchReindexBatch(db, batch, batchSize)
+      const result = await processProductSearchReindexBatch(
+        db,
+        batch,
+        batchSize
+      )
       refreshedCount += result.refreshedCount
     }
 
@@ -507,19 +520,8 @@ export async function searchProducts(
     }
   }
 
-  const categoryFilter = input.categoryId
-    ? Prisma.sql`
-      AND EXISTS (
-        SELECT 1
-        FROM "ProductCategory" selected_category
-        WHERE selected_category."productId" = p."id"
-          AND selected_category."categoryId" = ${input.categoryId}
-      )
-    `
-    : Prisma.empty
-  const manufacturerFilter = input.manufacturerId
-    ? Prisma.sql`AND p."manufacturerId" = ${input.manufacturerId}`
-    : Prisma.empty
+  const categoryId = input.categoryId ?? null
+  const manufacturerId = input.manufacturerId ?? null
   const skip = (page - 1) * pageSize
 
   const [countRows, resultRows, categoryFacetRows, manufacturerFacetRows] =
@@ -534,8 +536,16 @@ export async function searchProducts(
         CROSS JOIN search_query
         WHERE p."active" = true
           AND document."searchVector" @@ search_query.query
-          ${categoryFilter}
-          ${manufacturerFilter}
+          AND (
+            ${categoryId}::text IS NULL
+            OR EXISTS (
+              SELECT 1
+              FROM "ProductCategory" selected_category
+              WHERE selected_category."productId" = p."id"
+                AND selected_category."categoryId" = ${categoryId}
+            )
+          )
+          AND (${manufacturerId}::text IS NULL OR p."manufacturerId" = ${manufacturerId})
       `,
       db.$queryRaw<ProductSearchResultRow[]>`
         WITH search_query AS (
@@ -549,8 +559,16 @@ export async function searchProducts(
         CROSS JOIN search_query
         WHERE p."active" = true
           AND document."searchVector" @@ search_query.query
-          ${categoryFilter}
-          ${manufacturerFilter}
+          AND (
+            ${categoryId}::text IS NULL
+            OR EXISTS (
+              SELECT 1
+              FROM "ProductCategory" selected_category
+              WHERE selected_category."productId" = p."id"
+                AND selected_category."categoryId" = ${categoryId}
+            )
+          )
+          AND (${manufacturerId}::text IS NULL OR p."manufacturerId" = ${manufacturerId})
         ORDER BY "rank" DESC, p."name" ASC
         LIMIT ${pageSize}
         OFFSET ${skip}
@@ -577,7 +595,7 @@ export async function searchProducts(
               AND child."active" = true
           )
           AND document."searchVector" @@ search_query.query
-          ${manufacturerFilter}
+          AND (${manufacturerId}::text IS NULL OR p."manufacturerId" = ${manufacturerId})
         GROUP BY c."id", c."name"
         ORDER BY "count" DESC, c."name" ASC
       `,
@@ -595,7 +613,15 @@ export async function searchProducts(
         CROSS JOIN search_query
         WHERE p."active" = true
           AND document."searchVector" @@ search_query.query
-          ${categoryFilter}
+          AND (
+            ${categoryId}::text IS NULL
+            OR EXISTS (
+              SELECT 1
+              FROM "ProductCategory" selected_category
+              WHERE selected_category."productId" = p."id"
+                AND selected_category."categoryId" = ${categoryId}
+            )
+          )
         GROUP BY m."id", m."name"
         ORDER BY "count" DESC, m."name" ASC
       `
