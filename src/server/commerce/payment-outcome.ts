@@ -4,7 +4,10 @@ import type Stripe from 'stripe'
 import { env } from '~/env'
 import { getOrderAccessExpiry } from '~/server/commerce/order-access-token'
 import { publishEmailNotificationSafely } from '~/server/commerce/email-notifications'
-import { orderEmailNotificationKey } from '~/server/commerce/email-notification-key'
+import {
+  orderEmailNotificationKey,
+  paymentEmailNotificationKey
+} from '~/server/commerce/email-notification-key'
 import { retrieveStripeCheckoutSession } from '~/server/payments/stripe-checkout'
 
 type PaymentOutcomeDb = Pick<PrismaClient, '$transaction' | 'payment'>
@@ -247,14 +250,25 @@ async function markPaymentFailed(
     status: 'FAILED' | 'CANCELLED'
     failureReason?: string | null
     providerReference?: string | null
-  }
+  },
+  deps: PaymentOutcomeDeps
 ) {
   await lockOrder(tx, payment.orderId)
 
-  if (payment.status === 'CAPTURED') {
-    return
+  if (payment.status === 'CAPTURED' || payment.status === input.status) {
+    return []
   }
 
+  const now = deps.now?.() ?? new Date()
+  const currentOrder = await tx.order.findUniqueOrThrow({
+    where: { id: payment.orderId },
+    select: {
+      status: true,
+      origin: true,
+      paymentExpiresAt: true,
+      paymentExpiryStartedAt: true
+    }
+  })
   const update = await tx.payment.updateMany({
     where: {
       id: payment.id,
@@ -268,10 +282,45 @@ async function markPaymentFailed(
   })
 
   if (update.count === 0) {
-    return
+    return []
   }
 
-  await projectOrderPaymentStatus(tx, payment.orderId)
+  await projectOrderPaymentStatus(tx, payment.orderId, now)
+
+  const shouldNotify =
+    input.status === 'FAILED' &&
+    currentOrder.status === 'PLACED' &&
+    currentOrder.origin === 'STOREFRONT' &&
+    currentOrder.paymentExpiresAt !== null &&
+    currentOrder.paymentExpiresAt.getTime() > now.getTime() &&
+    currentOrder.paymentExpiryStartedAt === null
+
+  if (!shouldNotify) return []
+
+  const notification = await tx.emailNotification.upsert({
+    where: {
+      deduplicationKey: paymentEmailNotificationKey({
+        paymentId: payment.id,
+        type: 'PAYMENT_FAILED'
+      })
+    },
+    create: {
+      deduplicationKey: paymentEmailNotificationKey({
+        paymentId: payment.id,
+        type: 'PAYMENT_FAILED'
+      }),
+      orderId: payment.orderId,
+      paymentId: payment.id,
+      type: 'PAYMENT_FAILED',
+      recipientEmail: payment.order.customerEmail,
+      accessExpiresAt: payment.order.customer.userId
+        ? null
+        : getOrderAccessExpiry(now)
+    },
+    update: {}
+  })
+
+  return [notification.id]
 }
 
 async function handleCheckoutSessionCompleted(
@@ -306,7 +355,8 @@ async function handleCheckoutSessionCompleted(
 
 async function handleCheckoutSessionExpired(
   tx: PaymentOutcomeTx,
-  session: Stripe.Checkout.Session
+  session: Stripe.Checkout.Session,
+  deps: PaymentOutcomeDeps
 ) {
   const payment = await findPayment(tx, {
     paymentId: getStringMetadataValue(session.metadata, 'paymentId'),
@@ -314,18 +364,24 @@ async function handleCheckoutSessionExpired(
   })
 
   if (!payment) {
-    return
+    return []
   }
 
-  await markPaymentFailed(tx, payment, {
-    status: 'CANCELLED',
-    failureReason: 'Stripe Checkout Session expired.'
-  })
+  await markPaymentFailed(
+    tx,
+    payment,
+    {
+      status: 'CANCELLED',
+      failureReason: 'Stripe Checkout Session expired.'
+    },
+    deps
+  )
 }
 
 async function handlePaymentIntentFailed(
   tx: PaymentOutcomeTx,
-  paymentIntent: Stripe.PaymentIntent
+  paymentIntent: Stripe.PaymentIntent,
+  deps: PaymentOutcomeDeps
 ) {
   const payment = await findPayment(tx, {
     paymentId: getStringMetadataValue(paymentIntent.metadata, 'paymentId'),
@@ -333,15 +389,20 @@ async function handlePaymentIntentFailed(
   })
 
   if (!payment) {
-    return
+    return []
   }
 
-  await markPaymentFailed(tx, payment, {
-    status: 'FAILED',
-    failureReason:
-      paymentIntent.last_payment_error?.message ?? 'Stripe payment failed.',
-    providerReference: paymentIntent.id
-  })
+  return markPaymentFailed(
+    tx,
+    payment,
+    {
+      status: 'FAILED',
+      failureReason:
+        paymentIntent.last_payment_error?.message ?? 'Stripe payment failed.',
+      providerReference: paymentIntent.id
+    },
+    deps
+  )
 }
 
 export async function handleStripeWebhookEvent(
@@ -354,11 +415,10 @@ export async function handleStripeWebhookEvent(
       case 'checkout.session.completed':
         return handleCheckoutSessionCompleted(tx, event.data.object, deps)
       case 'checkout.session.expired':
-        await handleCheckoutSessionExpired(tx, event.data.object)
+        await handleCheckoutSessionExpired(tx, event.data.object, deps)
         return []
       case 'payment_intent.payment_failed':
-        await handlePaymentIntentFailed(tx, event.data.object)
-        return []
+        return handlePaymentIntentFailed(tx, event.data.object, deps)
       default:
         return []
     }
@@ -408,11 +468,16 @@ export async function reconcileStripePayment(
     }
 
     if (session.status === 'expired' || paymentIntent?.status === 'canceled') {
-      await markPaymentFailed(tx, payment, {
-        status: 'CANCELLED',
-        failureReason: 'Stripe Checkout Session expired.',
-        providerReference: paymentIntent?.id
-      })
+      await markPaymentFailed(
+        tx,
+        payment,
+        {
+          status: 'CANCELLED',
+          failureReason: 'Stripe Checkout Session expired.',
+          providerReference: paymentIntent?.id
+        },
+        deps
+      )
       return []
     }
 
@@ -420,11 +485,16 @@ export async function reconcileStripePayment(
       paymentIntent?.status === 'requires_payment_method' &&
       paymentIntent.last_payment_error
     ) {
-      await markPaymentFailed(tx, payment, {
-        status: 'FAILED',
-        failureReason: paymentIntent.last_payment_error.message,
-        providerReference: paymentIntent.id
-      })
+      return markPaymentFailed(
+        tx,
+        payment,
+        {
+          status: 'FAILED',
+          failureReason: paymentIntent.last_payment_error.message,
+          providerReference: paymentIntent.id
+        },
+        deps
+      )
     }
     return []
   })

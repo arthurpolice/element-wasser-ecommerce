@@ -18,6 +18,7 @@ import {
   dashTableShellClass
 } from '~/app/[locale]/dashboard/_components/dashboard-ui'
 import { type RouterOutputs } from '~/trpc/react'
+import { getOrderDashboardActions } from '~/lib/order-dashboard-actions'
 
 type OrderRow = RouterOutputs['order']['list']['items'][number]
 
@@ -41,6 +42,7 @@ type OrdersTableProps = {
   onCancel: (order: OrderRow) => void
   onDispatch: (order: OrderRow) => void
   onFulfill: (order: OrderRow) => void
+  onView: (order: OrderRow) => void
   pendingAction?: { orderId: string; action: 'cancel' | 'dispatch' | 'fulfill' }
   actionError?: string
 }
@@ -61,6 +63,7 @@ export function OrdersTable({
   onCancel,
   onDispatch,
   onFulfill,
+  onView,
   pendingAction,
   actionError
 }: OrdersTableProps) {
@@ -187,17 +190,11 @@ export function OrdersTable({
         header: t('columns.actions'),
         cell: ({ row }) => {
           const order = row.original
-          const canCancel =
-            order.fulfillmentStatus === 'UNFULFILLED' &&
-            order.status !== 'CANCELLED'
-          const canFulfill =
-            order.paymentStatus === 'PAID' &&
-            order.fulfillmentStatus === 'DISPATCHED' &&
-            order.status !== 'CANCELLED'
-          const canDispatch =
-            order.paymentStatus === 'PAID' &&
-            order.fulfillmentStatus === 'UNFULFILLED' &&
-            order.status !== 'CANCELLED'
+          const {
+            canCancel,
+            canDispatch,
+            canCompleteFulfillment: canFulfill
+          } = getOrderDashboardActions(order)
           const cancelPending =
             pendingAction?.orderId === order.id &&
             pendingAction.action === 'cancel'
@@ -208,12 +205,15 @@ export function OrdersTable({
             pendingAction?.orderId === order.id &&
             pendingAction.action === 'dispatch'
 
-          if (!canCancel && !canDispatch && !canFulfill) {
-            return <span className="text-dash-muted">{t('noActions')}</span>
-          }
-
           return (
             <div className="flex flex-wrap items-center gap-2">
+              <DashboardButton
+                className="px-3 py-1.5 text-xs"
+                onClick={() => onView(order)}
+                variant="ghost"
+              >
+                {t('actions.view')}
+              </DashboardButton>
               {canDispatch ? (
                 <DashboardButton
                   className="px-3 py-1.5 text-xs"
@@ -261,6 +261,7 @@ export function OrdersTable({
       onCancel,
       onDispatch,
       onFulfill,
+      onView,
       pendingAction,
       t,
       tFulfillmentStatus,

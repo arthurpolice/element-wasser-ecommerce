@@ -22,6 +22,8 @@ type OrderLifecycleRow = Prisma.OrderGetPayload<{
 export type OrderLifecycleErrorCode =
   | 'ORDER_NOT_FOUND'
   | 'ORDER_ALREADY_FULFILLED'
+  | 'ORDER_ALREADY_DISPATCHED'
+  | 'ORDER_NOT_DISPATCHED'
   | 'ORDER_PAYMENT_NOT_PAID'
   | 'ORDER_CANCELLED'
 
@@ -122,6 +124,13 @@ export async function cancelOrder(
       return { order, emailNotificationId: null }
     }
 
+    if (order.fulfillmentStatus === 'DISPATCHED') {
+      throw new OrderLifecycleError(
+        'ORDER_ALREADY_DISPATCHED',
+        'Dispatched Orders cannot be cancelled.'
+      )
+    }
+
     if (order.fulfillmentStatus === 'FULFILLED') {
       throw new OrderLifecycleError(
         'ORDER_ALREADY_FULFILLED',
@@ -198,6 +207,9 @@ export async function fulfillOrder(
   const completedAt = nowFromDeps(deps)
 
   return db.$transaction(async (tx) => {
+    await tx.$queryRaw`
+      SELECT "id" FROM "Order" WHERE "id" = ${input.orderId} FOR UPDATE
+    `
     const order = await findOrder(tx, input.orderId)
 
     if (order.fulfillmentStatus === 'FULFILLED') {
@@ -215,6 +227,13 @@ export async function fulfillOrder(
       throw new OrderLifecycleError(
         'ORDER_PAYMENT_NOT_PAID',
         'Only paid Orders can be fulfilled.'
+      )
+    }
+
+    if (order.fulfillmentStatus !== 'DISPATCHED') {
+      throw new OrderLifecycleError(
+        'ORDER_NOT_DISPATCHED',
+        'Only dispatched Orders can complete Fulfillment.'
       )
     }
 

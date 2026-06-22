@@ -349,12 +349,41 @@ exports.Prisma.EmailNotificationScalarFieldEnum = {
   recipientEmail: 'recipientEmail',
   accessExpiresAt: 'accessExpiresAt',
   attemptCount: 'attemptCount',
+  deliveryGeneration: 'deliveryGeneration',
   lastAttemptAt: 'lastAttemptAt',
   lastError: 'lastError',
   providerId: 'providerId',
   sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  failedAt: 'failedAt',
+  lastProviderEventAt: 'lastProviderEventAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EmailDeliveryAttemptScalarFieldEnum = {
+  id: 'id',
+  emailNotificationId: 'emailNotificationId',
+  generation: 'generation',
+  providerId: 'providerId',
+  status: 'status',
+  sentAt: 'sentAt',
+  deliveredAt: 'deliveredAt',
+  failedAt: 'failedAt',
+  lastError: 'lastError',
+  lastProviderEventAt: 'lastProviderEventAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ResendWebhookEventScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  providerEmailId: 'providerEmailId',
+  occurredAt: 'occurredAt',
+  rawPayload: 'rawPayload',
+  payloadExpiresAt: 'payloadExpiresAt',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.OrderLineScalarFieldEnum = {
@@ -482,6 +511,7 @@ exports.ShippingCarrier = exports.$Enums.ShippingCarrier = {
 exports.EmailNotificationType = exports.$Enums.EmailNotificationType = {
   ORDER_PLACED: 'ORDER_PLACED',
   ORDER_PAYMENT_CONFIRMED: 'ORDER_PAYMENT_CONFIRMED',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
   NEW_PAID_ORDER: 'NEW_PAID_ORDER',
   ORDER_CANCELLED: 'ORDER_CANCELLED',
   ORDER_DISPATCHED: 'ORDER_DISPATCHED'
@@ -489,7 +519,15 @@ exports.EmailNotificationType = exports.$Enums.EmailNotificationType = {
 
 exports.EmailNotificationStatus = exports.$Enums.EmailNotificationStatus = {
   PENDING: 'PENDING',
-  SENT: 'SENT'
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED'
+};
+
+exports.EmailDeliveryAttemptStatus = exports.$Enums.EmailDeliveryAttemptStatus = {
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED'
 };
 
 exports.PaymentType = exports.$Enums.PaymentType = {
@@ -538,6 +576,8 @@ exports.Prisma.ModelName = {
   ProductSkuSequence: 'ProductSkuSequence',
   Order: 'Order',
   EmailNotification: 'EmailNotification',
+  EmailDeliveryAttempt: 'EmailDeliveryAttempt',
+  ResendWebhookEvent: 'ResendWebhookEvent',
   OrderLine: 'OrderLine',
   Payment: 'Payment',
   Review: 'Review',

@@ -99,6 +99,16 @@ export type Order = $Result.DefaultSelection<Prisma.$OrderPayload>
  */
 export type EmailNotification = $Result.DefaultSelection<Prisma.$EmailNotificationPayload>
 /**
+ * Model EmailDeliveryAttempt
+ * 
+ */
+export type EmailDeliveryAttempt = $Result.DefaultSelection<Prisma.$EmailDeliveryAttemptPayload>
+/**
+ * Model ResendWebhookEvent
+ * 
+ */
+export type ResendWebhookEvent = $Result.DefaultSelection<Prisma.$ResendWebhookEventPayload>
+/**
  * Model OrderLine
  * 
  */
@@ -230,6 +240,7 @@ export type OrderOrigin = (typeof OrderOrigin)[keyof typeof OrderOrigin]
 export const EmailNotificationType: {
   ORDER_PLACED: 'ORDER_PLACED',
   ORDER_PAYMENT_CONFIRMED: 'ORDER_PAYMENT_CONFIRMED',
+  PAYMENT_FAILED: 'PAYMENT_FAILED',
   NEW_PAID_ORDER: 'NEW_PAID_ORDER',
   ORDER_CANCELLED: 'ORDER_CANCELLED',
   ORDER_DISPATCHED: 'ORDER_DISPATCHED'
@@ -240,10 +251,21 @@ export type EmailNotificationType = (typeof EmailNotificationType)[keyof typeof 
 
 export const EmailNotificationStatus: {
   PENDING: 'PENDING',
-  SENT: 'SENT'
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED'
 };
 
 export type EmailNotificationStatus = (typeof EmailNotificationStatus)[keyof typeof EmailNotificationStatus]
+
+
+export const EmailDeliveryAttemptStatus: {
+  SENT: 'SENT',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED'
+};
+
+export type EmailDeliveryAttemptStatus = (typeof EmailDeliveryAttemptStatus)[keyof typeof EmailDeliveryAttemptStatus]
 
 }
 
@@ -302,6 +324,10 @@ export const EmailNotificationType: typeof $Enums.EmailNotificationType
 export type EmailNotificationStatus = $Enums.EmailNotificationStatus
 
 export const EmailNotificationStatus: typeof $Enums.EmailNotificationStatus
+
+export type EmailDeliveryAttemptStatus = $Enums.EmailDeliveryAttemptStatus
+
+export const EmailDeliveryAttemptStatus: typeof $Enums.EmailDeliveryAttemptStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -593,6 +619,26 @@ export class PrismaClient<
     * ```
     */
   get emailNotification(): Prisma.EmailNotificationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.emailDeliveryAttempt`: Exposes CRUD operations for the **EmailDeliveryAttempt** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more EmailDeliveryAttempts
+    * const emailDeliveryAttempts = await prisma.emailDeliveryAttempt.findMany()
+    * ```
+    */
+  get emailDeliveryAttempt(): Prisma.EmailDeliveryAttemptDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.resendWebhookEvent`: Exposes CRUD operations for the **ResendWebhookEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ResendWebhookEvents
+    * const resendWebhookEvents = await prisma.resendWebhookEvent.findMany()
+    * ```
+    */
+  get resendWebhookEvent(): Prisma.ResendWebhookEventDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.orderLine`: Exposes CRUD operations for the **OrderLine** model.
@@ -1084,6 +1130,8 @@ export namespace Prisma {
     ProductSkuSequence: 'ProductSkuSequence',
     Order: 'Order',
     EmailNotification: 'EmailNotification',
+    EmailDeliveryAttempt: 'EmailDeliveryAttempt',
+    ResendWebhookEvent: 'ResendWebhookEvent',
     OrderLine: 'OrderLine',
     Payment: 'Payment',
     Review: 'Review',
@@ -1103,7 +1151,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "emailNotification" | "orderLine" | "payment" | "review" | "reviewInvite"
+      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "emailNotification" | "emailDeliveryAttempt" | "resendWebhookEvent" | "orderLine" | "payment" | "review" | "reviewInvite"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2349,6 +2397,154 @@ export namespace Prisma {
           }
         }
       }
+      EmailDeliveryAttempt: {
+        payload: Prisma.$EmailDeliveryAttemptPayload<ExtArgs>
+        fields: Prisma.EmailDeliveryAttemptFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.EmailDeliveryAttemptFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.EmailDeliveryAttemptFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>
+          }
+          findFirst: {
+            args: Prisma.EmailDeliveryAttemptFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.EmailDeliveryAttemptFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>
+          }
+          findMany: {
+            args: Prisma.EmailDeliveryAttemptFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>[]
+          }
+          create: {
+            args: Prisma.EmailDeliveryAttemptCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>
+          }
+          createMany: {
+            args: Prisma.EmailDeliveryAttemptCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.EmailDeliveryAttemptCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>[]
+          }
+          delete: {
+            args: Prisma.EmailDeliveryAttemptDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>
+          }
+          update: {
+            args: Prisma.EmailDeliveryAttemptUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>
+          }
+          deleteMany: {
+            args: Prisma.EmailDeliveryAttemptDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.EmailDeliveryAttemptUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.EmailDeliveryAttemptUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>[]
+          }
+          upsert: {
+            args: Prisma.EmailDeliveryAttemptUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$EmailDeliveryAttemptPayload>
+          }
+          aggregate: {
+            args: Prisma.EmailDeliveryAttemptAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateEmailDeliveryAttempt>
+          }
+          groupBy: {
+            args: Prisma.EmailDeliveryAttemptGroupByArgs<ExtArgs>
+            result: $Utils.Optional<EmailDeliveryAttemptGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.EmailDeliveryAttemptCountArgs<ExtArgs>
+            result: $Utils.Optional<EmailDeliveryAttemptCountAggregateOutputType> | number
+          }
+        }
+      }
+      ResendWebhookEvent: {
+        payload: Prisma.$ResendWebhookEventPayload<ExtArgs>
+        fields: Prisma.ResendWebhookEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ResendWebhookEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ResendWebhookEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+          }
+          findFirst: {
+            args: Prisma.ResendWebhookEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ResendWebhookEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+          }
+          findMany: {
+            args: Prisma.ResendWebhookEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>[]
+          }
+          create: {
+            args: Prisma.ResendWebhookEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+          }
+          createMany: {
+            args: Prisma.ResendWebhookEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ResendWebhookEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>[]
+          }
+          delete: {
+            args: Prisma.ResendWebhookEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+          }
+          update: {
+            args: Prisma.ResendWebhookEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.ResendWebhookEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ResendWebhookEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ResendWebhookEventUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>[]
+          }
+          upsert: {
+            args: Prisma.ResendWebhookEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ResendWebhookEventPayload>
+          }
+          aggregate: {
+            args: Prisma.ResendWebhookEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateResendWebhookEvent>
+          }
+          groupBy: {
+            args: Prisma.ResendWebhookEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ResendWebhookEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ResendWebhookEventCountArgs<ExtArgs>
+            result: $Utils.Optional<ResendWebhookEventCountAggregateOutputType> | number
+          }
+        }
+      }
       OrderLine: {
         payload: Prisma.$OrderLinePayload<ExtArgs>
         fields: Prisma.OrderLineFieldRefs
@@ -2770,6 +2966,8 @@ export namespace Prisma {
     productSkuSequence?: ProductSkuSequenceOmit
     order?: OrderOmit
     emailNotification?: EmailNotificationOmit
+    emailDeliveryAttempt?: EmailDeliveryAttemptOmit
+    resendWebhookEvent?: ResendWebhookEventOmit
     orderLine?: OrderLineOmit
     payment?: PaymentOmit
     review?: ReviewOmit
@@ -3122,6 +3320,37 @@ export namespace Prisma {
    */
   export type OrderCountOutputTypeCountEmailNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: EmailNotificationWhereInput
+  }
+
+
+  /**
+   * Count Type EmailNotificationCountOutputType
+   */
+
+  export type EmailNotificationCountOutputType = {
+    deliveryAttempts: number
+  }
+
+  export type EmailNotificationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    deliveryAttempts?: boolean | EmailNotificationCountOutputTypeCountDeliveryAttemptsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * EmailNotificationCountOutputType without action
+   */
+  export type EmailNotificationCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailNotificationCountOutputType
+     */
+    select?: EmailNotificationCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * EmailNotificationCountOutputType without action
+   */
+  export type EmailNotificationCountOutputTypeCountDeliveryAttemptsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EmailDeliveryAttemptWhereInput
   }
 
 
@@ -21795,10 +22024,12 @@ export namespace Prisma {
 
   export type EmailNotificationAvgAggregateOutputType = {
     attemptCount: number | null
+    deliveryGeneration: number | null
   }
 
   export type EmailNotificationSumAggregateOutputType = {
     attemptCount: number | null
+    deliveryGeneration: number | null
   }
 
   export type EmailNotificationMinAggregateOutputType = {
@@ -21811,10 +22042,14 @@ export namespace Prisma {
     recipientEmail: string | null
     accessExpiresAt: Date | null
     attemptCount: number | null
+    deliveryGeneration: number | null
     lastAttemptAt: Date | null
     lastError: string | null
     providerId: string | null
     sentAt: Date | null
+    deliveredAt: Date | null
+    failedAt: Date | null
+    lastProviderEventAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -21829,10 +22064,14 @@ export namespace Prisma {
     recipientEmail: string | null
     accessExpiresAt: Date | null
     attemptCount: number | null
+    deliveryGeneration: number | null
     lastAttemptAt: Date | null
     lastError: string | null
     providerId: string | null
     sentAt: Date | null
+    deliveredAt: Date | null
+    failedAt: Date | null
+    lastProviderEventAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -21847,10 +22086,14 @@ export namespace Prisma {
     recipientEmail: number
     accessExpiresAt: number
     attemptCount: number
+    deliveryGeneration: number
     lastAttemptAt: number
     lastError: number
     providerId: number
     sentAt: number
+    deliveredAt: number
+    failedAt: number
+    lastProviderEventAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -21859,10 +22102,12 @@ export namespace Prisma {
 
   export type EmailNotificationAvgAggregateInputType = {
     attemptCount?: true
+    deliveryGeneration?: true
   }
 
   export type EmailNotificationSumAggregateInputType = {
     attemptCount?: true
+    deliveryGeneration?: true
   }
 
   export type EmailNotificationMinAggregateInputType = {
@@ -21875,10 +22120,14 @@ export namespace Prisma {
     recipientEmail?: true
     accessExpiresAt?: true
     attemptCount?: true
+    deliveryGeneration?: true
     lastAttemptAt?: true
     lastError?: true
     providerId?: true
     sentAt?: true
+    deliveredAt?: true
+    failedAt?: true
+    lastProviderEventAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -21893,10 +22142,14 @@ export namespace Prisma {
     recipientEmail?: true
     accessExpiresAt?: true
     attemptCount?: true
+    deliveryGeneration?: true
     lastAttemptAt?: true
     lastError?: true
     providerId?: true
     sentAt?: true
+    deliveredAt?: true
+    failedAt?: true
+    lastProviderEventAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -21911,10 +22164,14 @@ export namespace Prisma {
     recipientEmail?: true
     accessExpiresAt?: true
     attemptCount?: true
+    deliveryGeneration?: true
     lastAttemptAt?: true
     lastError?: true
     providerId?: true
     sentAt?: true
+    deliveredAt?: true
+    failedAt?: true
+    lastProviderEventAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -22016,10 +22273,14 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt: Date | null
     attemptCount: number
+    deliveryGeneration: number
     lastAttemptAt: Date | null
     lastError: string | null
     providerId: string | null
     sentAt: Date | null
+    deliveredAt: Date | null
+    failedAt: Date | null
+    lastProviderEventAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: EmailNotificationCountAggregateOutputType | null
@@ -22053,14 +22314,20 @@ export namespace Prisma {
     recipientEmail?: boolean
     accessExpiresAt?: boolean
     attemptCount?: boolean
+    deliveryGeneration?: boolean
     lastAttemptAt?: boolean
     lastError?: boolean
     providerId?: boolean
     sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastProviderEventAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
     payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+    deliveryAttempts?: boolean | EmailNotification$deliveryAttemptsArgs<ExtArgs>
+    _count?: boolean | EmailNotificationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["emailNotification"]>
 
   export type EmailNotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -22073,10 +22340,14 @@ export namespace Prisma {
     recipientEmail?: boolean
     accessExpiresAt?: boolean
     attemptCount?: boolean
+    deliveryGeneration?: boolean
     lastAttemptAt?: boolean
     lastError?: boolean
     providerId?: boolean
     sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastProviderEventAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
@@ -22093,10 +22364,14 @@ export namespace Prisma {
     recipientEmail?: boolean
     accessExpiresAt?: boolean
     attemptCount?: boolean
+    deliveryGeneration?: boolean
     lastAttemptAt?: boolean
     lastError?: boolean
     providerId?: boolean
     sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastProviderEventAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     order?: boolean | OrderDefaultArgs<ExtArgs>
@@ -22113,18 +22388,24 @@ export namespace Prisma {
     recipientEmail?: boolean
     accessExpiresAt?: boolean
     attemptCount?: boolean
+    deliveryGeneration?: boolean
     lastAttemptAt?: boolean
     lastError?: boolean
     providerId?: boolean
     sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastProviderEventAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type EmailNotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "paymentId" | "deduplicationKey" | "type" | "status" | "recipientEmail" | "accessExpiresAt" | "attemptCount" | "lastAttemptAt" | "lastError" | "providerId" | "sentAt" | "createdAt" | "updatedAt", ExtArgs["result"]["emailNotification"]>
+  export type EmailNotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderId" | "paymentId" | "deduplicationKey" | "type" | "status" | "recipientEmail" | "accessExpiresAt" | "attemptCount" | "deliveryGeneration" | "lastAttemptAt" | "lastError" | "providerId" | "sentAt" | "deliveredAt" | "failedAt" | "lastProviderEventAt" | "createdAt" | "updatedAt", ExtArgs["result"]["emailNotification"]>
   export type EmailNotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
     payment?: boolean | EmailNotification$paymentArgs<ExtArgs>
+    deliveryAttempts?: boolean | EmailNotification$deliveryAttemptsArgs<ExtArgs>
+    _count?: boolean | EmailNotificationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type EmailNotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     order?: boolean | OrderDefaultArgs<ExtArgs>
@@ -22140,6 +22421,7 @@ export namespace Prisma {
     objects: {
       order: Prisma.$OrderPayload<ExtArgs>
       payment: Prisma.$PaymentPayload<ExtArgs> | null
+      deliveryAttempts: Prisma.$EmailDeliveryAttemptPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -22151,10 +22433,14 @@ export namespace Prisma {
       recipientEmail: string
       accessExpiresAt: Date | null
       attemptCount: number
+      deliveryGeneration: number
       lastAttemptAt: Date | null
       lastError: string | null
       providerId: string | null
       sentAt: Date | null
+      deliveredAt: Date | null
+      failedAt: Date | null
+      lastProviderEventAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["emailNotification"]>
@@ -22553,6 +22839,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     order<T extends OrderDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrderDefaultArgs<ExtArgs>>): Prisma__OrderClient<$Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     payment<T extends EmailNotification$paymentArgs<ExtArgs> = {}>(args?: Subset<T, EmailNotification$paymentArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    deliveryAttempts<T extends EmailNotification$deliveryAttemptsArgs<ExtArgs> = {}>(args?: Subset<T, EmailNotification$deliveryAttemptsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -22591,10 +22878,14 @@ export namespace Prisma {
     readonly recipientEmail: FieldRef<"EmailNotification", 'String'>
     readonly accessExpiresAt: FieldRef<"EmailNotification", 'DateTime'>
     readonly attemptCount: FieldRef<"EmailNotification", 'Int'>
+    readonly deliveryGeneration: FieldRef<"EmailNotification", 'Int'>
     readonly lastAttemptAt: FieldRef<"EmailNotification", 'DateTime'>
     readonly lastError: FieldRef<"EmailNotification", 'String'>
     readonly providerId: FieldRef<"EmailNotification", 'String'>
     readonly sentAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly deliveredAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly failedAt: FieldRef<"EmailNotification", 'DateTime'>
+    readonly lastProviderEventAt: FieldRef<"EmailNotification", 'DateTime'>
     readonly createdAt: FieldRef<"EmailNotification", 'DateTime'>
     readonly updatedAt: FieldRef<"EmailNotification", 'DateTime'>
   }
@@ -23017,6 +23308,30 @@ export namespace Prisma {
   }
 
   /**
+   * EmailNotification.deliveryAttempts
+   */
+  export type EmailNotification$deliveryAttemptsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    where?: EmailDeliveryAttemptWhereInput
+    orderBy?: EmailDeliveryAttemptOrderByWithRelationInput | EmailDeliveryAttemptOrderByWithRelationInput[]
+    cursor?: EmailDeliveryAttemptWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: EmailDeliveryAttemptScalarFieldEnum | EmailDeliveryAttemptScalarFieldEnum[]
+  }
+
+  /**
    * EmailNotification without action
    */
   export type EmailNotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -23032,6 +23347,2216 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: EmailNotificationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model EmailDeliveryAttempt
+   */
+
+  export type AggregateEmailDeliveryAttempt = {
+    _count: EmailDeliveryAttemptCountAggregateOutputType | null
+    _avg: EmailDeliveryAttemptAvgAggregateOutputType | null
+    _sum: EmailDeliveryAttemptSumAggregateOutputType | null
+    _min: EmailDeliveryAttemptMinAggregateOutputType | null
+    _max: EmailDeliveryAttemptMaxAggregateOutputType | null
+  }
+
+  export type EmailDeliveryAttemptAvgAggregateOutputType = {
+    generation: number | null
+  }
+
+  export type EmailDeliveryAttemptSumAggregateOutputType = {
+    generation: number | null
+  }
+
+  export type EmailDeliveryAttemptMinAggregateOutputType = {
+    id: string | null
+    emailNotificationId: string | null
+    generation: number | null
+    providerId: string | null
+    status: $Enums.EmailDeliveryAttemptStatus | null
+    sentAt: Date | null
+    deliveredAt: Date | null
+    failedAt: Date | null
+    lastError: string | null
+    lastProviderEventAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type EmailDeliveryAttemptMaxAggregateOutputType = {
+    id: string | null
+    emailNotificationId: string | null
+    generation: number | null
+    providerId: string | null
+    status: $Enums.EmailDeliveryAttemptStatus | null
+    sentAt: Date | null
+    deliveredAt: Date | null
+    failedAt: Date | null
+    lastError: string | null
+    lastProviderEventAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type EmailDeliveryAttemptCountAggregateOutputType = {
+    id: number
+    emailNotificationId: number
+    generation: number
+    providerId: number
+    status: number
+    sentAt: number
+    deliveredAt: number
+    failedAt: number
+    lastError: number
+    lastProviderEventAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type EmailDeliveryAttemptAvgAggregateInputType = {
+    generation?: true
+  }
+
+  export type EmailDeliveryAttemptSumAggregateInputType = {
+    generation?: true
+  }
+
+  export type EmailDeliveryAttemptMinAggregateInputType = {
+    id?: true
+    emailNotificationId?: true
+    generation?: true
+    providerId?: true
+    status?: true
+    sentAt?: true
+    deliveredAt?: true
+    failedAt?: true
+    lastError?: true
+    lastProviderEventAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type EmailDeliveryAttemptMaxAggregateInputType = {
+    id?: true
+    emailNotificationId?: true
+    generation?: true
+    providerId?: true
+    status?: true
+    sentAt?: true
+    deliveredAt?: true
+    failedAt?: true
+    lastError?: true
+    lastProviderEventAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type EmailDeliveryAttemptCountAggregateInputType = {
+    id?: true
+    emailNotificationId?: true
+    generation?: true
+    providerId?: true
+    status?: true
+    sentAt?: true
+    deliveredAt?: true
+    failedAt?: true
+    lastError?: true
+    lastProviderEventAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type EmailDeliveryAttemptAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EmailDeliveryAttempt to aggregate.
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailDeliveryAttempts to fetch.
+     */
+    orderBy?: EmailDeliveryAttemptOrderByWithRelationInput | EmailDeliveryAttemptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: EmailDeliveryAttemptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailDeliveryAttempts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailDeliveryAttempts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned EmailDeliveryAttempts
+    **/
+    _count?: true | EmailDeliveryAttemptCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: EmailDeliveryAttemptAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: EmailDeliveryAttemptSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: EmailDeliveryAttemptMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: EmailDeliveryAttemptMaxAggregateInputType
+  }
+
+  export type GetEmailDeliveryAttemptAggregateType<T extends EmailDeliveryAttemptAggregateArgs> = {
+        [P in keyof T & keyof AggregateEmailDeliveryAttempt]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateEmailDeliveryAttempt[P]>
+      : GetScalarType<T[P], AggregateEmailDeliveryAttempt[P]>
+  }
+
+
+
+
+  export type EmailDeliveryAttemptGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: EmailDeliveryAttemptWhereInput
+    orderBy?: EmailDeliveryAttemptOrderByWithAggregationInput | EmailDeliveryAttemptOrderByWithAggregationInput[]
+    by: EmailDeliveryAttemptScalarFieldEnum[] | EmailDeliveryAttemptScalarFieldEnum
+    having?: EmailDeliveryAttemptScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: EmailDeliveryAttemptCountAggregateInputType | true
+    _avg?: EmailDeliveryAttemptAvgAggregateInputType
+    _sum?: EmailDeliveryAttemptSumAggregateInputType
+    _min?: EmailDeliveryAttemptMinAggregateInputType
+    _max?: EmailDeliveryAttemptMaxAggregateInputType
+  }
+
+  export type EmailDeliveryAttemptGroupByOutputType = {
+    id: string
+    emailNotificationId: string
+    generation: number
+    providerId: string
+    status: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date
+    deliveredAt: Date | null
+    failedAt: Date | null
+    lastError: string | null
+    lastProviderEventAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: EmailDeliveryAttemptCountAggregateOutputType | null
+    _avg: EmailDeliveryAttemptAvgAggregateOutputType | null
+    _sum: EmailDeliveryAttemptSumAggregateOutputType | null
+    _min: EmailDeliveryAttemptMinAggregateOutputType | null
+    _max: EmailDeliveryAttemptMaxAggregateOutputType | null
+  }
+
+  type GetEmailDeliveryAttemptGroupByPayload<T extends EmailDeliveryAttemptGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<EmailDeliveryAttemptGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof EmailDeliveryAttemptGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], EmailDeliveryAttemptGroupByOutputType[P]>
+            : GetScalarType<T[P], EmailDeliveryAttemptGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type EmailDeliveryAttemptSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    emailNotificationId?: boolean
+    generation?: boolean
+    providerId?: boolean
+    status?: boolean
+    sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastError?: boolean
+    lastProviderEventAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    emailNotification?: boolean | EmailNotificationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["emailDeliveryAttempt"]>
+
+  export type EmailDeliveryAttemptSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    emailNotificationId?: boolean
+    generation?: boolean
+    providerId?: boolean
+    status?: boolean
+    sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastError?: boolean
+    lastProviderEventAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    emailNotification?: boolean | EmailNotificationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["emailDeliveryAttempt"]>
+
+  export type EmailDeliveryAttemptSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    emailNotificationId?: boolean
+    generation?: boolean
+    providerId?: boolean
+    status?: boolean
+    sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastError?: boolean
+    lastProviderEventAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    emailNotification?: boolean | EmailNotificationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["emailDeliveryAttempt"]>
+
+  export type EmailDeliveryAttemptSelectScalar = {
+    id?: boolean
+    emailNotificationId?: boolean
+    generation?: boolean
+    providerId?: boolean
+    status?: boolean
+    sentAt?: boolean
+    deliveredAt?: boolean
+    failedAt?: boolean
+    lastError?: boolean
+    lastProviderEventAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type EmailDeliveryAttemptOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "emailNotificationId" | "generation" | "providerId" | "status" | "sentAt" | "deliveredAt" | "failedAt" | "lastError" | "lastProviderEventAt" | "createdAt" | "updatedAt", ExtArgs["result"]["emailDeliveryAttempt"]>
+  export type EmailDeliveryAttemptInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    emailNotification?: boolean | EmailNotificationDefaultArgs<ExtArgs>
+  }
+  export type EmailDeliveryAttemptIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    emailNotification?: boolean | EmailNotificationDefaultArgs<ExtArgs>
+  }
+  export type EmailDeliveryAttemptIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    emailNotification?: boolean | EmailNotificationDefaultArgs<ExtArgs>
+  }
+
+  export type $EmailDeliveryAttemptPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "EmailDeliveryAttempt"
+    objects: {
+      emailNotification: Prisma.$EmailNotificationPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      emailNotificationId: string
+      generation: number
+      providerId: string
+      status: $Enums.EmailDeliveryAttemptStatus
+      sentAt: Date
+      deliveredAt: Date | null
+      failedAt: Date | null
+      lastError: string | null
+      lastProviderEventAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["emailDeliveryAttempt"]>
+    composites: {}
+  }
+
+  type EmailDeliveryAttemptGetPayload<S extends boolean | null | undefined | EmailDeliveryAttemptDefaultArgs> = $Result.GetResult<Prisma.$EmailDeliveryAttemptPayload, S>
+
+  type EmailDeliveryAttemptCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<EmailDeliveryAttemptFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: EmailDeliveryAttemptCountAggregateInputType | true
+    }
+
+  export interface EmailDeliveryAttemptDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['EmailDeliveryAttempt'], meta: { name: 'EmailDeliveryAttempt' } }
+    /**
+     * Find zero or one EmailDeliveryAttempt that matches the filter.
+     * @param {EmailDeliveryAttemptFindUniqueArgs} args - Arguments to find a EmailDeliveryAttempt
+     * @example
+     * // Get one EmailDeliveryAttempt
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends EmailDeliveryAttemptFindUniqueArgs>(args: SelectSubset<T, EmailDeliveryAttemptFindUniqueArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one EmailDeliveryAttempt that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {EmailDeliveryAttemptFindUniqueOrThrowArgs} args - Arguments to find a EmailDeliveryAttempt
+     * @example
+     * // Get one EmailDeliveryAttempt
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends EmailDeliveryAttemptFindUniqueOrThrowArgs>(args: SelectSubset<T, EmailDeliveryAttemptFindUniqueOrThrowArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EmailDeliveryAttempt that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptFindFirstArgs} args - Arguments to find a EmailDeliveryAttempt
+     * @example
+     * // Get one EmailDeliveryAttempt
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends EmailDeliveryAttemptFindFirstArgs>(args?: SelectSubset<T, EmailDeliveryAttemptFindFirstArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first EmailDeliveryAttempt that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptFindFirstOrThrowArgs} args - Arguments to find a EmailDeliveryAttempt
+     * @example
+     * // Get one EmailDeliveryAttempt
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends EmailDeliveryAttemptFindFirstOrThrowArgs>(args?: SelectSubset<T, EmailDeliveryAttemptFindFirstOrThrowArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more EmailDeliveryAttempts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all EmailDeliveryAttempts
+     * const emailDeliveryAttempts = await prisma.emailDeliveryAttempt.findMany()
+     * 
+     * // Get first 10 EmailDeliveryAttempts
+     * const emailDeliveryAttempts = await prisma.emailDeliveryAttempt.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const emailDeliveryAttemptWithIdOnly = await prisma.emailDeliveryAttempt.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends EmailDeliveryAttemptFindManyArgs>(args?: SelectSubset<T, EmailDeliveryAttemptFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a EmailDeliveryAttempt.
+     * @param {EmailDeliveryAttemptCreateArgs} args - Arguments to create a EmailDeliveryAttempt.
+     * @example
+     * // Create one EmailDeliveryAttempt
+     * const EmailDeliveryAttempt = await prisma.emailDeliveryAttempt.create({
+     *   data: {
+     *     // ... data to create a EmailDeliveryAttempt
+     *   }
+     * })
+     * 
+     */
+    create<T extends EmailDeliveryAttemptCreateArgs>(args: SelectSubset<T, EmailDeliveryAttemptCreateArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many EmailDeliveryAttempts.
+     * @param {EmailDeliveryAttemptCreateManyArgs} args - Arguments to create many EmailDeliveryAttempts.
+     * @example
+     * // Create many EmailDeliveryAttempts
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends EmailDeliveryAttemptCreateManyArgs>(args?: SelectSubset<T, EmailDeliveryAttemptCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many EmailDeliveryAttempts and returns the data saved in the database.
+     * @param {EmailDeliveryAttemptCreateManyAndReturnArgs} args - Arguments to create many EmailDeliveryAttempts.
+     * @example
+     * // Create many EmailDeliveryAttempts
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many EmailDeliveryAttempts and only return the `id`
+     * const emailDeliveryAttemptWithIdOnly = await prisma.emailDeliveryAttempt.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends EmailDeliveryAttemptCreateManyAndReturnArgs>(args?: SelectSubset<T, EmailDeliveryAttemptCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a EmailDeliveryAttempt.
+     * @param {EmailDeliveryAttemptDeleteArgs} args - Arguments to delete one EmailDeliveryAttempt.
+     * @example
+     * // Delete one EmailDeliveryAttempt
+     * const EmailDeliveryAttempt = await prisma.emailDeliveryAttempt.delete({
+     *   where: {
+     *     // ... filter to delete one EmailDeliveryAttempt
+     *   }
+     * })
+     * 
+     */
+    delete<T extends EmailDeliveryAttemptDeleteArgs>(args: SelectSubset<T, EmailDeliveryAttemptDeleteArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one EmailDeliveryAttempt.
+     * @param {EmailDeliveryAttemptUpdateArgs} args - Arguments to update one EmailDeliveryAttempt.
+     * @example
+     * // Update one EmailDeliveryAttempt
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends EmailDeliveryAttemptUpdateArgs>(args: SelectSubset<T, EmailDeliveryAttemptUpdateArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more EmailDeliveryAttempts.
+     * @param {EmailDeliveryAttemptDeleteManyArgs} args - Arguments to filter EmailDeliveryAttempts to delete.
+     * @example
+     * // Delete a few EmailDeliveryAttempts
+     * const { count } = await prisma.emailDeliveryAttempt.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends EmailDeliveryAttemptDeleteManyArgs>(args?: SelectSubset<T, EmailDeliveryAttemptDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EmailDeliveryAttempts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many EmailDeliveryAttempts
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends EmailDeliveryAttemptUpdateManyArgs>(args: SelectSubset<T, EmailDeliveryAttemptUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more EmailDeliveryAttempts and returns the data updated in the database.
+     * @param {EmailDeliveryAttemptUpdateManyAndReturnArgs} args - Arguments to update many EmailDeliveryAttempts.
+     * @example
+     * // Update many EmailDeliveryAttempts
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more EmailDeliveryAttempts and only return the `id`
+     * const emailDeliveryAttemptWithIdOnly = await prisma.emailDeliveryAttempt.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends EmailDeliveryAttemptUpdateManyAndReturnArgs>(args: SelectSubset<T, EmailDeliveryAttemptUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one EmailDeliveryAttempt.
+     * @param {EmailDeliveryAttemptUpsertArgs} args - Arguments to update or create a EmailDeliveryAttempt.
+     * @example
+     * // Update or create a EmailDeliveryAttempt
+     * const emailDeliveryAttempt = await prisma.emailDeliveryAttempt.upsert({
+     *   create: {
+     *     // ... data to create a EmailDeliveryAttempt
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the EmailDeliveryAttempt we want to update
+     *   }
+     * })
+     */
+    upsert<T extends EmailDeliveryAttemptUpsertArgs>(args: SelectSubset<T, EmailDeliveryAttemptUpsertArgs<ExtArgs>>): Prisma__EmailDeliveryAttemptClient<$Result.GetResult<Prisma.$EmailDeliveryAttemptPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of EmailDeliveryAttempts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptCountArgs} args - Arguments to filter EmailDeliveryAttempts to count.
+     * @example
+     * // Count the number of EmailDeliveryAttempts
+     * const count = await prisma.emailDeliveryAttempt.count({
+     *   where: {
+     *     // ... the filter for the EmailDeliveryAttempts we want to count
+     *   }
+     * })
+    **/
+    count<T extends EmailDeliveryAttemptCountArgs>(
+      args?: Subset<T, EmailDeliveryAttemptCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], EmailDeliveryAttemptCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a EmailDeliveryAttempt.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends EmailDeliveryAttemptAggregateArgs>(args: Subset<T, EmailDeliveryAttemptAggregateArgs>): Prisma.PrismaPromise<GetEmailDeliveryAttemptAggregateType<T>>
+
+    /**
+     * Group by EmailDeliveryAttempt.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {EmailDeliveryAttemptGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends EmailDeliveryAttemptGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: EmailDeliveryAttemptGroupByArgs['orderBy'] }
+        : { orderBy?: EmailDeliveryAttemptGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, EmailDeliveryAttemptGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetEmailDeliveryAttemptGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the EmailDeliveryAttempt model
+   */
+  readonly fields: EmailDeliveryAttemptFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for EmailDeliveryAttempt.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__EmailDeliveryAttemptClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    emailNotification<T extends EmailNotificationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, EmailNotificationDefaultArgs<ExtArgs>>): Prisma__EmailNotificationClient<$Result.GetResult<Prisma.$EmailNotificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the EmailDeliveryAttempt model
+   */
+  interface EmailDeliveryAttemptFieldRefs {
+    readonly id: FieldRef<"EmailDeliveryAttempt", 'String'>
+    readonly emailNotificationId: FieldRef<"EmailDeliveryAttempt", 'String'>
+    readonly generation: FieldRef<"EmailDeliveryAttempt", 'Int'>
+    readonly providerId: FieldRef<"EmailDeliveryAttempt", 'String'>
+    readonly status: FieldRef<"EmailDeliveryAttempt", 'EmailDeliveryAttemptStatus'>
+    readonly sentAt: FieldRef<"EmailDeliveryAttempt", 'DateTime'>
+    readonly deliveredAt: FieldRef<"EmailDeliveryAttempt", 'DateTime'>
+    readonly failedAt: FieldRef<"EmailDeliveryAttempt", 'DateTime'>
+    readonly lastError: FieldRef<"EmailDeliveryAttempt", 'String'>
+    readonly lastProviderEventAt: FieldRef<"EmailDeliveryAttempt", 'DateTime'>
+    readonly createdAt: FieldRef<"EmailDeliveryAttempt", 'DateTime'>
+    readonly updatedAt: FieldRef<"EmailDeliveryAttempt", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * EmailDeliveryAttempt findUnique
+   */
+  export type EmailDeliveryAttemptFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailDeliveryAttempt to fetch.
+     */
+    where: EmailDeliveryAttemptWhereUniqueInput
+  }
+
+  /**
+   * EmailDeliveryAttempt findUniqueOrThrow
+   */
+  export type EmailDeliveryAttemptFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailDeliveryAttempt to fetch.
+     */
+    where: EmailDeliveryAttemptWhereUniqueInput
+  }
+
+  /**
+   * EmailDeliveryAttempt findFirst
+   */
+  export type EmailDeliveryAttemptFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailDeliveryAttempt to fetch.
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailDeliveryAttempts to fetch.
+     */
+    orderBy?: EmailDeliveryAttemptOrderByWithRelationInput | EmailDeliveryAttemptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EmailDeliveryAttempts.
+     */
+    cursor?: EmailDeliveryAttemptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailDeliveryAttempts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailDeliveryAttempts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailDeliveryAttempts.
+     */
+    distinct?: EmailDeliveryAttemptScalarFieldEnum | EmailDeliveryAttemptScalarFieldEnum[]
+  }
+
+  /**
+   * EmailDeliveryAttempt findFirstOrThrow
+   */
+  export type EmailDeliveryAttemptFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailDeliveryAttempt to fetch.
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailDeliveryAttempts to fetch.
+     */
+    orderBy?: EmailDeliveryAttemptOrderByWithRelationInput | EmailDeliveryAttemptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for EmailDeliveryAttempts.
+     */
+    cursor?: EmailDeliveryAttemptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailDeliveryAttempts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailDeliveryAttempts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailDeliveryAttempts.
+     */
+    distinct?: EmailDeliveryAttemptScalarFieldEnum | EmailDeliveryAttemptScalarFieldEnum[]
+  }
+
+  /**
+   * EmailDeliveryAttempt findMany
+   */
+  export type EmailDeliveryAttemptFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * Filter, which EmailDeliveryAttempts to fetch.
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of EmailDeliveryAttempts to fetch.
+     */
+    orderBy?: EmailDeliveryAttemptOrderByWithRelationInput | EmailDeliveryAttemptOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing EmailDeliveryAttempts.
+     */
+    cursor?: EmailDeliveryAttemptWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` EmailDeliveryAttempts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` EmailDeliveryAttempts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of EmailDeliveryAttempts.
+     */
+    distinct?: EmailDeliveryAttemptScalarFieldEnum | EmailDeliveryAttemptScalarFieldEnum[]
+  }
+
+  /**
+   * EmailDeliveryAttempt create
+   */
+  export type EmailDeliveryAttemptCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * The data needed to create a EmailDeliveryAttempt.
+     */
+    data: XOR<EmailDeliveryAttemptCreateInput, EmailDeliveryAttemptUncheckedCreateInput>
+  }
+
+  /**
+   * EmailDeliveryAttempt createMany
+   */
+  export type EmailDeliveryAttemptCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many EmailDeliveryAttempts.
+     */
+    data: EmailDeliveryAttemptCreateManyInput | EmailDeliveryAttemptCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * EmailDeliveryAttempt createManyAndReturn
+   */
+  export type EmailDeliveryAttemptCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * The data used to create many EmailDeliveryAttempts.
+     */
+    data: EmailDeliveryAttemptCreateManyInput | EmailDeliveryAttemptCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EmailDeliveryAttempt update
+   */
+  export type EmailDeliveryAttemptUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * The data needed to update a EmailDeliveryAttempt.
+     */
+    data: XOR<EmailDeliveryAttemptUpdateInput, EmailDeliveryAttemptUncheckedUpdateInput>
+    /**
+     * Choose, which EmailDeliveryAttempt to update.
+     */
+    where: EmailDeliveryAttemptWhereUniqueInput
+  }
+
+  /**
+   * EmailDeliveryAttempt updateMany
+   */
+  export type EmailDeliveryAttemptUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update EmailDeliveryAttempts.
+     */
+    data: XOR<EmailDeliveryAttemptUpdateManyMutationInput, EmailDeliveryAttemptUncheckedUpdateManyInput>
+    /**
+     * Filter which EmailDeliveryAttempts to update
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * Limit how many EmailDeliveryAttempts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * EmailDeliveryAttempt updateManyAndReturn
+   */
+  export type EmailDeliveryAttemptUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * The data used to update EmailDeliveryAttempts.
+     */
+    data: XOR<EmailDeliveryAttemptUpdateManyMutationInput, EmailDeliveryAttemptUncheckedUpdateManyInput>
+    /**
+     * Filter which EmailDeliveryAttempts to update
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * Limit how many EmailDeliveryAttempts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * EmailDeliveryAttempt upsert
+   */
+  export type EmailDeliveryAttemptUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * The filter to search for the EmailDeliveryAttempt to update in case it exists.
+     */
+    where: EmailDeliveryAttemptWhereUniqueInput
+    /**
+     * In case the EmailDeliveryAttempt found by the `where` argument doesn't exist, create a new EmailDeliveryAttempt with this data.
+     */
+    create: XOR<EmailDeliveryAttemptCreateInput, EmailDeliveryAttemptUncheckedCreateInput>
+    /**
+     * In case the EmailDeliveryAttempt was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<EmailDeliveryAttemptUpdateInput, EmailDeliveryAttemptUncheckedUpdateInput>
+  }
+
+  /**
+   * EmailDeliveryAttempt delete
+   */
+  export type EmailDeliveryAttemptDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+    /**
+     * Filter which EmailDeliveryAttempt to delete.
+     */
+    where: EmailDeliveryAttemptWhereUniqueInput
+  }
+
+  /**
+   * EmailDeliveryAttempt deleteMany
+   */
+  export type EmailDeliveryAttemptDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which EmailDeliveryAttempts to delete
+     */
+    where?: EmailDeliveryAttemptWhereInput
+    /**
+     * Limit how many EmailDeliveryAttempts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * EmailDeliveryAttempt without action
+   */
+  export type EmailDeliveryAttemptDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the EmailDeliveryAttempt
+     */
+    select?: EmailDeliveryAttemptSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the EmailDeliveryAttempt
+     */
+    omit?: EmailDeliveryAttemptOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: EmailDeliveryAttemptInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ResendWebhookEvent
+   */
+
+  export type AggregateResendWebhookEvent = {
+    _count: ResendWebhookEventCountAggregateOutputType | null
+    _min: ResendWebhookEventMinAggregateOutputType | null
+    _max: ResendWebhookEventMaxAggregateOutputType | null
+  }
+
+  export type ResendWebhookEventMinAggregateOutputType = {
+    id: string | null
+    type: string | null
+    providerEmailId: string | null
+    occurredAt: Date | null
+    payloadExpiresAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type ResendWebhookEventMaxAggregateOutputType = {
+    id: string | null
+    type: string | null
+    providerEmailId: string | null
+    occurredAt: Date | null
+    payloadExpiresAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type ResendWebhookEventCountAggregateOutputType = {
+    id: number
+    type: number
+    providerEmailId: number
+    occurredAt: number
+    rawPayload: number
+    payloadExpiresAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type ResendWebhookEventMinAggregateInputType = {
+    id?: true
+    type?: true
+    providerEmailId?: true
+    occurredAt?: true
+    payloadExpiresAt?: true
+    createdAt?: true
+  }
+
+  export type ResendWebhookEventMaxAggregateInputType = {
+    id?: true
+    type?: true
+    providerEmailId?: true
+    occurredAt?: true
+    payloadExpiresAt?: true
+    createdAt?: true
+  }
+
+  export type ResendWebhookEventCountAggregateInputType = {
+    id?: true
+    type?: true
+    providerEmailId?: true
+    occurredAt?: true
+    rawPayload?: true
+    payloadExpiresAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type ResendWebhookEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ResendWebhookEvent to aggregate.
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResendWebhookEvents to fetch.
+     */
+    orderBy?: ResendWebhookEventOrderByWithRelationInput | ResendWebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ResendWebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResendWebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResendWebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ResendWebhookEvents
+    **/
+    _count?: true | ResendWebhookEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ResendWebhookEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ResendWebhookEventMaxAggregateInputType
+  }
+
+  export type GetResendWebhookEventAggregateType<T extends ResendWebhookEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateResendWebhookEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateResendWebhookEvent[P]>
+      : GetScalarType<T[P], AggregateResendWebhookEvent[P]>
+  }
+
+
+
+
+  export type ResendWebhookEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ResendWebhookEventWhereInput
+    orderBy?: ResendWebhookEventOrderByWithAggregationInput | ResendWebhookEventOrderByWithAggregationInput[]
+    by: ResendWebhookEventScalarFieldEnum[] | ResendWebhookEventScalarFieldEnum
+    having?: ResendWebhookEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ResendWebhookEventCountAggregateInputType | true
+    _min?: ResendWebhookEventMinAggregateInputType
+    _max?: ResendWebhookEventMaxAggregateInputType
+  }
+
+  export type ResendWebhookEventGroupByOutputType = {
+    id: string
+    type: string
+    providerEmailId: string | null
+    occurredAt: Date
+    rawPayload: JsonValue | null
+    payloadExpiresAt: Date
+    createdAt: Date
+    _count: ResendWebhookEventCountAggregateOutputType | null
+    _min: ResendWebhookEventMinAggregateOutputType | null
+    _max: ResendWebhookEventMaxAggregateOutputType | null
+  }
+
+  type GetResendWebhookEventGroupByPayload<T extends ResendWebhookEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ResendWebhookEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ResendWebhookEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ResendWebhookEventGroupByOutputType[P]>
+            : GetScalarType<T[P], ResendWebhookEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ResendWebhookEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    providerEmailId?: boolean
+    occurredAt?: boolean
+    rawPayload?: boolean
+    payloadExpiresAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["resendWebhookEvent"]>
+
+  export type ResendWebhookEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    providerEmailId?: boolean
+    occurredAt?: boolean
+    rawPayload?: boolean
+    payloadExpiresAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["resendWebhookEvent"]>
+
+  export type ResendWebhookEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    providerEmailId?: boolean
+    occurredAt?: boolean
+    rawPayload?: boolean
+    payloadExpiresAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["resendWebhookEvent"]>
+
+  export type ResendWebhookEventSelectScalar = {
+    id?: boolean
+    type?: boolean
+    providerEmailId?: boolean
+    occurredAt?: boolean
+    rawPayload?: boolean
+    payloadExpiresAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type ResendWebhookEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "providerEmailId" | "occurredAt" | "rawPayload" | "payloadExpiresAt" | "createdAt", ExtArgs["result"]["resendWebhookEvent"]>
+
+  export type $ResendWebhookEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ResendWebhookEvent"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      type: string
+      providerEmailId: string | null
+      occurredAt: Date
+      rawPayload: Prisma.JsonValue | null
+      payloadExpiresAt: Date
+      createdAt: Date
+    }, ExtArgs["result"]["resendWebhookEvent"]>
+    composites: {}
+  }
+
+  type ResendWebhookEventGetPayload<S extends boolean | null | undefined | ResendWebhookEventDefaultArgs> = $Result.GetResult<Prisma.$ResendWebhookEventPayload, S>
+
+  type ResendWebhookEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ResendWebhookEventFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ResendWebhookEventCountAggregateInputType | true
+    }
+
+  export interface ResendWebhookEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ResendWebhookEvent'], meta: { name: 'ResendWebhookEvent' } }
+    /**
+     * Find zero or one ResendWebhookEvent that matches the filter.
+     * @param {ResendWebhookEventFindUniqueArgs} args - Arguments to find a ResendWebhookEvent
+     * @example
+     * // Get one ResendWebhookEvent
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ResendWebhookEventFindUniqueArgs>(args: SelectSubset<T, ResendWebhookEventFindUniqueArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ResendWebhookEvent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ResendWebhookEventFindUniqueOrThrowArgs} args - Arguments to find a ResendWebhookEvent
+     * @example
+     * // Get one ResendWebhookEvent
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ResendWebhookEventFindUniqueOrThrowArgs>(args: SelectSubset<T, ResendWebhookEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ResendWebhookEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventFindFirstArgs} args - Arguments to find a ResendWebhookEvent
+     * @example
+     * // Get one ResendWebhookEvent
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ResendWebhookEventFindFirstArgs>(args?: SelectSubset<T, ResendWebhookEventFindFirstArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ResendWebhookEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventFindFirstOrThrowArgs} args - Arguments to find a ResendWebhookEvent
+     * @example
+     * // Get one ResendWebhookEvent
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ResendWebhookEventFindFirstOrThrowArgs>(args?: SelectSubset<T, ResendWebhookEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ResendWebhookEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ResendWebhookEvents
+     * const resendWebhookEvents = await prisma.resendWebhookEvent.findMany()
+     * 
+     * // Get first 10 ResendWebhookEvents
+     * const resendWebhookEvents = await prisma.resendWebhookEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const resendWebhookEventWithIdOnly = await prisma.resendWebhookEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ResendWebhookEventFindManyArgs>(args?: SelectSubset<T, ResendWebhookEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ResendWebhookEvent.
+     * @param {ResendWebhookEventCreateArgs} args - Arguments to create a ResendWebhookEvent.
+     * @example
+     * // Create one ResendWebhookEvent
+     * const ResendWebhookEvent = await prisma.resendWebhookEvent.create({
+     *   data: {
+     *     // ... data to create a ResendWebhookEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends ResendWebhookEventCreateArgs>(args: SelectSubset<T, ResendWebhookEventCreateArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ResendWebhookEvents.
+     * @param {ResendWebhookEventCreateManyArgs} args - Arguments to create many ResendWebhookEvents.
+     * @example
+     * // Create many ResendWebhookEvents
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ResendWebhookEventCreateManyArgs>(args?: SelectSubset<T, ResendWebhookEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ResendWebhookEvents and returns the data saved in the database.
+     * @param {ResendWebhookEventCreateManyAndReturnArgs} args - Arguments to create many ResendWebhookEvents.
+     * @example
+     * // Create many ResendWebhookEvents
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ResendWebhookEvents and only return the `id`
+     * const resendWebhookEventWithIdOnly = await prisma.resendWebhookEvent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ResendWebhookEventCreateManyAndReturnArgs>(args?: SelectSubset<T, ResendWebhookEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ResendWebhookEvent.
+     * @param {ResendWebhookEventDeleteArgs} args - Arguments to delete one ResendWebhookEvent.
+     * @example
+     * // Delete one ResendWebhookEvent
+     * const ResendWebhookEvent = await prisma.resendWebhookEvent.delete({
+     *   where: {
+     *     // ... filter to delete one ResendWebhookEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ResendWebhookEventDeleteArgs>(args: SelectSubset<T, ResendWebhookEventDeleteArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ResendWebhookEvent.
+     * @param {ResendWebhookEventUpdateArgs} args - Arguments to update one ResendWebhookEvent.
+     * @example
+     * // Update one ResendWebhookEvent
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ResendWebhookEventUpdateArgs>(args: SelectSubset<T, ResendWebhookEventUpdateArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ResendWebhookEvents.
+     * @param {ResendWebhookEventDeleteManyArgs} args - Arguments to filter ResendWebhookEvents to delete.
+     * @example
+     * // Delete a few ResendWebhookEvents
+     * const { count } = await prisma.resendWebhookEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ResendWebhookEventDeleteManyArgs>(args?: SelectSubset<T, ResendWebhookEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ResendWebhookEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ResendWebhookEvents
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ResendWebhookEventUpdateManyArgs>(args: SelectSubset<T, ResendWebhookEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ResendWebhookEvents and returns the data updated in the database.
+     * @param {ResendWebhookEventUpdateManyAndReturnArgs} args - Arguments to update many ResendWebhookEvents.
+     * @example
+     * // Update many ResendWebhookEvents
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ResendWebhookEvents and only return the `id`
+     * const resendWebhookEventWithIdOnly = await prisma.resendWebhookEvent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ResendWebhookEventUpdateManyAndReturnArgs>(args: SelectSubset<T, ResendWebhookEventUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ResendWebhookEvent.
+     * @param {ResendWebhookEventUpsertArgs} args - Arguments to update or create a ResendWebhookEvent.
+     * @example
+     * // Update or create a ResendWebhookEvent
+     * const resendWebhookEvent = await prisma.resendWebhookEvent.upsert({
+     *   create: {
+     *     // ... data to create a ResendWebhookEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ResendWebhookEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ResendWebhookEventUpsertArgs>(args: SelectSubset<T, ResendWebhookEventUpsertArgs<ExtArgs>>): Prisma__ResendWebhookEventClient<$Result.GetResult<Prisma.$ResendWebhookEventPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ResendWebhookEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventCountArgs} args - Arguments to filter ResendWebhookEvents to count.
+     * @example
+     * // Count the number of ResendWebhookEvents
+     * const count = await prisma.resendWebhookEvent.count({
+     *   where: {
+     *     // ... the filter for the ResendWebhookEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends ResendWebhookEventCountArgs>(
+      args?: Subset<T, ResendWebhookEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ResendWebhookEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ResendWebhookEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ResendWebhookEventAggregateArgs>(args: Subset<T, ResendWebhookEventAggregateArgs>): Prisma.PrismaPromise<GetResendWebhookEventAggregateType<T>>
+
+    /**
+     * Group by ResendWebhookEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ResendWebhookEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ResendWebhookEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ResendWebhookEventGroupByArgs['orderBy'] }
+        : { orderBy?: ResendWebhookEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ResendWebhookEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetResendWebhookEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ResendWebhookEvent model
+   */
+  readonly fields: ResendWebhookEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ResendWebhookEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ResendWebhookEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ResendWebhookEvent model
+   */
+  interface ResendWebhookEventFieldRefs {
+    readonly id: FieldRef<"ResendWebhookEvent", 'String'>
+    readonly type: FieldRef<"ResendWebhookEvent", 'String'>
+    readonly providerEmailId: FieldRef<"ResendWebhookEvent", 'String'>
+    readonly occurredAt: FieldRef<"ResendWebhookEvent", 'DateTime'>
+    readonly rawPayload: FieldRef<"ResendWebhookEvent", 'Json'>
+    readonly payloadExpiresAt: FieldRef<"ResendWebhookEvent", 'DateTime'>
+    readonly createdAt: FieldRef<"ResendWebhookEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ResendWebhookEvent findUnique
+   */
+  export type ResendWebhookEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * Filter, which ResendWebhookEvent to fetch.
+     */
+    where: ResendWebhookEventWhereUniqueInput
+  }
+
+  /**
+   * ResendWebhookEvent findUniqueOrThrow
+   */
+  export type ResendWebhookEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * Filter, which ResendWebhookEvent to fetch.
+     */
+    where: ResendWebhookEventWhereUniqueInput
+  }
+
+  /**
+   * ResendWebhookEvent findFirst
+   */
+  export type ResendWebhookEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * Filter, which ResendWebhookEvent to fetch.
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResendWebhookEvents to fetch.
+     */
+    orderBy?: ResendWebhookEventOrderByWithRelationInput | ResendWebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ResendWebhookEvents.
+     */
+    cursor?: ResendWebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResendWebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResendWebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ResendWebhookEvents.
+     */
+    distinct?: ResendWebhookEventScalarFieldEnum | ResendWebhookEventScalarFieldEnum[]
+  }
+
+  /**
+   * ResendWebhookEvent findFirstOrThrow
+   */
+  export type ResendWebhookEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * Filter, which ResendWebhookEvent to fetch.
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResendWebhookEvents to fetch.
+     */
+    orderBy?: ResendWebhookEventOrderByWithRelationInput | ResendWebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ResendWebhookEvents.
+     */
+    cursor?: ResendWebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResendWebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResendWebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ResendWebhookEvents.
+     */
+    distinct?: ResendWebhookEventScalarFieldEnum | ResendWebhookEventScalarFieldEnum[]
+  }
+
+  /**
+   * ResendWebhookEvent findMany
+   */
+  export type ResendWebhookEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * Filter, which ResendWebhookEvents to fetch.
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ResendWebhookEvents to fetch.
+     */
+    orderBy?: ResendWebhookEventOrderByWithRelationInput | ResendWebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ResendWebhookEvents.
+     */
+    cursor?: ResendWebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ResendWebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ResendWebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ResendWebhookEvents.
+     */
+    distinct?: ResendWebhookEventScalarFieldEnum | ResendWebhookEventScalarFieldEnum[]
+  }
+
+  /**
+   * ResendWebhookEvent create
+   */
+  export type ResendWebhookEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ResendWebhookEvent.
+     */
+    data: XOR<ResendWebhookEventCreateInput, ResendWebhookEventUncheckedCreateInput>
+  }
+
+  /**
+   * ResendWebhookEvent createMany
+   */
+  export type ResendWebhookEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ResendWebhookEvents.
+     */
+    data: ResendWebhookEventCreateManyInput | ResendWebhookEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ResendWebhookEvent createManyAndReturn
+   */
+  export type ResendWebhookEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * The data used to create many ResendWebhookEvents.
+     */
+    data: ResendWebhookEventCreateManyInput | ResendWebhookEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ResendWebhookEvent update
+   */
+  export type ResendWebhookEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ResendWebhookEvent.
+     */
+    data: XOR<ResendWebhookEventUpdateInput, ResendWebhookEventUncheckedUpdateInput>
+    /**
+     * Choose, which ResendWebhookEvent to update.
+     */
+    where: ResendWebhookEventWhereUniqueInput
+  }
+
+  /**
+   * ResendWebhookEvent updateMany
+   */
+  export type ResendWebhookEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ResendWebhookEvents.
+     */
+    data: XOR<ResendWebhookEventUpdateManyMutationInput, ResendWebhookEventUncheckedUpdateManyInput>
+    /**
+     * Filter which ResendWebhookEvents to update
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * Limit how many ResendWebhookEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ResendWebhookEvent updateManyAndReturn
+   */
+  export type ResendWebhookEventUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * The data used to update ResendWebhookEvents.
+     */
+    data: XOR<ResendWebhookEventUpdateManyMutationInput, ResendWebhookEventUncheckedUpdateManyInput>
+    /**
+     * Filter which ResendWebhookEvents to update
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * Limit how many ResendWebhookEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ResendWebhookEvent upsert
+   */
+  export type ResendWebhookEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ResendWebhookEvent to update in case it exists.
+     */
+    where: ResendWebhookEventWhereUniqueInput
+    /**
+     * In case the ResendWebhookEvent found by the `where` argument doesn't exist, create a new ResendWebhookEvent with this data.
+     */
+    create: XOR<ResendWebhookEventCreateInput, ResendWebhookEventUncheckedCreateInput>
+    /**
+     * In case the ResendWebhookEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ResendWebhookEventUpdateInput, ResendWebhookEventUncheckedUpdateInput>
+  }
+
+  /**
+   * ResendWebhookEvent delete
+   */
+  export type ResendWebhookEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
+    /**
+     * Filter which ResendWebhookEvent to delete.
+     */
+    where: ResendWebhookEventWhereUniqueInput
+  }
+
+  /**
+   * ResendWebhookEvent deleteMany
+   */
+  export type ResendWebhookEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ResendWebhookEvents to delete
+     */
+    where?: ResendWebhookEventWhereInput
+    /**
+     * Limit how many ResendWebhookEvents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ResendWebhookEvent without action
+   */
+  export type ResendWebhookEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ResendWebhookEvent
+     */
+    select?: ResendWebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ResendWebhookEvent
+     */
+    omit?: ResendWebhookEventOmit<ExtArgs> | null
   }
 
 
@@ -28125,15 +30650,50 @@ export namespace Prisma {
     recipientEmail: 'recipientEmail',
     accessExpiresAt: 'accessExpiresAt',
     attemptCount: 'attemptCount',
+    deliveryGeneration: 'deliveryGeneration',
     lastAttemptAt: 'lastAttemptAt',
     lastError: 'lastError',
     providerId: 'providerId',
     sentAt: 'sentAt',
+    deliveredAt: 'deliveredAt',
+    failedAt: 'failedAt',
+    lastProviderEventAt: 'lastProviderEventAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type EmailNotificationScalarFieldEnum = (typeof EmailNotificationScalarFieldEnum)[keyof typeof EmailNotificationScalarFieldEnum]
+
+
+  export const EmailDeliveryAttemptScalarFieldEnum: {
+    id: 'id',
+    emailNotificationId: 'emailNotificationId',
+    generation: 'generation',
+    providerId: 'providerId',
+    status: 'status',
+    sentAt: 'sentAt',
+    deliveredAt: 'deliveredAt',
+    failedAt: 'failedAt',
+    lastError: 'lastError',
+    lastProviderEventAt: 'lastProviderEventAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type EmailDeliveryAttemptScalarFieldEnum = (typeof EmailDeliveryAttemptScalarFieldEnum)[keyof typeof EmailDeliveryAttemptScalarFieldEnum]
+
+
+  export const ResendWebhookEventScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    providerEmailId: 'providerEmailId',
+    occurredAt: 'occurredAt',
+    rawPayload: 'rawPayload',
+    payloadExpiresAt: 'payloadExpiresAt',
+    createdAt: 'createdAt'
+  };
+
+  export type ResendWebhookEventScalarFieldEnum = (typeof ResendWebhookEventScalarFieldEnum)[keyof typeof ResendWebhookEventScalarFieldEnum]
 
 
   export const OrderLineScalarFieldEnum: {
@@ -28437,6 +30997,20 @@ export namespace Prisma {
    * Reference to a field of type 'EmailNotificationStatus[]'
    */
   export type ListEnumEmailNotificationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailNotificationStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailDeliveryAttemptStatus'
+   */
+  export type EnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailDeliveryAttemptStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'EmailDeliveryAttemptStatus[]'
+   */
+  export type ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailDeliveryAttemptStatus[]'>
     
 
 
@@ -29932,14 +32506,19 @@ export namespace Prisma {
     recipientEmail?: StringFilter<"EmailNotification"> | string
     accessExpiresAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     attemptCount?: IntFilter<"EmailNotification"> | number
+    deliveryGeneration?: IntFilter<"EmailNotification"> | number
     lastAttemptAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     lastError?: StringNullableFilter<"EmailNotification"> | string | null
     providerId?: StringNullableFilter<"EmailNotification"> | string | null
     sentAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    deliveredAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    failedAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    lastProviderEventAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     createdAt?: DateTimeFilter<"EmailNotification"> | Date | string
     updatedAt?: DateTimeFilter<"EmailNotification"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
     payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
+    deliveryAttempts?: EmailDeliveryAttemptListRelationFilter
   }
 
   export type EmailNotificationOrderByWithRelationInput = {
@@ -29952,14 +32531,19 @@ export namespace Prisma {
     recipientEmail?: SortOrder
     accessExpiresAt?: SortOrderInput | SortOrder
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
     lastAttemptAt?: SortOrderInput | SortOrder
     lastError?: SortOrderInput | SortOrder
     providerId?: SortOrderInput | SortOrder
     sentAt?: SortOrderInput | SortOrder
+    deliveredAt?: SortOrderInput | SortOrder
+    failedAt?: SortOrderInput | SortOrder
+    lastProviderEventAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     order?: OrderOrderByWithRelationInput
     payment?: PaymentOrderByWithRelationInput
+    deliveryAttempts?: EmailDeliveryAttemptOrderByRelationAggregateInput
   }
 
   export type EmailNotificationWhereUniqueInput = Prisma.AtLeast<{
@@ -29975,14 +32559,19 @@ export namespace Prisma {
     recipientEmail?: StringFilter<"EmailNotification"> | string
     accessExpiresAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     attemptCount?: IntFilter<"EmailNotification"> | number
+    deliveryGeneration?: IntFilter<"EmailNotification"> | number
     lastAttemptAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     lastError?: StringNullableFilter<"EmailNotification"> | string | null
     providerId?: StringNullableFilter<"EmailNotification"> | string | null
     sentAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    deliveredAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    failedAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    lastProviderEventAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     createdAt?: DateTimeFilter<"EmailNotification"> | Date | string
     updatedAt?: DateTimeFilter<"EmailNotification"> | Date | string
     order?: XOR<OrderScalarRelationFilter, OrderWhereInput>
     payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
+    deliveryAttempts?: EmailDeliveryAttemptListRelationFilter
   }, "id" | "deduplicationKey">
 
   export type EmailNotificationOrderByWithAggregationInput = {
@@ -29995,10 +32584,14 @@ export namespace Prisma {
     recipientEmail?: SortOrder
     accessExpiresAt?: SortOrderInput | SortOrder
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
     lastAttemptAt?: SortOrderInput | SortOrder
     lastError?: SortOrderInput | SortOrder
     providerId?: SortOrderInput | SortOrder
     sentAt?: SortOrderInput | SortOrder
+    deliveredAt?: SortOrderInput | SortOrder
+    failedAt?: SortOrderInput | SortOrder
+    lastProviderEventAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EmailNotificationCountOrderByAggregateInput
@@ -30021,12 +32614,171 @@ export namespace Prisma {
     recipientEmail?: StringWithAggregatesFilter<"EmailNotification"> | string
     accessExpiresAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
     attemptCount?: IntWithAggregatesFilter<"EmailNotification"> | number
+    deliveryGeneration?: IntWithAggregatesFilter<"EmailNotification"> | number
     lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
     lastError?: StringNullableWithAggregatesFilter<"EmailNotification"> | string | null
     providerId?: StringNullableWithAggregatesFilter<"EmailNotification"> | string | null
     sentAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
+    deliveredAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
+    failedAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
+    lastProviderEventAt?: DateTimeNullableWithAggregatesFilter<"EmailNotification"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"EmailNotification"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"EmailNotification"> | Date | string
+  }
+
+  export type EmailDeliveryAttemptWhereInput = {
+    AND?: EmailDeliveryAttemptWhereInput | EmailDeliveryAttemptWhereInput[]
+    OR?: EmailDeliveryAttemptWhereInput[]
+    NOT?: EmailDeliveryAttemptWhereInput | EmailDeliveryAttemptWhereInput[]
+    id?: StringFilter<"EmailDeliveryAttempt"> | string
+    emailNotificationId?: StringFilter<"EmailDeliveryAttempt"> | string
+    generation?: IntFilter<"EmailDeliveryAttempt"> | number
+    providerId?: StringFilter<"EmailDeliveryAttempt"> | string
+    status?: EnumEmailDeliveryAttemptStatusFilter<"EmailDeliveryAttempt"> | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    deliveredAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    failedAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    lastError?: StringNullableFilter<"EmailDeliveryAttempt"> | string | null
+    lastProviderEventAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    createdAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    updatedAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    emailNotification?: XOR<EmailNotificationScalarRelationFilter, EmailNotificationWhereInput>
+  }
+
+  export type EmailDeliveryAttemptOrderByWithRelationInput = {
+    id?: SortOrder
+    emailNotificationId?: SortOrder
+    generation?: SortOrder
+    providerId?: SortOrder
+    status?: SortOrder
+    sentAt?: SortOrder
+    deliveredAt?: SortOrderInput | SortOrder
+    failedAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    lastProviderEventAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    emailNotification?: EmailNotificationOrderByWithRelationInput
+  }
+
+  export type EmailDeliveryAttemptWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    providerId?: string
+    emailNotificationId_generation?: EmailDeliveryAttemptEmailNotificationIdGenerationCompoundUniqueInput
+    AND?: EmailDeliveryAttemptWhereInput | EmailDeliveryAttemptWhereInput[]
+    OR?: EmailDeliveryAttemptWhereInput[]
+    NOT?: EmailDeliveryAttemptWhereInput | EmailDeliveryAttemptWhereInput[]
+    emailNotificationId?: StringFilter<"EmailDeliveryAttempt"> | string
+    generation?: IntFilter<"EmailDeliveryAttempt"> | number
+    status?: EnumEmailDeliveryAttemptStatusFilter<"EmailDeliveryAttempt"> | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    deliveredAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    failedAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    lastError?: StringNullableFilter<"EmailDeliveryAttempt"> | string | null
+    lastProviderEventAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    createdAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    updatedAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    emailNotification?: XOR<EmailNotificationScalarRelationFilter, EmailNotificationWhereInput>
+  }, "id" | "providerId" | "emailNotificationId_generation">
+
+  export type EmailDeliveryAttemptOrderByWithAggregationInput = {
+    id?: SortOrder
+    emailNotificationId?: SortOrder
+    generation?: SortOrder
+    providerId?: SortOrder
+    status?: SortOrder
+    sentAt?: SortOrder
+    deliveredAt?: SortOrderInput | SortOrder
+    failedAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    lastProviderEventAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: EmailDeliveryAttemptCountOrderByAggregateInput
+    _avg?: EmailDeliveryAttemptAvgOrderByAggregateInput
+    _max?: EmailDeliveryAttemptMaxOrderByAggregateInput
+    _min?: EmailDeliveryAttemptMinOrderByAggregateInput
+    _sum?: EmailDeliveryAttemptSumOrderByAggregateInput
+  }
+
+  export type EmailDeliveryAttemptScalarWhereWithAggregatesInput = {
+    AND?: EmailDeliveryAttemptScalarWhereWithAggregatesInput | EmailDeliveryAttemptScalarWhereWithAggregatesInput[]
+    OR?: EmailDeliveryAttemptScalarWhereWithAggregatesInput[]
+    NOT?: EmailDeliveryAttemptScalarWhereWithAggregatesInput | EmailDeliveryAttemptScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"EmailDeliveryAttempt"> | string
+    emailNotificationId?: StringWithAggregatesFilter<"EmailDeliveryAttempt"> | string
+    generation?: IntWithAggregatesFilter<"EmailDeliveryAttempt"> | number
+    providerId?: StringWithAggregatesFilter<"EmailDeliveryAttempt"> | string
+    status?: EnumEmailDeliveryAttemptStatusWithAggregatesFilter<"EmailDeliveryAttempt"> | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeWithAggregatesFilter<"EmailDeliveryAttempt"> | Date | string
+    deliveredAt?: DateTimeNullableWithAggregatesFilter<"EmailDeliveryAttempt"> | Date | string | null
+    failedAt?: DateTimeNullableWithAggregatesFilter<"EmailDeliveryAttempt"> | Date | string | null
+    lastError?: StringNullableWithAggregatesFilter<"EmailDeliveryAttempt"> | string | null
+    lastProviderEventAt?: DateTimeNullableWithAggregatesFilter<"EmailDeliveryAttempt"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"EmailDeliveryAttempt"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"EmailDeliveryAttempt"> | Date | string
+  }
+
+  export type ResendWebhookEventWhereInput = {
+    AND?: ResendWebhookEventWhereInput | ResendWebhookEventWhereInput[]
+    OR?: ResendWebhookEventWhereInput[]
+    NOT?: ResendWebhookEventWhereInput | ResendWebhookEventWhereInput[]
+    id?: StringFilter<"ResendWebhookEvent"> | string
+    type?: StringFilter<"ResendWebhookEvent"> | string
+    providerEmailId?: StringNullableFilter<"ResendWebhookEvent"> | string | null
+    occurredAt?: DateTimeFilter<"ResendWebhookEvent"> | Date | string
+    rawPayload?: JsonNullableFilter<"ResendWebhookEvent">
+    payloadExpiresAt?: DateTimeFilter<"ResendWebhookEvent"> | Date | string
+    createdAt?: DateTimeFilter<"ResendWebhookEvent"> | Date | string
+  }
+
+  export type ResendWebhookEventOrderByWithRelationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    providerEmailId?: SortOrderInput | SortOrder
+    occurredAt?: SortOrder
+    rawPayload?: SortOrderInput | SortOrder
+    payloadExpiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ResendWebhookEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ResendWebhookEventWhereInput | ResendWebhookEventWhereInput[]
+    OR?: ResendWebhookEventWhereInput[]
+    NOT?: ResendWebhookEventWhereInput | ResendWebhookEventWhereInput[]
+    type?: StringFilter<"ResendWebhookEvent"> | string
+    providerEmailId?: StringNullableFilter<"ResendWebhookEvent"> | string | null
+    occurredAt?: DateTimeFilter<"ResendWebhookEvent"> | Date | string
+    rawPayload?: JsonNullableFilter<"ResendWebhookEvent">
+    payloadExpiresAt?: DateTimeFilter<"ResendWebhookEvent"> | Date | string
+    createdAt?: DateTimeFilter<"ResendWebhookEvent"> | Date | string
+  }, "id">
+
+  export type ResendWebhookEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    providerEmailId?: SortOrderInput | SortOrder
+    occurredAt?: SortOrder
+    rawPayload?: SortOrderInput | SortOrder
+    payloadExpiresAt?: SortOrder
+    createdAt?: SortOrder
+    _count?: ResendWebhookEventCountOrderByAggregateInput
+    _max?: ResendWebhookEventMaxOrderByAggregateInput
+    _min?: ResendWebhookEventMinOrderByAggregateInput
+  }
+
+  export type ResendWebhookEventScalarWhereWithAggregatesInput = {
+    AND?: ResendWebhookEventScalarWhereWithAggregatesInput | ResendWebhookEventScalarWhereWithAggregatesInput[]
+    OR?: ResendWebhookEventScalarWhereWithAggregatesInput[]
+    NOT?: ResendWebhookEventScalarWhereWithAggregatesInput | ResendWebhookEventScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ResendWebhookEvent"> | string
+    type?: StringWithAggregatesFilter<"ResendWebhookEvent"> | string
+    providerEmailId?: StringNullableWithAggregatesFilter<"ResendWebhookEvent"> | string | null
+    occurredAt?: DateTimeWithAggregatesFilter<"ResendWebhookEvent"> | Date | string
+    rawPayload?: JsonNullableWithAggregatesFilter<"ResendWebhookEvent">
+    payloadExpiresAt?: DateTimeWithAggregatesFilter<"ResendWebhookEvent"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"ResendWebhookEvent"> | Date | string
   }
 
   export type OrderLineWhereInput = {
@@ -31966,14 +34718,19 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutEmailNotificationsInput
     payment?: PaymentCreateNestedOneWithoutEmailNotificationsInput
+    deliveryAttempts?: EmailDeliveryAttemptCreateNestedManyWithoutEmailNotificationInput
   }
 
   export type EmailNotificationUncheckedCreateInput = {
@@ -31986,12 +34743,17 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    deliveryAttempts?: EmailDeliveryAttemptUncheckedCreateNestedManyWithoutEmailNotificationInput
   }
 
   export type EmailNotificationUpdateInput = {
@@ -32002,14 +34764,19 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutEmailNotificationsNestedInput
     payment?: PaymentUpdateOneWithoutEmailNotificationsNestedInput
+    deliveryAttempts?: EmailDeliveryAttemptUpdateManyWithoutEmailNotificationNestedInput
   }
 
   export type EmailNotificationUncheckedUpdateInput = {
@@ -32022,12 +34789,17 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryAttempts?: EmailDeliveryAttemptUncheckedUpdateManyWithoutEmailNotificationNestedInput
   }
 
   export type EmailNotificationCreateManyInput = {
@@ -32040,10 +34812,14 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -32056,10 +34832,14 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -32074,12 +34854,190 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptCreateInput = {
+    id?: string
+    generation: number
+    providerId: string
+    status?: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date | string
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastError?: string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    emailNotification: EmailNotificationCreateNestedOneWithoutDeliveryAttemptsInput
+  }
+
+  export type EmailDeliveryAttemptUncheckedCreateInput = {
+    id?: string
+    emailNotificationId: string
+    generation: number
+    providerId: string
+    status?: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date | string
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastError?: string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailDeliveryAttemptUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailNotification?: EmailNotificationUpdateOneRequiredWithoutDeliveryAttemptsNestedInput
+  }
+
+  export type EmailDeliveryAttemptUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    emailNotificationId?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptCreateManyInput = {
+    id?: string
+    emailNotificationId: string
+    generation: number
+    providerId: string
+    status?: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date | string
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastError?: string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailDeliveryAttemptUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    emailNotificationId?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResendWebhookEventCreateInput = {
+    id: string
+    type: string
+    providerEmailId?: string | null
+    occurredAt: Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type ResendWebhookEventUncheckedCreateInput = {
+    id: string
+    type: string
+    providerEmailId?: string | null
+    occurredAt: Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type ResendWebhookEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    providerEmailId?: NullableStringFieldUpdateOperationsInput | string | null
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResendWebhookEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    providerEmailId?: NullableStringFieldUpdateOperationsInput | string | null
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResendWebhookEventCreateManyInput = {
+    id: string
+    type: string
+    providerEmailId?: string | null
+    occurredAt: Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt: Date | string
+    createdAt?: Date | string
+  }
+
+  export type ResendWebhookEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    providerEmailId?: NullableStringFieldUpdateOperationsInput | string | null
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ResendWebhookEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    providerEmailId?: NullableStringFieldUpdateOperationsInput | string | null
+    occurredAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rawPayload?: NullableJsonNullValueInput | InputJsonValue
+    payloadExpiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OrderLineCreateInput = {
@@ -33777,6 +36735,16 @@ export namespace Prisma {
     isNot?: PaymentWhereInput | null
   }
 
+  export type EmailDeliveryAttemptListRelationFilter = {
+    every?: EmailDeliveryAttemptWhereInput
+    some?: EmailDeliveryAttemptWhereInput
+    none?: EmailDeliveryAttemptWhereInput
+  }
+
+  export type EmailDeliveryAttemptOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type EmailNotificationCountOrderByAggregateInput = {
     id?: SortOrder
     orderId?: SortOrder
@@ -33787,16 +36755,21 @@ export namespace Prisma {
     recipientEmail?: SortOrder
     accessExpiresAt?: SortOrder
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
     lastAttemptAt?: SortOrder
     lastError?: SortOrder
     providerId?: SortOrder
     sentAt?: SortOrder
+    deliveredAt?: SortOrder
+    failedAt?: SortOrder
+    lastProviderEventAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type EmailNotificationAvgOrderByAggregateInput = {
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
   }
 
   export type EmailNotificationMaxOrderByAggregateInput = {
@@ -33809,10 +36782,14 @@ export namespace Prisma {
     recipientEmail?: SortOrder
     accessExpiresAt?: SortOrder
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
     lastAttemptAt?: SortOrder
     lastError?: SortOrder
     providerId?: SortOrder
     sentAt?: SortOrder
+    deliveredAt?: SortOrder
+    failedAt?: SortOrder
+    lastProviderEventAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33827,16 +36804,21 @@ export namespace Prisma {
     recipientEmail?: SortOrder
     accessExpiresAt?: SortOrder
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
     lastAttemptAt?: SortOrder
     lastError?: SortOrder
     providerId?: SortOrder
     sentAt?: SortOrder
+    deliveredAt?: SortOrder
+    failedAt?: SortOrder
+    lastProviderEventAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type EmailNotificationSumOrderByAggregateInput = {
     attemptCount?: SortOrder
+    deliveryGeneration?: SortOrder
   }
 
   export type EnumEmailNotificationTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -33857,6 +36839,114 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
     _max?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
+  }
+
+  export type EnumEmailDeliveryAttemptStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailDeliveryAttemptStatus | EnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel> | $Enums.EmailDeliveryAttemptStatus
+  }
+
+  export type EmailNotificationScalarRelationFilter = {
+    is?: EmailNotificationWhereInput
+    isNot?: EmailNotificationWhereInput
+  }
+
+  export type EmailDeliveryAttemptEmailNotificationIdGenerationCompoundUniqueInput = {
+    emailNotificationId: string
+    generation: number
+  }
+
+  export type EmailDeliveryAttemptCountOrderByAggregateInput = {
+    id?: SortOrder
+    emailNotificationId?: SortOrder
+    generation?: SortOrder
+    providerId?: SortOrder
+    status?: SortOrder
+    sentAt?: SortOrder
+    deliveredAt?: SortOrder
+    failedAt?: SortOrder
+    lastError?: SortOrder
+    lastProviderEventAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EmailDeliveryAttemptAvgOrderByAggregateInput = {
+    generation?: SortOrder
+  }
+
+  export type EmailDeliveryAttemptMaxOrderByAggregateInput = {
+    id?: SortOrder
+    emailNotificationId?: SortOrder
+    generation?: SortOrder
+    providerId?: SortOrder
+    status?: SortOrder
+    sentAt?: SortOrder
+    deliveredAt?: SortOrder
+    failedAt?: SortOrder
+    lastError?: SortOrder
+    lastProviderEventAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EmailDeliveryAttemptMinOrderByAggregateInput = {
+    id?: SortOrder
+    emailNotificationId?: SortOrder
+    generation?: SortOrder
+    providerId?: SortOrder
+    status?: SortOrder
+    sentAt?: SortOrder
+    deliveredAt?: SortOrder
+    failedAt?: SortOrder
+    lastError?: SortOrder
+    lastProviderEventAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EmailDeliveryAttemptSumOrderByAggregateInput = {
+    generation?: SortOrder
+  }
+
+  export type EnumEmailDeliveryAttemptStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailDeliveryAttemptStatus | EnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailDeliveryAttemptStatusWithAggregatesFilter<$PrismaModel> | $Enums.EmailDeliveryAttemptStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel>
+    _max?: NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel>
+  }
+
+  export type ResendWebhookEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    providerEmailId?: SortOrder
+    occurredAt?: SortOrder
+    rawPayload?: SortOrder
+    payloadExpiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ResendWebhookEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    providerEmailId?: SortOrder
+    occurredAt?: SortOrder
+    payloadExpiresAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ResendWebhookEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    providerEmailId?: SortOrder
+    occurredAt?: SortOrder
+    payloadExpiresAt?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type ReviewNullableScalarRelationFilter = {
@@ -35132,6 +38222,20 @@ export namespace Prisma {
     connect?: PaymentWhereUniqueInput
   }
 
+  export type EmailDeliveryAttemptCreateNestedManyWithoutEmailNotificationInput = {
+    create?: XOR<EmailDeliveryAttemptCreateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput> | EmailDeliveryAttemptCreateWithoutEmailNotificationInput[] | EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput[]
+    connectOrCreate?: EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput | EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput[]
+    createMany?: EmailDeliveryAttemptCreateManyEmailNotificationInputEnvelope
+    connect?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+  }
+
+  export type EmailDeliveryAttemptUncheckedCreateNestedManyWithoutEmailNotificationInput = {
+    create?: XOR<EmailDeliveryAttemptCreateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput> | EmailDeliveryAttemptCreateWithoutEmailNotificationInput[] | EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput[]
+    connectOrCreate?: EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput | EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput[]
+    createMany?: EmailDeliveryAttemptCreateManyEmailNotificationInputEnvelope
+    connect?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+  }
+
   export type EnumEmailNotificationTypeFieldUpdateOperationsInput = {
     set?: $Enums.EmailNotificationType
   }
@@ -35156,6 +38260,52 @@ export namespace Prisma {
     delete?: PaymentWhereInput | boolean
     connect?: PaymentWhereUniqueInput
     update?: XOR<XOR<PaymentUpdateToOneWithWhereWithoutEmailNotificationsInput, PaymentUpdateWithoutEmailNotificationsInput>, PaymentUncheckedUpdateWithoutEmailNotificationsInput>
+  }
+
+  export type EmailDeliveryAttemptUpdateManyWithoutEmailNotificationNestedInput = {
+    create?: XOR<EmailDeliveryAttemptCreateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput> | EmailDeliveryAttemptCreateWithoutEmailNotificationInput[] | EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput[]
+    connectOrCreate?: EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput | EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput[]
+    upsert?: EmailDeliveryAttemptUpsertWithWhereUniqueWithoutEmailNotificationInput | EmailDeliveryAttemptUpsertWithWhereUniqueWithoutEmailNotificationInput[]
+    createMany?: EmailDeliveryAttemptCreateManyEmailNotificationInputEnvelope
+    set?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    disconnect?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    delete?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    connect?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    update?: EmailDeliveryAttemptUpdateWithWhereUniqueWithoutEmailNotificationInput | EmailDeliveryAttemptUpdateWithWhereUniqueWithoutEmailNotificationInput[]
+    updateMany?: EmailDeliveryAttemptUpdateManyWithWhereWithoutEmailNotificationInput | EmailDeliveryAttemptUpdateManyWithWhereWithoutEmailNotificationInput[]
+    deleteMany?: EmailDeliveryAttemptScalarWhereInput | EmailDeliveryAttemptScalarWhereInput[]
+  }
+
+  export type EmailDeliveryAttemptUncheckedUpdateManyWithoutEmailNotificationNestedInput = {
+    create?: XOR<EmailDeliveryAttemptCreateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput> | EmailDeliveryAttemptCreateWithoutEmailNotificationInput[] | EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput[]
+    connectOrCreate?: EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput | EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput[]
+    upsert?: EmailDeliveryAttemptUpsertWithWhereUniqueWithoutEmailNotificationInput | EmailDeliveryAttemptUpsertWithWhereUniqueWithoutEmailNotificationInput[]
+    createMany?: EmailDeliveryAttemptCreateManyEmailNotificationInputEnvelope
+    set?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    disconnect?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    delete?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    connect?: EmailDeliveryAttemptWhereUniqueInput | EmailDeliveryAttemptWhereUniqueInput[]
+    update?: EmailDeliveryAttemptUpdateWithWhereUniqueWithoutEmailNotificationInput | EmailDeliveryAttemptUpdateWithWhereUniqueWithoutEmailNotificationInput[]
+    updateMany?: EmailDeliveryAttemptUpdateManyWithWhereWithoutEmailNotificationInput | EmailDeliveryAttemptUpdateManyWithWhereWithoutEmailNotificationInput[]
+    deleteMany?: EmailDeliveryAttemptScalarWhereInput | EmailDeliveryAttemptScalarWhereInput[]
+  }
+
+  export type EmailNotificationCreateNestedOneWithoutDeliveryAttemptsInput = {
+    create?: XOR<EmailNotificationCreateWithoutDeliveryAttemptsInput, EmailNotificationUncheckedCreateWithoutDeliveryAttemptsInput>
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutDeliveryAttemptsInput
+    connect?: EmailNotificationWhereUniqueInput
+  }
+
+  export type EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput = {
+    set?: $Enums.EmailDeliveryAttemptStatus
+  }
+
+  export type EmailNotificationUpdateOneRequiredWithoutDeliveryAttemptsNestedInput = {
+    create?: XOR<EmailNotificationCreateWithoutDeliveryAttemptsInput, EmailNotificationUncheckedCreateWithoutDeliveryAttemptsInput>
+    connectOrCreate?: EmailNotificationCreateOrConnectWithoutDeliveryAttemptsInput
+    upsert?: EmailNotificationUpsertWithoutDeliveryAttemptsInput
+    connect?: EmailNotificationWhereUniqueInput
+    update?: XOR<XOR<EmailNotificationUpdateToOneWithWhereWithoutDeliveryAttemptsInput, EmailNotificationUpdateWithoutDeliveryAttemptsInput>, EmailNotificationUncheckedUpdateWithoutDeliveryAttemptsInput>
   }
 
   export type OrderCreateNestedOneWithoutLinesInput = {
@@ -35757,6 +38907,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
     _max?: NestedEnumEmailNotificationStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailDeliveryAttemptStatus | EnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel> | $Enums.EmailDeliveryAttemptStatus
+  }
+
+  export type NestedEnumEmailDeliveryAttemptStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.EmailDeliveryAttemptStatus | EnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EmailDeliveryAttemptStatus[] | ListEnumEmailDeliveryAttemptStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumEmailDeliveryAttemptStatusWithAggregatesFilter<$PrismaModel> | $Enums.EmailDeliveryAttemptStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel>
+    _max?: NestedEnumEmailDeliveryAttemptStatusFilter<$PrismaModel>
   }
 
   export type NestedEnumPaymentTypeFilter<$PrismaModel = never> = {
@@ -37906,13 +41073,18 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     payment?: PaymentCreateNestedOneWithoutEmailNotificationsInput
+    deliveryAttempts?: EmailDeliveryAttemptCreateNestedManyWithoutEmailNotificationInput
   }
 
   export type EmailNotificationUncheckedCreateWithoutOrderInput = {
@@ -37924,12 +41096,17 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    deliveryAttempts?: EmailDeliveryAttemptUncheckedCreateNestedManyWithoutEmailNotificationInput
   }
 
   export type EmailNotificationCreateOrConnectWithoutOrderInput = {
@@ -38059,10 +41236,14 @@ export namespace Prisma {
     recipientEmail?: StringFilter<"EmailNotification"> | string
     accessExpiresAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     attemptCount?: IntFilter<"EmailNotification"> | number
+    deliveryGeneration?: IntFilter<"EmailNotification"> | number
     lastAttemptAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     lastError?: StringNullableFilter<"EmailNotification"> | string | null
     providerId?: StringNullableFilter<"EmailNotification"> | string | null
     sentAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    deliveredAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    failedAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
+    lastProviderEventAt?: DateTimeNullableFilter<"EmailNotification"> | Date | string | null
     createdAt?: DateTimeFilter<"EmailNotification"> | Date | string
     updatedAt?: DateTimeFilter<"EmailNotification"> | Date | string
   }
@@ -38219,6 +41400,44 @@ export namespace Prisma {
   export type PaymentCreateOrConnectWithoutEmailNotificationsInput = {
     where: PaymentWhereUniqueInput
     create: XOR<PaymentCreateWithoutEmailNotificationsInput, PaymentUncheckedCreateWithoutEmailNotificationsInput>
+  }
+
+  export type EmailDeliveryAttemptCreateWithoutEmailNotificationInput = {
+    id?: string
+    generation: number
+    providerId: string
+    status?: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date | string
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastError?: string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput = {
+    id?: string
+    generation: number
+    providerId: string
+    status?: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date | string
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastError?: string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailDeliveryAttemptCreateOrConnectWithoutEmailNotificationInput = {
+    where: EmailDeliveryAttemptWhereUniqueInput
+    create: XOR<EmailDeliveryAttemptCreateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput>
+  }
+
+  export type EmailDeliveryAttemptCreateManyEmailNotificationInputEnvelope = {
+    data: EmailDeliveryAttemptCreateManyEmailNotificationInput | EmailDeliveryAttemptCreateManyEmailNotificationInput[]
+    skipDuplicates?: boolean
   }
 
   export type OrderUpsertWithoutEmailNotificationsInput = {
@@ -38383,6 +41602,144 @@ export namespace Prisma {
     providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     stripeCheckoutSessionId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptUpsertWithWhereUniqueWithoutEmailNotificationInput = {
+    where: EmailDeliveryAttemptWhereUniqueInput
+    update: XOR<EmailDeliveryAttemptUpdateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedUpdateWithoutEmailNotificationInput>
+    create: XOR<EmailDeliveryAttemptCreateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedCreateWithoutEmailNotificationInput>
+  }
+
+  export type EmailDeliveryAttemptUpdateWithWhereUniqueWithoutEmailNotificationInput = {
+    where: EmailDeliveryAttemptWhereUniqueInput
+    data: XOR<EmailDeliveryAttemptUpdateWithoutEmailNotificationInput, EmailDeliveryAttemptUncheckedUpdateWithoutEmailNotificationInput>
+  }
+
+  export type EmailDeliveryAttemptUpdateManyWithWhereWithoutEmailNotificationInput = {
+    where: EmailDeliveryAttemptScalarWhereInput
+    data: XOR<EmailDeliveryAttemptUpdateManyMutationInput, EmailDeliveryAttemptUncheckedUpdateManyWithoutEmailNotificationInput>
+  }
+
+  export type EmailDeliveryAttemptScalarWhereInput = {
+    AND?: EmailDeliveryAttemptScalarWhereInput | EmailDeliveryAttemptScalarWhereInput[]
+    OR?: EmailDeliveryAttemptScalarWhereInput[]
+    NOT?: EmailDeliveryAttemptScalarWhereInput | EmailDeliveryAttemptScalarWhereInput[]
+    id?: StringFilter<"EmailDeliveryAttempt"> | string
+    emailNotificationId?: StringFilter<"EmailDeliveryAttempt"> | string
+    generation?: IntFilter<"EmailDeliveryAttempt"> | number
+    providerId?: StringFilter<"EmailDeliveryAttempt"> | string
+    status?: EnumEmailDeliveryAttemptStatusFilter<"EmailDeliveryAttempt"> | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    deliveredAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    failedAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    lastError?: StringNullableFilter<"EmailDeliveryAttempt"> | string | null
+    lastProviderEventAt?: DateTimeNullableFilter<"EmailDeliveryAttempt"> | Date | string | null
+    createdAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+    updatedAt?: DateTimeFilter<"EmailDeliveryAttempt"> | Date | string
+  }
+
+  export type EmailNotificationCreateWithoutDeliveryAttemptsInput = {
+    id?: string
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    deliveryGeneration?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    order: OrderCreateNestedOneWithoutEmailNotificationsInput
+    payment?: PaymentCreateNestedOneWithoutEmailNotificationsInput
+  }
+
+  export type EmailNotificationUncheckedCreateWithoutDeliveryAttemptsInput = {
+    id?: string
+    orderId: string
+    paymentId?: string | null
+    deduplicationKey: string
+    type: $Enums.EmailNotificationType
+    status?: $Enums.EmailNotificationStatus
+    recipientEmail: string
+    accessExpiresAt?: Date | string | null
+    attemptCount?: number
+    deliveryGeneration?: number
+    lastAttemptAt?: Date | string | null
+    lastError?: string | null
+    providerId?: string | null
+    sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailNotificationCreateOrConnectWithoutDeliveryAttemptsInput = {
+    where: EmailNotificationWhereUniqueInput
+    create: XOR<EmailNotificationCreateWithoutDeliveryAttemptsInput, EmailNotificationUncheckedCreateWithoutDeliveryAttemptsInput>
+  }
+
+  export type EmailNotificationUpsertWithoutDeliveryAttemptsInput = {
+    update: XOR<EmailNotificationUpdateWithoutDeliveryAttemptsInput, EmailNotificationUncheckedUpdateWithoutDeliveryAttemptsInput>
+    create: XOR<EmailNotificationCreateWithoutDeliveryAttemptsInput, EmailNotificationUncheckedCreateWithoutDeliveryAttemptsInput>
+    where?: EmailNotificationWhereInput
+  }
+
+  export type EmailNotificationUpdateToOneWithWhereWithoutDeliveryAttemptsInput = {
+    where?: EmailNotificationWhereInput
+    data: XOR<EmailNotificationUpdateWithoutDeliveryAttemptsInput, EmailNotificationUncheckedUpdateWithoutDeliveryAttemptsInput>
+  }
+
+  export type EmailNotificationUpdateWithoutDeliveryAttemptsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    order?: OrderUpdateOneRequiredWithoutEmailNotificationsNestedInput
+    payment?: PaymentUpdateOneWithoutEmailNotificationsNestedInput
+  }
+
+  export type EmailNotificationUncheckedUpdateWithoutDeliveryAttemptsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    orderId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    deduplicationKey?: StringFieldUpdateOperationsInput | string
+    type?: EnumEmailNotificationTypeFieldUpdateOperationsInput | $Enums.EmailNotificationType
+    status?: EnumEmailNotificationStatusFieldUpdateOperationsInput | $Enums.EmailNotificationStatus
+    recipientEmail?: StringFieldUpdateOperationsInput | string
+    accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38988,13 +42345,18 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     order: OrderCreateNestedOneWithoutEmailNotificationsInput
+    deliveryAttempts?: EmailDeliveryAttemptCreateNestedManyWithoutEmailNotificationInput
   }
 
   export type EmailNotificationUncheckedCreateWithoutPaymentInput = {
@@ -39006,12 +42368,17 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    deliveryAttempts?: EmailDeliveryAttemptUncheckedCreateNestedManyWithoutEmailNotificationInput
   }
 
   export type EmailNotificationCreateOrConnectWithoutPaymentInput = {
@@ -40362,10 +43729,14 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40474,13 +43845,18 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     payment?: PaymentUpdateOneWithoutEmailNotificationsNestedInput
+    deliveryAttempts?: EmailDeliveryAttemptUpdateManyWithoutEmailNotificationNestedInput
   }
 
   export type EmailNotificationUncheckedUpdateWithoutOrderInput = {
@@ -40492,12 +43868,17 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryAttempts?: EmailDeliveryAttemptUncheckedUpdateManyWithoutEmailNotificationNestedInput
   }
 
   export type EmailNotificationUncheckedUpdateManyWithoutOrderInput = {
@@ -40509,10 +43890,70 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptCreateManyEmailNotificationInput = {
+    id?: string
+    generation: number
+    providerId: string
+    status?: $Enums.EmailDeliveryAttemptStatus
+    sentAt: Date | string
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastError?: string | null
+    lastProviderEventAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type EmailDeliveryAttemptUpdateWithoutEmailNotificationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptUncheckedUpdateWithoutEmailNotificationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type EmailDeliveryAttemptUncheckedUpdateManyWithoutEmailNotificationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    providerId?: StringFieldUpdateOperationsInput | string
+    status?: EnumEmailDeliveryAttemptStatusFieldUpdateOperationsInput | $Enums.EmailDeliveryAttemptStatus
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40526,10 +43967,14 @@ export namespace Prisma {
     recipientEmail: string
     accessExpiresAt?: Date | string | null
     attemptCount?: number
+    deliveryGeneration?: number
     lastAttemptAt?: Date | string | null
     lastError?: string | null
     providerId?: string | null
     sentAt?: Date | string | null
+    deliveredAt?: Date | string | null
+    failedAt?: Date | string | null
+    lastProviderEventAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40542,13 +43987,18 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     order?: OrderUpdateOneRequiredWithoutEmailNotificationsNestedInput
+    deliveryAttempts?: EmailDeliveryAttemptUpdateManyWithoutEmailNotificationNestedInput
   }
 
   export type EmailNotificationUncheckedUpdateWithoutPaymentInput = {
@@ -40560,12 +44010,17 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveryAttempts?: EmailDeliveryAttemptUncheckedUpdateManyWithoutEmailNotificationNestedInput
   }
 
   export type EmailNotificationUncheckedUpdateManyWithoutPaymentInput = {
@@ -40577,10 +44032,14 @@ export namespace Prisma {
     recipientEmail?: StringFieldUpdateOperationsInput | string
     accessExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     attemptCount?: IntFieldUpdateOperationsInput | number
+    deliveryGeneration?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     providerId?: NullableStringFieldUpdateOperationsInput | string | null
     sentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    failedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastProviderEventAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

@@ -639,12 +639,41 @@
       "paymentException": "Payment exception — review required",
       "noActions": "No actions",
       "actions": {
+        "view": "View details",
         "cancel": "Cancel",
         "cancelPending": "Cancelling...",
         "dispatch": "Mark dispatched",
         "dispatchPending": "Dispatching...",
-        "fulfill": "Mark fulfilled",
-        "fulfillPending": "Marking..."
+        "fulfill": "Complete fulfillment",
+        "fulfillPending": "Completing..."
+      }
+    },
+    "detail": {
+      "title": "Order email notifications",
+      "close": "Close",
+      "loading": "Loading email notifications…",
+      "error": "Could not load email notifications.",
+      "empty": "This order has no email notifications.",
+      "notAvailable": "—",
+      "createdAt": "Created",
+      "sentAt": "Sent",
+      "deliveredAt": "Delivered",
+      "attemptCount": "Attempts",
+      "retry": "Retry failed notification",
+      "retrying": "Retrying…",
+      "statuses": {
+        "PENDING": "Pending",
+        "SENT": "Sent",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed"
+      },
+      "types": {
+        "ORDER_PLACED": "Order placed",
+        "ORDER_PAYMENT_CONFIRMED": "Payment confirmed",
+        "PAYMENT_FAILED": "Payment failed",
+        "NEW_PAID_ORDER": "New paid order",
+        "ORDER_CANCELLED": "Order cancelled",
+        "ORDER_DISPATCHED": "Order dispatched"
       }
     },
     "dispatch": {

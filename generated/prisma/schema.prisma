@@ -307,6 +307,7 @@ enum OrderOrigin {
 enum EmailNotificationType {
   ORDER_PLACED
   ORDER_PAYMENT_CONFIRMED
+  PAYMENT_FAILED
   NEW_PAID_ORDER
   ORDER_CANCELLED
   ORDER_DISPATCHED
@@ -315,6 +316,14 @@ enum EmailNotificationType {
 enum EmailNotificationStatus {
   PENDING
   SENT
+  DELIVERED
+  FAILED
+}
+
+enum EmailDeliveryAttemptStatus {
+  SENT
+  DELIVERED
+  FAILED
 }
 
 model Order {
@@ -381,26 +390,64 @@ model Order {
 }
 
 model EmailNotification {
-  id               String                  @id @default(cuid())
-  orderId          String
-  order            Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  paymentId        String?
-  payment          Payment?                @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  deduplicationKey String                  @unique
-  type             EmailNotificationType
-  status           EmailNotificationStatus @default(PENDING)
-  recipientEmail   String
-  accessExpiresAt  DateTime?
-  attemptCount     Int                     @default(0)
-  lastAttemptAt    DateTime?
-  lastError        String?
-  providerId       String?
-  sentAt           DateTime?
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
+  id                  String                  @id @default(cuid())
+  orderId             String
+  order               Order                   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentId           String?
+  payment             Payment?                @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  deduplicationKey    String                  @unique
+  type                EmailNotificationType
+  status              EmailNotificationStatus @default(PENDING)
+  recipientEmail      String
+  accessExpiresAt     DateTime?
+  attemptCount        Int                     @default(0)
+  deliveryGeneration  Int                     @default(0)
+  lastAttemptAt       DateTime?
+  lastError           String?
+  providerId          String?
+  sentAt              DateTime?
+  deliveredAt         DateTime?
+  failedAt            DateTime?
+  lastProviderEventAt DateTime?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  deliveryAttempts    EmailDeliveryAttempt[]
 
   @@index([paymentId])
+  @@index([providerId])
   @@index([status, createdAt])
+}
+
+model EmailDeliveryAttempt {
+  id                  String                     @id @default(cuid())
+  emailNotificationId String
+  emailNotification   EmailNotification          @relation(fields: [emailNotificationId], references: [id], onDelete: Cascade)
+  generation          Int
+  providerId          String                     @unique
+  status              EmailDeliveryAttemptStatus @default(SENT)
+  sentAt              DateTime
+  deliveredAt         DateTime?
+  failedAt            DateTime?
+  lastError           String?
+  lastProviderEventAt DateTime?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+
+  @@unique([emailNotificationId, generation])
+  @@index([emailNotificationId])
+}
+
+model ResendWebhookEvent {
+  id               String   @id
+  type             String
+  providerEmailId  String?
+  occurredAt       DateTime
+  rawPayload       Json?
+  payloadExpiresAt DateTime
+  createdAt        DateTime @default(now())
+
+  @@index([payloadExpiresAt])
+  @@index([providerEmailId])
 }
 
 model OrderLine {

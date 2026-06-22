@@ -639,12 +639,41 @@
       "paymentException": "Zahlungsausnahme – Prüfung erforderlich",
       "noActions": "Keine Aktionen",
       "actions": {
+        "view": "Details ansehen",
         "cancel": "Stornieren",
         "cancelPending": "Wird storniert...",
         "dispatch": "Als versendet markieren",
         "dispatchPending": "Wird versendet...",
-        "fulfill": "Als erfüllt markieren",
-        "fulfillPending": "Wird markiert..."
+        "fulfill": "Erfüllung abschliessen",
+        "fulfillPending": "Wird abgeschlossen..."
+      }
+    },
+    "detail": {
+      "title": "E-Mail-Benachrichtigungen der Bestellung",
+      "close": "Schliessen",
+      "loading": "E-Mail-Benachrichtigungen werden geladen…",
+      "error": "E-Mail-Benachrichtigungen konnten nicht geladen werden.",
+      "empty": "Für diese Bestellung gibt es keine E-Mail-Benachrichtigungen.",
+      "notAvailable": "—",
+      "createdAt": "Erstellt",
+      "sentAt": "Gesendet",
+      "deliveredAt": "Zugestellt",
+      "attemptCount": "Versuche",
+      "retry": "Fehlgeschlagene Benachrichtigung erneut senden",
+      "retrying": "Wird erneut gesendet…",
+      "statuses": {
+        "PENDING": "Ausstehend",
+        "SENT": "Gesendet",
+        "DELIVERED": "Zugestellt",
+        "FAILED": "Fehlgeschlagen"
+      },
+      "types": {
+        "ORDER_PLACED": "Bestellung aufgegeben",
+        "ORDER_PAYMENT_CONFIRMED": "Zahlung bestätigt",
+        "PAYMENT_FAILED": "Zahlung fehlgeschlagen",
+        "NEW_PAID_ORDER": "Neue bezahlte Bestellung",
+        "ORDER_CANCELLED": "Bestellung storniert",
+        "ORDER_DISPATCHED": "Bestellung versendet"
       }
     },
     "dispatch": {

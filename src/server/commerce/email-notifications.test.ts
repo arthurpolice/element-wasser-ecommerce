@@ -19,7 +19,8 @@ vi.mock('~/server/queue/qstash', () => ({
 import {
   deliverEmailNotification,
   publishEmailNotification,
-  recoverPendingEmailNotifications
+  recoverPendingEmailNotifications,
+  retryFailedEmailNotification
 } from './email-notifications'
 
 type SendInput = {
@@ -34,6 +35,15 @@ type UpdateInput = {
     providerId?: string
     lastError?: string | null
     attemptCount?: { increment: number }
+    deliveryAttempts?: {
+      upsert: {
+        create: {
+          generation: number
+          providerId: string
+          status: string
+        }
+      }
+    }
   }
 }
 
@@ -42,6 +52,8 @@ const emailNotificationMocks = [
     id: 'notification-1',
     type: 'ORDER_PLACED',
     status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
     recipientEmail: 'anna@example.com',
     accessExpiresAt: new Date('2026-07-01T12:00:00Z'),
     order: {
@@ -56,6 +68,8 @@ const emailNotificationMocks = [
     id: 'notification-2',
     type: 'ORDER_PLACED',
     status: 'SENT',
+    attemptCount: 1,
+    deliveryGeneration: 0,
     recipientEmail: 'hannah@example.com',
     accessExpiresAt: new Date('2026-07-01T12:00:00Z'),
     order: {
@@ -70,6 +84,8 @@ const emailNotificationMocks = [
     id: 'notification-3',
     type: 'ORDER_CANCELLED',
     status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
     recipientEmail: 'river@example.com',
     accessExpiresAt: null,
     order: {
@@ -84,6 +100,8 @@ const emailNotificationMocks = [
     id: 'notification-4',
     type: 'ORDER_CANCELLED',
     status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
     recipientEmail: 'guest@example.com',
     accessExpiresAt: new Date('2026-07-01T12:00:00Z'),
     order: {
@@ -98,6 +116,8 @@ const emailNotificationMocks = [
     id: 'notification-5',
     type: 'ORDER_DISPATCHED',
     status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
     recipientEmail: 'parcel@example.com',
     accessExpiresAt: null,
     order: {
@@ -113,6 +133,8 @@ const emailNotificationMocks = [
     id: 'notification-6',
     type: 'ORDER_PAYMENT_CONFIRMED',
     status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
     recipientEmail: 'anna@example.com',
     accessExpiresAt: null,
     order: {
@@ -140,6 +162,8 @@ const emailNotificationMocks = [
     id: 'notification-7',
     type: 'NEW_PAID_ORDER',
     status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
     recipientEmail: 'bestellungen@element-wasser.example',
     accessExpiresAt: null,
     order: {
@@ -170,6 +194,23 @@ const emailNotificationMocks = [
       ]
     },
     lastError: null
+  },
+  {
+    id: 'notification-8',
+    type: 'PAYMENT_FAILED',
+    status: 'PENDING',
+    attemptCount: 0,
+    deliveryGeneration: 0,
+    recipientEmail: 'guest@example.com',
+    accessExpiresAt: new Date('2026-07-20T12:00:00Z'),
+    order: {
+      id: 'order-8',
+      orderNumber: 'EW-2026-00008',
+      customerFirstName: 'Greta',
+      customer: { userId: null },
+      lines: []
+    },
+    lastError: null
   }
 ]
 
@@ -179,7 +220,8 @@ const createMockDb = () => ({
       async ({ where: { id } }: { where: { id: string } }) =>
         emailNotificationMocks.find((mock) => mock.id === id) ?? null
     ),
-    update: vi.fn(async (input: UpdateInput) => input.data)
+    update: vi.fn(async (input: UpdateInput) => input.data),
+    updateMany: vi.fn(async () => ({ count: 1 }))
   }
 })
 
@@ -195,7 +237,23 @@ describe('Email Notifications', () => {
       expect.objectContaining({
         path: '/api/qstash/email/deliver',
         body: { emailNotificationId: 'notification-1' },
-        deduplicationId: 'notification-1'
+        deduplicationId: 'notification-1:0'
+      })
+    )
+  })
+
+  it('publishes an owner retry with a new queue generation', async () => {
+    const db = createMockDb()
+    db.emailNotification.findUnique.mockResolvedValue({
+      id: 'notification-1',
+      deliveryGeneration: 1
+    } as never)
+
+    await retryFailedEmailNotification(db as never, 'notification-1')
+
+    expect(publishQstashJsonMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        deduplicationId: 'notification-1:1'
       })
     )
   })
@@ -218,10 +276,19 @@ describe('Email Notifications', () => {
     )
     expect(message.html).toContain('Zahlungseingang wird separat bestätigt')
     expect(message.text).toContain('Bestellung ansehen')
-    expect(options).toEqual({ idempotencyKey: 'notification-1' })
+    expect(options).toEqual({ idempotencyKey: 'notification-1:0' })
     const updateInput = db.emailNotification.update.mock.calls[0]![0]
     expect(updateInput.data.status).toBe('SENT')
     expect(updateInput.data.providerId).toBe('resend-1')
+    expect(updateInput.data.deliveryAttempts).toMatchObject({
+      upsert: {
+        create: {
+          generation: 0,
+          providerId: 'resend-1',
+          status: 'SENT'
+        }
+      }
+    })
   })
 
   it('does not resend an already-sent notification', async () => {
@@ -339,6 +406,30 @@ describe('Email Notifications', () => {
     expect(message.text).toContain('129.00')
   })
 
+  it('renders generic German Payment Failed copy with an authorized retry link', async () => {
+    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
+      data: { id: 'resend-8' },
+      error: null
+    }))
+    const db = createMockDb()
+
+    await deliverEmailNotification(db as never, 'notification-8', {
+      resend: { emails: { send } } as never
+    })
+
+    const [message] = send.mock.calls[0]!
+    expect(message.subject).toBe(
+      'Zahlung für Bestellung EW-2026-00008 nicht abgeschlossen'
+    )
+    expect(message.html).toContain(
+      'Ihre Zahlung konnte nicht abgeschlossen werden'
+    )
+    expect(message.text).toContain('Zahlung erneut versuchen')
+    expect(message.text).toContain('token=')
+    expect(message.text).not.toContain('Card declined')
+    expect(message.text).not.toContain('Stripe')
+  })
+
   it('records the failed attempt and rethrows the provider error', async () => {
     const db = createMockDb()
     const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
@@ -358,6 +449,23 @@ describe('Email Notifications', () => {
     expect(updateInput.data.attemptCount?.increment).toEqual(1)
   })
 
+  it('marks the notification failed after the fifth unsuccessful attempt', async () => {
+    const db = createMockDb()
+    emailNotificationMocks[0]!.attemptCount = 4
+    const send = vi.fn().mockRejectedValue(new Error('Mailbox unavailable'))
+
+    await expect(
+      deliverEmailNotification(db as never, 'notification-1', {
+        resend: { emails: { send } } as never
+      })
+    ).rejects.toThrow('Mailbox unavailable')
+
+    const updateInput = db.emailNotification.update.mock.calls[0]![0]
+    expect(updateInput.data.status).toBe('FAILED')
+
+    emailNotificationMocks[0]!.attemptCount = 0
+  })
+
   it('returns null when notification is not found', async () => {
     const db = createMockDb()
     const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
@@ -367,7 +475,7 @@ describe('Email Notifications', () => {
 
     const result = await deliverEmailNotification(
       db as never,
-      'notification-8',
+      'notification-9',
       {
         resend: { emails: { send } } as never
       }

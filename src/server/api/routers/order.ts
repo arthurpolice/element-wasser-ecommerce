@@ -17,6 +17,7 @@ import {
   fulfillOrder
 } from '~/server/commerce/order-lifecycle'
 import { isPrismaErrorCode } from '~/server/prisma-errors'
+import { retryFailedEmailNotification } from '~/server/commerce/email-notifications'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -173,6 +174,8 @@ function toOrderLifecycleTrpcError(error: OrderLifecycleError): TRPCError {
         message: error.message
       })
     case 'ORDER_ALREADY_FULFILLED':
+    case 'ORDER_ALREADY_DISPATCHED':
+    case 'ORDER_NOT_DISPATCHED':
     case 'ORDER_PAYMENT_NOT_PAID':
     case 'ORDER_CANCELLED':
       return new TRPCError({
@@ -207,6 +210,48 @@ export const orderRouter = createTRPCRouter({
       totalPages: Math.max(1, Math.ceil(totalCount / input.pageSize))
     }
   }),
+
+  detail: ownerProcedure
+    .input(orderIdInputSchema)
+    .query(async ({ ctx, input }) => {
+      const order = await ctx.db.order.findUnique({
+        where: { id: input.orderId },
+        select: {
+          id: true,
+          orderNumber: true,
+          customerFirstName: true,
+          customerLastName: true,
+          customerEmail: true,
+          placedAt: true,
+          emailNotifications: {
+            select: {
+              id: true,
+              type: true,
+              status: true,
+              recipientEmail: true,
+              attemptCount: true,
+              lastAttemptAt: true,
+              sentAt: true,
+              deliveredAt: true,
+              failedAt: true,
+              lastError: true,
+              createdAt: true,
+              updatedAt: true
+            },
+            orderBy: { createdAt: 'asc' }
+          }
+        }
+      })
+
+      if (!order) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Order not found.'
+        })
+      }
+
+      return order
+    }),
 
   listCustomersForCreate: ownerProcedure.query(async ({ ctx }) => {
     const customers = await ctx.db.customer.findMany({
@@ -324,6 +369,24 @@ export const orderRouter = createTRPCRouter({
 
         throw error
       }
+    }),
+
+  retryEmailNotification: ownerProcedure
+    .input(z.object({ emailNotificationId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const retried = await retryFailedEmailNotification(
+        ctx.db,
+        input.emailNotificationId
+      )
+
+      if (!retried) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Only failed Email Notifications can be retried.'
+        })
+      }
+
+      return { retried: true as const }
     }),
 
   expirePendingPayments: ownerProcedure.mutation(async ({ ctx }) => {

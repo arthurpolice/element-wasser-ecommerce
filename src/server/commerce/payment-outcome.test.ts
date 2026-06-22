@@ -26,9 +26,12 @@ type MockPayment = {
   stripeCheckoutSessionId: string | null
   order: {
     id: string
+    status: 'PLACED' | 'CANCELLED' | 'COMPLETED'
     paymentStatus: OrderPaymentStatus
     origin: OrderOrigin
     customerEmail: string
+    paymentExpiresAt: Date | null
+    paymentExpiryStartedAt: Date | null
     customer: { userId: string | null }
   }
 }
@@ -77,6 +80,7 @@ type MockDb = {
         create: {
           deduplicationKey: string
           orderId: string
+          paymentId?: string
           type: string
           recipientEmail: string
           accessExpiresAt?: Date | null
@@ -88,8 +92,12 @@ type MockDb = {
   $transaction: Mock<(callback: (tx: MockDb) => Promise<void>) => Promise<void>>
 }
 
-function createPayment(overrides: Partial<MockPayment> = {}): MockPayment {
-  return {
+function createPayment(
+  overrides: Partial<Omit<MockPayment, 'order'>> & {
+    order?: Partial<MockPayment['order']>
+  } = {}
+): MockPayment {
+  const payment: MockPayment = {
     id: 'payment-1',
     orderId: 'order-1',
     status: 'PENDING',
@@ -97,12 +105,20 @@ function createPayment(overrides: Partial<MockPayment> = {}): MockPayment {
     stripeCheckoutSessionId: 'cs_test_123',
     order: {
       id: 'order-1',
+      status: 'PLACED',
       paymentStatus: 'PENDING',
       origin: 'STOREFRONT',
       customerEmail: 'anna@example.com',
+      paymentExpiresAt: new Date('2099-06-20T12:15:00Z'),
+      paymentExpiryStartedAt: null,
       customer: { userId: 'user-1' }
-    },
-    ...overrides
+    }
+  }
+
+  return {
+    ...payment,
+    ...overrides,
+    order: { ...payment.order, ...overrides.order }
   }
 }
 
@@ -125,8 +141,6 @@ function createMockDb(payment = createPayment()): MockDb {
     order: {
       findUniqueOrThrow: vi.fn(async () => ({
         ...payment.order,
-        status: 'PLACED',
-        paymentExpiresAt: new Date('2099-06-20T12:15:00Z'),
         payments: [{ status: payment.status }]
       })),
       update: vi.fn(async ({ data }) => {
@@ -146,7 +160,9 @@ function createMockDb(payment = createPayment()): MockDb {
         id:
           create.type === 'ORDER_PAYMENT_CONFIRMED'
             ? 'notification-customer'
-            : 'notification-merchant'
+            : create.type === 'PAYMENT_FAILED'
+              ? `notification-${create.paymentId}`
+              : 'notification-merchant'
       }))
     },
     $transaction: vi.fn(async (callback) => callback(db))
@@ -411,6 +427,137 @@ describe('handleStripeWebhookEvent', () => {
       where: { id: 'order-1' },
       data: { paymentStatus: 'FAILED' }
     })
+    expect(db.emailNotification.upsert).toHaveBeenCalledWith({
+      where: {
+        deduplicationKey: 'payment:payment-1:PAYMENT_FAILED'
+      },
+      create: {
+        deduplicationKey: 'payment:payment-1:PAYMENT_FAILED',
+        orderId: 'order-1',
+        paymentId: 'payment-1',
+        type: 'PAYMENT_FAILED',
+        recipientEmail: 'anna@example.com',
+        accessExpiresAt: null
+      },
+      update: {}
+    })
+    expect(publishEmailNotificationSafelyMock).toHaveBeenCalledWith(
+      'notification-payment-1'
+    )
+  })
+
+  it('deduplicates repeated failure events for one Payment', async () => {
+    const db = createMockDb()
+    const event = createEvent('payment_intent.payment_failed', {
+      id: 'pi_test_123',
+      metadata: { paymentId: 'payment-1' },
+      last_payment_error: { message: 'Card declined.' }
+    })
+
+    await handleStripeWebhookEvent(db as never, event)
+    await handleStripeWebhookEvent(db as never, event)
+
+    expect(db.emailNotification.upsert).toHaveBeenCalledTimes(1)
+    expect(publishEmailNotificationSafelyMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('creates separate Payment Failed Email Notifications for separate attempts', async () => {
+    const firstDb = createMockDb(createPayment({ id: 'payment-1' }))
+    const secondDb = createMockDb(createPayment({ id: 'payment-2' }))
+
+    await handleStripeWebhookEvent(
+      firstDb as never,
+      createEvent('payment_intent.payment_failed', {
+        id: 'pi_test_1',
+        metadata: { paymentId: 'payment-1' },
+        last_payment_error: { message: 'Declined.' }
+      })
+    )
+    await handleStripeWebhookEvent(
+      secondDb as never,
+      createEvent('payment_intent.payment_failed', {
+        id: 'pi_test_2',
+        metadata: { paymentId: 'payment-2' },
+        last_payment_error: { message: 'Declined.' }
+      })
+    )
+
+    expect(
+      firstDb.emailNotification.upsert.mock.calls[0]![0].create
+    ).toMatchObject({
+      paymentId: 'payment-1',
+      deduplicationKey: 'payment:payment-1:PAYMENT_FAILED'
+    })
+    expect(
+      secondDb.emailNotification.upsert.mock.calls[0]![0].create
+    ).toMatchObject({
+      paymentId: 'payment-2',
+      deduplicationKey: 'payment:payment-2:PAYMENT_FAILED'
+    })
+  })
+
+  it('gives a Guest Customer a signed access link for Payment Retry', async () => {
+    const db = createMockDb(
+      createPayment({
+        order: { customer: { userId: null } }
+      })
+    )
+
+    await handleStripeWebhookEvent(
+      db as never,
+      createEvent('payment_intent.payment_failed', {
+        id: 'pi_test_123',
+        metadata: { paymentId: 'payment-1' },
+        last_payment_error: { message: 'Declined.' }
+      }),
+      { now: () => new Date('2026-06-20T12:00:00Z') }
+    )
+
+    const create = db.emailNotification.upsert.mock.calls[0]![0].create
+    expect(create.accessExpiresAt).toEqual(new Date('2026-07-20T12:00:00.000Z'))
+  })
+
+  it('does not notify after the Order Payment Window has expired', async () => {
+    const db = createMockDb(
+      createPayment({
+        order: {
+          paymentExpiresAt: new Date('2026-06-20T11:59:00Z')
+        }
+      })
+    )
+
+    await handleStripeWebhookEvent(
+      db as never,
+      createEvent('payment_intent.payment_failed', {
+        id: 'pi_test_123',
+        metadata: { paymentId: 'payment-1' },
+        last_payment_error: { message: 'Declined.' }
+      }),
+      { now: () => new Date('2026-06-20T12:00:00Z') }
+    )
+
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
+    expect(publishEmailNotificationSafelyMock).not.toHaveBeenCalled()
+  })
+
+  it('does not create Payment Failed Email Notifications for owner-dashboard Orders', async () => {
+    const db = createMockDb(
+      createPayment({
+        order: { origin: 'OWNER_DASHBOARD' }
+      })
+    )
+
+    await handleStripeWebhookEvent(
+      db as never,
+      createEvent('payment_intent.payment_failed', {
+        id: 'pi_test_123',
+        metadata: { paymentId: 'payment-1' },
+        last_payment_error: { message: 'Declined.' }
+      })
+    )
+
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
+    expect(publishEmailNotificationSafelyMock).not.toHaveBeenCalled()
   })
 
   it('ignores a failed PaymentIntent when the Payment was already captured', async () => {
@@ -443,6 +590,8 @@ describe('handleStripeWebhookEvent', () => {
 
     expect(db.payment.updateMany).not.toHaveBeenCalled()
     expect(db.order.updateMany).not.toHaveBeenCalled()
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
+    expect(publishEmailNotificationSafelyMock).not.toHaveBeenCalled()
   })
 
   it('ignores unrelated Stripe events', async () => {

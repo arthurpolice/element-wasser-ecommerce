@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 
 import { CreateOrderDialog } from '~/app/[locale]/dashboard/_components/orders/create-order-modal'
 import { DispatchOrderDialog } from '~/app/[locale]/dashboard/_components/orders/dispatch-order-modal'
+import { OrderDetailDialog } from '~/app/[locale]/dashboard/_components/orders/order-detail-dialog'
 import {
   OrdersTable,
   type SortField
@@ -27,7 +28,10 @@ export function OrdersTab() {
   const [page, setPage] = useState(1)
   const [sortBy, setSortBy] = useState<SortField>('placedAt')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [dispatchingOrder, setDispatchingOrder] = useState<OrderRow | null>(null)
+  const [dispatchingOrder, setDispatchingOrder] = useState<OrderRow | null>(
+    null
+  )
+  const [viewingOrderId, setViewingOrderId] = useState<string | null>(null)
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -85,7 +89,7 @@ export function OrdersTab() {
             orderId: dispatchOrder.variables.orderId,
             action: 'dispatch' as const
           }
-      : undefined
+        : undefined
   const actionError =
     cancelOrder.error?.message ?? fulfillOrder.error?.message ?? undefined
 
@@ -135,6 +139,7 @@ export function OrdersTab() {
               cancelOrder.reset()
               fulfillOrder.mutate({ orderId: order.id })
             }}
+            onView={(order) => setViewingOrderId(order.id)}
             onSortChange={handleSortChange}
             pendingAction={pendingAction}
             sortBy={sortBy}
@@ -155,6 +160,11 @@ export function OrdersTab() {
             }}
             order={dispatchingOrder}
             pending={dispatchOrder.isPending}
+          />
+
+          <OrderDetailDialog
+            onClose={() => setViewingOrderId(null)}
+            orderId={viewingOrderId}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -8,12 +8,14 @@ import { OrderCancelledEmail } from '~/server/email/templates/order-cancelled'
 import { OrderDispatchedEmail } from '~/server/email/templates/order-dispatched'
 import { OrderPlacedEmail } from '~/server/email/templates/order-placed'
 import { PaymentConfirmedEmail } from '~/server/email/templates/payment-confirmed'
+import { PaymentFailedEmail } from '~/server/email/templates/payment-failed'
 import { NewPaidOrderEmail } from '~/server/email/templates/new-paid-order'
 import { getResendClient } from '~/server/email/resend'
 import { isQstashConfigured, publishQstashJson } from '~/server/queue/qstash'
 
 export const EMAIL_DELIVERY_PATH = '/api/qstash/email/deliver'
 const RECOVERY_BATCH_SIZE = 50
+export const MAX_EMAIL_DELIVERY_ATTEMPTS = 5
 
 type EmailNotificationDb = Pick<PrismaClient, 'emailNotification'>
 
@@ -30,21 +32,24 @@ function appBaseUrl() {
   return `http://localhost:${process.env.PORT ?? 3000}`
 }
 
-export async function publishEmailNotification(id: string) {
+export async function publishEmailNotification(id: string, generation = 0) {
   if (!isQstashConfigured()) return false
 
   await publishQstashJson({
     path: EMAIL_DELIVERY_PATH,
     body: { emailNotificationId: id },
-    deduplicationId: id,
+    deduplicationId: `${id}:${generation}`,
     retries: 5
   })
   return true
 }
 
-export async function publishEmailNotificationSafely(id: string) {
+export async function publishEmailNotificationSafely(
+  id: string,
+  generation = 0
+) {
   try {
-    return await publishEmailNotification(id)
+    return await publishEmailNotification(id, generation)
   } catch (error) {
     console.error('Failed to publish Email Notification.', { id, error })
     return false
@@ -68,7 +73,14 @@ export async function deliverEmailNotification(
     }
   })
 
-  if (!notification || notification.status === 'SENT') return notification
+  if (
+    !notification ||
+    notification.status === 'SENT' ||
+    notification.status === 'DELIVERED' ||
+    notification.status === 'FAILED'
+  ) {
+    return notification
+  }
 
   const order = notification.order
   const token = notification.accessExpiresAt
@@ -111,6 +123,12 @@ export async function deliverEmailNotification(
           })),
           total: formatMoney(order.totalCents, order.currencyCode)
         })
+      case 'PAYMENT_FAILED':
+        return PaymentFailedEmail({
+          customerFirstName: order.customerFirstName,
+          orderNumber: order.orderNumber,
+          orderUrl: url.toString()
+        })
       case 'NEW_PAID_ORDER':
         return NewPaidOrderEmail({
           orderNumber: order.orderNumber,
@@ -137,6 +155,7 @@ export async function deliverEmailNotification(
   const subject = {
     ORDER_PLACED: `Ihre Bestellung ${order.orderNumber} wurde aufgegeben`,
     ORDER_PAYMENT_CONFIRMED: `Zahlung für Bestellung ${order.orderNumber} bestätigt`,
+    PAYMENT_FAILED: `Zahlung für Bestellung ${order.orderNumber} nicht abgeschlossen`,
     NEW_PAID_ORDER: `Neue bezahlte Bestellung ${order.orderNumber}`,
     ORDER_CANCELLED: `Ihre Bestellung ${order.orderNumber} wurde storniert`,
     ORDER_DISPATCHED: `Ihre Bestellung ${order.orderNumber} wurde versendet`
@@ -156,26 +175,69 @@ export async function deliverEmailNotification(
         html,
         text
       },
-      { idempotencyKey: notification.id }
+      {
+        idempotencyKey: `${notification.id}:${notification.deliveryGeneration}`
+      }
     )
 
     if (result.error) throw new Error(result.error.message)
+
+    const sentAt = new Date()
+    const providerId = result.data?.id
 
     return db.emailNotification.update({
       where: { id },
       data: {
         status: 'SENT',
-        providerId: result.data?.id,
-        sentAt: new Date(),
-        lastAttemptAt: new Date(),
+        providerId,
+        sentAt,
+        failedAt: null,
+        lastAttemptAt: sentAt,
         attemptCount: { increment: 1 },
-        lastError: null
+        lastError: null,
+        ...(providerId
+          ? {
+              deliveryAttempts: {
+                upsert: {
+                  where: {
+                    emailNotificationId_generation: {
+                      emailNotificationId: id,
+                      generation: notification.deliveryGeneration
+                    }
+                  },
+                  create: {
+                    generation: notification.deliveryGeneration,
+                    providerId,
+                    status: 'SENT',
+                    sentAt
+                  },
+                  update: {
+                    providerId,
+                    status: 'SENT',
+                    sentAt,
+                    deliveredAt: null,
+                    failedAt: null,
+                    lastError: null,
+                    lastProviderEventAt: null
+                  }
+                }
+              }
+            }
+          : {})
       }
     })
   } catch (error) {
     await db.emailNotification.update({
       where: { id },
       data: {
+        status:
+          notification.attemptCount + 1 >= MAX_EMAIL_DELIVERY_ATTEMPTS
+            ? 'FAILED'
+            : 'PENDING',
+        failedAt:
+          notification.attemptCount + 1 >= MAX_EMAIL_DELIVERY_ATTEMPTS
+            ? new Date()
+            : null,
         lastAttemptAt: new Date(),
         attemptCount: { increment: 1 },
         lastError: error instanceof Error ? error.message : 'Unknown error'
@@ -183,6 +245,35 @@ export async function deliverEmailNotification(
     })
     throw error
   }
+}
+
+export async function retryFailedEmailNotification(
+  db: EmailNotificationDb,
+  id: string
+) {
+  const result = await db.emailNotification.updateMany({
+    where: { id, status: 'FAILED' },
+    data: {
+      status: 'PENDING',
+      deliveryGeneration: { increment: 1 },
+      providerId: null,
+      failedAt: null,
+      lastProviderEventAt: null,
+      lastError: null,
+      lastAttemptAt: null
+    }
+  })
+
+  if (result.count === 0) return false
+
+  const notification = await db.emailNotification.findUnique({
+    where: { id },
+    select: { deliveryGeneration: true }
+  })
+  if (!notification) return false
+
+  await publishEmailNotificationSafely(id, notification.deliveryGeneration)
+  return true
 }
 
 export async function recoverPendingEmailNotifications(
@@ -200,11 +291,13 @@ export async function recoverPendingEmailNotifications(
     },
     orderBy: { createdAt: 'asc' },
     take: RECOVERY_BATCH_SIZE,
-    select: { id: true }
+    select: { id: true, deliveryGeneration: true }
   })
 
   const results = await Promise.all(
-    pending.map(({ id }) => publishEmailNotificationSafely(id))
+    pending.map(({ id, deliveryGeneration }) =>
+      publishEmailNotificationSafely(id, deliveryGeneration)
+    )
   )
   return results.filter(Boolean).length
 }

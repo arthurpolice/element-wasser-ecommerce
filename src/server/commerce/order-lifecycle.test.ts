@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 import type {
   FulfillmentStatus,
@@ -24,6 +24,10 @@ import { firstMockCall } from '~/test/mock-calls'
 
 const now = new Date('2026-05-15T10:00:00Z')
 
+beforeEach(() => {
+  publishEmailNotificationSafelyMock.mockReset()
+})
+
 type MockOrder = {
   id: string
   orderNumber: string
@@ -33,6 +37,10 @@ type MockOrder = {
   status: OrderStatus
   paymentStatus: OrderPaymentStatus
   fulfillmentStatus: FulfillmentStatus
+  dispatchCarrier: 'SWISS_POST' | null
+  trackingNumber: string | null
+  dispatchedAt: Date | null
+  completedAt: Date | null
   paymentExpiresAt: Date
   lines: Array<{ productId: string; quantity: number }>
   payments?: Array<{
@@ -102,6 +110,10 @@ function createOrder(overrides: Partial<MockOrder> = {}): MockOrder {
     status: 'PLACED',
     paymentStatus: 'PENDING',
     fulfillmentStatus: 'UNFULFILLED',
+    dispatchCarrier: null,
+    trackingNumber: null,
+    dispatchedAt: null,
+    completedAt: null,
     paymentExpiresAt: new Date('2026-05-15T09:59:00Z'),
     lines: [{ productId: 'product-1', quantity: 2 }],
     ...overrides
@@ -245,11 +257,42 @@ describe('cancelOrder', () => {
       code: 'ORDER_ALREADY_FULFILLED'
     } satisfies Partial<OrderLifecycleError>)
   })
+
+  it('rejects cancellation after Dispatch without releasing stock or emailing', async () => {
+    const db = createMockDb(
+      createOrder({
+        paymentStatus: 'PAID',
+        fulfillmentStatus: 'DISPATCHED',
+        dispatchCarrier: 'SWISS_POST',
+        trackingNumber: '99.123',
+        dispatchedAt: now
+      })
+    )
+
+    await expect(
+      cancelOrder(db as never, { orderId: 'order-1' }, { now: () => now })
+    ).rejects.toMatchObject({
+      code: 'ORDER_ALREADY_DISPATCHED'
+    } satisfies Partial<OrderLifecycleError>)
+
+    expect(db.product.update).not.toHaveBeenCalled()
+    expect(db.order.update).not.toHaveBeenCalled()
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
+  })
 })
 
 describe('fulfillOrder', () => {
-  it('marks a paid unfulfilled Order fulfilled and consumes reserved stock', async () => {
-    const db = createMockDb(createOrder({ paymentStatus: 'PAID' }))
+  it('completes Fulfillment for a dispatched Order while preserving Dispatch details', async () => {
+    const dispatchedAt = new Date('2026-05-14T10:00:00Z')
+    const db = createMockDb(
+      createOrder({
+        paymentStatus: 'PAID',
+        fulfillmentStatus: 'DISPATCHED',
+        dispatchCarrier: 'SWISS_POST',
+        trackingNumber: '99.123',
+        dispatchedAt
+      })
+    )
 
     await fulfillOrder(db as never, { orderId: 'order-1' }, { now: () => now })
 
@@ -270,16 +313,34 @@ describe('fulfillOrder', () => {
       }
     })
     expect(orderUpdateArgs.include).toBeDefined()
+    expect(orderUpdateArgs.data).not.toHaveProperty('dispatchCarrier')
+    expect(orderUpdateArgs.data).not.toHaveProperty('trackingNumber')
+    expect(orderUpdateArgs.data).not.toHaveProperty('dispatchedAt')
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
   })
 
   it('rejects pending-payment Orders', async () => {
-    const db = createMockDb()
+    const db = createMockDb(createOrder({ fulfillmentStatus: 'DISPATCHED' }))
 
     await expect(
       fulfillOrder(db as never, { orderId: 'order-1' }, { now: () => now })
     ).rejects.toMatchObject({
       code: 'ORDER_PAYMENT_NOT_PAID'
     } satisfies Partial<OrderLifecycleError>)
+  })
+
+  it('rejects Fulfillment Completion before Dispatch', async () => {
+    const db = createMockDb(createOrder({ paymentStatus: 'PAID' }))
+
+    await expect(
+      fulfillOrder(db as never, { orderId: 'order-1' }, { now: () => now })
+    ).rejects.toMatchObject({
+      code: 'ORDER_NOT_DISPATCHED'
+    } satisfies Partial<OrderLifecycleError>)
+
+    expect(db.product.update).not.toHaveBeenCalled()
+    expect(db.order.update).not.toHaveBeenCalled()
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
   })
 
   it('does not consume stock again for an already-fulfilled Order', async () => {
@@ -295,6 +356,7 @@ describe('fulfillOrder', () => {
 
     expect(db.product.update).not.toHaveBeenCalled()
     expect(db.order.update).not.toHaveBeenCalled()
+    expect(db.emailNotification.upsert).not.toHaveBeenCalled()
   })
 })
 
@@ -341,6 +403,30 @@ describe('dispatchOrder', () => {
     await expect(
       dispatchOrder(db as never, { orderId: 'order-1' })
     ).rejects.toMatchObject({ code: 'ORDER_PAYMENT_NOT_PAID' })
+  })
+})
+
+describe('Dispatch to Fulfillment Completion sequence', () => {
+  it('moves UNFULFILLED to DISPATCHED to FULFILLED with one Dispatch email only', async () => {
+    const order = createOrder({ paymentStatus: 'PAID' })
+    const db = createMockDb(order)
+    const dispatchedAt = new Date('2026-05-15T09:00:00Z')
+
+    await dispatchOrder(
+      db as never,
+      { orderId: order.id, trackingNumber: '99.123' },
+      { now: () => dispatchedAt }
+    )
+    await fulfillOrder(db as never, { orderId: order.id }, { now: () => now })
+
+    expect(order.status).toBe('COMPLETED')
+    expect(order.fulfillmentStatus).toBe('FULFILLED')
+    expect(order.completedAt).toEqual(now)
+    expect(order.dispatchCarrier).toBe('SWISS_POST')
+    expect(order.trackingNumber).toBe('99.123')
+    expect(order.dispatchedAt).toEqual(dispatchedAt)
+    expect(db.emailNotification.upsert).toHaveBeenCalledTimes(1)
+    expect(publishEmailNotificationSafelyMock).toHaveBeenCalledTimes(1)
   })
 })
 

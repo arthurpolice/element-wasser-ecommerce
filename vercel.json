@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/payments/expire",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/email/webhooks/cleanup",
+      "schedule": "0 3 * * *"
     }
   ]
 }

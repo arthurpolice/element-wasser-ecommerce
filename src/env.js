@@ -69,6 +69,10 @@ export const env = createEnv({
       process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
+    RESEND_WEBHOOK_SECRET:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
     EMAIL_FROM:
       process.env.NODE_ENV === 'production'
         ? z.string().email()
@@ -121,6 +125,7 @@ export const env = createEnv({
     CRON_SECRET: process.env.CRON_SECRET,
     ORDER_ACCESS_SECRET: process.env.ORDER_ACCESS_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_WEBHOOK_SECRET: process.env.RESEND_WEBHOOK_SECRET,
     EMAIL_FROM: process.env.EMAIL_FROM,
     EMAIL_REPLY_TO: process.env.EMAIL_REPLY_TO,
     EMAIL_INTERNAL_RECIPIENT: process.env.EMAIL_INTERNAL_RECIPIENT,
