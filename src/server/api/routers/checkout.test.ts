@@ -134,6 +134,7 @@ type MockDb = {
     upsert: Mock<() => Promise<{ nextNumber: number }>>
   }
   order: {
+    count: Mock<(args: MockRecord) => Promise<number>>
     create: Mock<(args: { data: MockRecord }) => Promise<MockRecord>>
     findUnique: Mock<(args: MockRecord) => Promise<MockRecord | null>>
     findUniqueOrThrow: Mock<(args: MockRecord) => Promise<MockRecord>>
@@ -202,6 +203,7 @@ function createMockDb(): MockDb {
       upsert: vi.fn(async () => ({ nextNumber: 2 }))
     },
     order: {
+      count: vi.fn(async () => 0),
       findUnique: vi.fn(async () => null),
       findUniqueOrThrow: vi.fn(async () => {
         const order = await db.order.findFirst({})
@@ -757,6 +759,29 @@ describe('checkout router', () => {
     expect(result.checkoutUrl).toBe(
       'https://checkout.stripe.com/c/pay/cs_test_123'
     )
+  })
+
+  it('rate limits Guest Checkout before creating a Customer or reserving stock', async () => {
+    db.order.count = vi.fn(async () => 5)
+    const caller = createPublicCaller(db)
+
+    await expect(
+      caller.placeGuestOrder({
+        lines: [{ productId: filter.id, quantity: 1 }],
+        email: 'guest@example.com',
+        paymentMethod: 'CARD',
+        locale: 'en',
+        firstName: 'Guest',
+        lastName: 'River',
+        streetLine1: 'Springstrasse 1',
+        postalCode: '8000',
+        city: 'Zurich',
+        countryCode: 'ch'
+      })
+    ).rejects.toMatchObject({ code: 'TOO_MANY_REQUESTS' })
+
+    expect(db.customer.create).not.toHaveBeenCalled()
+    expect(db.product.updateMany).not.toHaveBeenCalled()
   })
 
   it('retries payment for the same open unexpired Order with a new Stripe-backed Payment', async () => {

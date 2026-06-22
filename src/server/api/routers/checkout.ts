@@ -23,6 +23,7 @@ import {
   CheckoutPaymentError,
   retryCheckoutPayment
 } from '~/server/commerce/checkout-payment'
+import { guestCheckoutFingerprint } from '~/server/commerce/guest-checkout-abuse'
 import {
   normalizeOrderQuoteLines,
   quoteOrderLines,
@@ -181,6 +182,11 @@ function toCheckoutPaymentTrpcError(error: CheckoutPaymentError): TRPCError {
     case 'PENDING_PAYMENT_NOT_FOUND':
       return new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
+        message: error.message
+      })
+    case 'GUEST_CHECKOUT_RATE_LIMITED':
+      return new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
         message: error.message
       })
   }
@@ -534,7 +540,8 @@ export const checkoutRouter = createTRPCRouter({
           },
           order: toGuestOrderInput(input),
           locale: input.locale,
-          checkoutSubmissionId: input.checkoutSubmissionId
+          checkoutSubmissionId: input.checkoutSubmissionId,
+          guestCheckoutFingerprint: guestCheckoutFingerprint(ctx.headers)
         })
       } catch (error) {
         if (error instanceof OrderPlacementError) {

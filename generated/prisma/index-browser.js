@@ -304,6 +304,7 @@ exports.Prisma.OrderScalarFieldEnum = {
   paymentExpiryStartedAt: 'paymentExpiryStartedAt',
   checkoutSubmissionId: 'checkoutSubmissionId',
   checkoutSubmissionFingerprint: 'checkoutSubmissionFingerprint',
+  guestCheckoutFingerprint: 'guestCheckoutFingerprint',
   paymentExceptionAt: 'paymentExceptionAt',
   paymentExceptionReason: 'paymentExceptionReason',
   subtotalCents: 'subtotalCents',

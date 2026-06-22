@@ -75,6 +75,7 @@ export type PlaceOrderInput = {
   origin?: 'STOREFRONT' | 'OWNER_DASHBOARD'
   checkoutSubmissionId?: string
   checkoutSubmissionFingerprint?: string
+  guestCheckoutFingerprint?: string
 }
 
 export type PlaceOrderLineInput = {
@@ -271,8 +272,8 @@ export function buildPendingPayment(
   }
 }
 
-export async function placeOrder(
-  db: Pick<PrismaClient, '$transaction'>,
+export async function placeOrderInTransaction(
+  tx: Prisma.TransactionClient,
   input: PlaceOrderInput,
   deps: OrderPlacementDeps = {}
 ): Promise<OrderListRow> {
@@ -282,145 +283,132 @@ export async function placeOrder(
     PROVISIONAL_PAYMENT_RESERVATION_MINUTES
   )
 
-  return db.$transaction(
-    async (tx) => {
-      const requestedLines = normalizeOrderLines(input)
-      const customer = await tx.customer.findUnique({
-        where: { id: input.customerId }
-      })
+  const requestedLines = normalizeOrderLines(input)
+  const customer = await tx.customer.findUnique({
+    where: { id: input.customerId }
+  })
 
-      if (!customer) {
-        throw new OrderPlacementError(
-          'CUSTOMER_NOT_FOUND',
-          'Customer not found.'
-        )
+  if (!customer) {
+    throw new OrderPlacementError('CUSTOMER_NOT_FOUND', 'Customer not found.')
+  }
+
+  const products = await tx.product.findMany({
+    where: { id: { in: requestedLines.map((line) => line.productId) } }
+  })
+  const quote = quoteOrderLines(products, requestedLines, input.shippingCents)
+  const firstProblem = quote.problems[0]
+
+  if (firstProblem) {
+    throw toOrderPlacementError(firstProblem.code)
+  }
+
+  for (const quotedLine of quote.lines) {
+    const product = quotedLine.product
+
+    if (!product) {
+      throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
+    }
+
+    const reservation = await tx.product.updateMany({
+      where: {
+        id: product.id,
+        stockOnHand: { gte: quotedLine.quantity },
+        stockReserved: { lte: product.stockOnHand - quotedLine.quantity }
+      },
+      data: {
+        stockReserved: { increment: quotedLine.quantity }
       }
+    })
 
-      const products = await tx.product.findMany({
-        where: { id: { in: requestedLines.map((line) => line.productId) } }
-      })
-      const quote = quoteOrderLines(
-        products,
-        requestedLines,
-        input.shippingCents
+    if (reservation.count !== 1) {
+      throw new OrderPlacementError(
+        'INSUFFICIENT_STOCK',
+        'Insufficient stock available.'
       )
-      const firstProblem = quote.problems[0]
+    }
+  }
 
-      if (firstProblem) {
-        throw toOrderPlacementError(firstProblem.code)
-      }
+  const orderNumber = await allocateOrderNumber(tx, now)
+  const shippingSnapshot = await resolveShippingSnapshot(tx, input, customer.id)
+  const orderLines = quote.lines.map((line) => {
+    const product = line.product
 
-      for (const quotedLine of quote.lines) {
-        const product = quotedLine.product
+    if (!product) {
+      throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
+    }
 
-        if (!product) {
-          throw new OrderPlacementError(
-            'PRODUCT_NOT_FOUND',
-            'Product not found.'
-          )
-        }
+    return buildOrderLineSnapshot(product, line.quantity)
+  })
+  const totals = {
+    subtotalCents: quote.subtotalCents,
+    discountCents: quote.discountCents,
+    totalCents: quote.totalCents
+  }
+  const snapshotCountryCode = shippingSnapshot.countryCode.toUpperCase()
+  const pendingPayment = input.paymentMethod
+    ? buildPendingPayment(input.paymentMethod, totals.totalCents)
+    : undefined
 
-        const reservation = await tx.product.updateMany({
-          where: {
-            id: product.id,
-            stockOnHand: { gte: quotedLine.quantity },
-            stockReserved: { lte: product.stockOnHand - quotedLine.quantity }
-          },
-          data: {
-            stockReserved: { increment: quotedLine.quantity }
+  return tx.order.create({
+    data: {
+      orderNumber,
+      customerId: customer.id,
+      customerSalutation: customer.salutation,
+      customerFirstName: customer.firstName,
+      customerLastName: customer.lastName,
+      customerEmail: customer.email,
+      origin: input.origin ?? 'OWNER_DASHBOARD',
+      checkoutSubmissionId: input.checkoutSubmissionId,
+      checkoutSubmissionFingerprint: input.checkoutSubmissionFingerprint,
+      guestCheckoutFingerprint: input.guestCheckoutFingerprint,
+      paymentExpiresAt,
+      subtotalCents: totals.subtotalCents,
+      shippingCents: input.shippingCents,
+      discountCents: totals.discountCents,
+      totalCents: totals.totalCents,
+      currencyCode: 'CHF',
+      shippingSalutation: shippingSnapshot.salutation,
+      shippingFirstName: shippingSnapshot.firstName,
+      shippingLastName: shippingSnapshot.lastName,
+      shippingCompany: shippingSnapshot.company,
+      shippingStreetLine1: shippingSnapshot.streetLine1,
+      shippingStreetLine2: shippingSnapshot.streetLine2,
+      shippingPostalCode: shippingSnapshot.postalCode,
+      shippingCity: shippingSnapshot.city,
+      shippingCountryCode: snapshotCountryCode,
+      shippingPhone: shippingSnapshot.phone,
+      billingSameAsShipping: true,
+      billingSalutation: shippingSnapshot.salutation,
+      billingFirstName: shippingSnapshot.firstName,
+      billingLastName: shippingSnapshot.lastName,
+      billingCompany: shippingSnapshot.company,
+      billingStreetLine1: shippingSnapshot.streetLine1,
+      billingStreetLine2: shippingSnapshot.streetLine2,
+      billingPostalCode: shippingSnapshot.postalCode,
+      billingCity: shippingSnapshot.city,
+      billingCountryCode: snapshotCountryCode,
+      billingPhone: shippingSnapshot.phone,
+      lines: {
+        create: orderLines
+      },
+      ...(pendingPayment
+        ? {
+            payments: {
+              create: pendingPayment
+            }
           }
-        })
-
-        if (reservation.count !== 1) {
-          throw new OrderPlacementError(
-            'INSUFFICIENT_STOCK',
-            'Insufficient stock available.'
-          )
-        }
-      }
-
-      const orderNumber = await allocateOrderNumber(tx, now)
-      const shippingSnapshot = await resolveShippingSnapshot(
-        tx,
-        input,
-        customer.id
-      )
-      const orderLines = quote.lines.map((line) => {
-        const product = line.product
-
-        if (!product) {
-          throw new OrderPlacementError(
-            'PRODUCT_NOT_FOUND',
-            'Product not found.'
-          )
-        }
-
-        return buildOrderLineSnapshot(product, line.quantity)
-      })
-      const totals = {
-        subtotalCents: quote.subtotalCents,
-        discountCents: quote.discountCents,
-        totalCents: quote.totalCents
-      }
-      const snapshotCountryCode = shippingSnapshot.countryCode.toUpperCase()
-      const pendingPayment = input.paymentMethod
-        ? buildPendingPayment(input.paymentMethod, totals.totalCents)
-        : undefined
-
-      const created = await tx.order.create({
-        data: {
-          orderNumber,
-          customerId: customer.id,
-          customerSalutation: customer.salutation,
-          customerFirstName: customer.firstName,
-          customerLastName: customer.lastName,
-          customerEmail: customer.email,
-          origin: input.origin ?? 'OWNER_DASHBOARD',
-          checkoutSubmissionId: input.checkoutSubmissionId,
-          checkoutSubmissionFingerprint: input.checkoutSubmissionFingerprint,
-          paymentExpiresAt,
-          subtotalCents: totals.subtotalCents,
-          shippingCents: input.shippingCents,
-          discountCents: totals.discountCents,
-          totalCents: totals.totalCents,
-          currencyCode: 'CHF',
-          shippingSalutation: shippingSnapshot.salutation,
-          shippingFirstName: shippingSnapshot.firstName,
-          shippingLastName: shippingSnapshot.lastName,
-          shippingCompany: shippingSnapshot.company,
-          shippingStreetLine1: shippingSnapshot.streetLine1,
-          shippingStreetLine2: shippingSnapshot.streetLine2,
-          shippingPostalCode: shippingSnapshot.postalCode,
-          shippingCity: shippingSnapshot.city,
-          shippingCountryCode: snapshotCountryCode,
-          shippingPhone: shippingSnapshot.phone,
-          billingSameAsShipping: true,
-          billingSalutation: shippingSnapshot.salutation,
-          billingFirstName: shippingSnapshot.firstName,
-          billingLastName: shippingSnapshot.lastName,
-          billingCompany: shippingSnapshot.company,
-          billingStreetLine1: shippingSnapshot.streetLine1,
-          billingStreetLine2: shippingSnapshot.streetLine2,
-          billingPostalCode: shippingSnapshot.postalCode,
-          billingCity: shippingSnapshot.city,
-          billingCountryCode: snapshotCountryCode,
-          billingPhone: shippingSnapshot.phone,
-          lines: {
-            create: orderLines
-          },
-          ...(pendingPayment
-            ? {
-                payments: {
-                  create: pendingPayment
-                }
-              }
-            : {})
-        },
-        include: orderListInclude
-      })
-
-      return created
+        : {})
     },
-    { timeout: 10000 }
-  )
+    include: orderListInclude
+  })
+}
+
+export async function placeOrder(
+  db: Pick<PrismaClient, '$transaction'>,
+  input: PlaceOrderInput,
+  deps: OrderPlacementDeps = {}
+): Promise<OrderListRow> {
+  return db.$transaction((tx) => placeOrderInTransaction(tx, input, deps), {
+    timeout: 10000
+  })
 }

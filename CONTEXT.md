@@ -232,6 +232,10 @@ _Avoid_: Order count
 The CHF cent amount charged for an order, broken down into subtotal, shipping, discount, and final total.
 _Avoid_: Total price
 
+**Customer Non-cancelled Order Value**:
+The sum of Order Totals across a Customer's Orders whose Order Lifecycle Status is not cancelled. It describes retained Order value and does not imply that every included Order has been paid.
+_Avoid_: Total spent, customer revenue
+
 **Shipping Charge**:
 The flat CHF cent amount charged for shipping and stored on the order as a checkout snapshot.
 _Avoid_: Shipping rule

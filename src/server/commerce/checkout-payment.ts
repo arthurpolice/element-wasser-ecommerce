@@ -5,6 +5,7 @@ import {
   buildPendingPayment,
   orderListInclude,
   placeOrder,
+  placeOrderInTransaction,
   type CheckoutPaymentMethod,
   type OrderListRow,
   type PlaceOrderInput
@@ -16,6 +17,7 @@ import {
 } from '~/server/commerce/order-access-token'
 import { publishEmailNotificationSafely } from '~/server/commerce/email-notifications'
 import { orderEmailNotificationKey } from '~/server/commerce/email-notification-key'
+import { MAX_OPEN_GUEST_ORDERS_PER_FINGERPRINT } from '~/server/commerce/guest-checkout-abuse'
 import { projectOrderPaymentStatus } from '~/server/commerce/payment-outcome'
 import {
   expireStripeCheckoutSession,
@@ -53,6 +55,7 @@ export type CheckoutPaymentErrorCode =
   | 'ORDER_PAYMENT_NOT_RETRYABLE'
   | 'PENDING_PAYMENT_NOT_FOUND'
   | 'CHECKOUT_SUBMISSION_CONFLICT'
+  | 'GUEST_CHECKOUT_RATE_LIMITED'
 
 export class CheckoutPaymentError extends Error {
   constructor(
@@ -266,6 +269,7 @@ export async function beginGuestCheckoutPayment(
     order: Omit<PlaceOrderInput, 'customerId'>
     locale: CheckoutPaymentLocale
     checkoutSubmissionId: string
+    guestCheckoutFingerprint: string
   }
 ) {
   const normalized = normalizedSubmissionInput({
@@ -290,16 +294,55 @@ export async function beginGuestCheckoutPayment(
     })
   }
 
-  const customer = await db.customer.create({
-    data: input.guestCustomer,
-    select: { id: true }
-  })
-  const placedOrder = await placeSubmittedOrder(
-    db,
-    { ...normalized, customerId: customer.id },
-    input.checkoutSubmissionId,
-    fingerprint
-  )
+  let placedOrder: OrderListRow
+  try {
+    placedOrder = await db.$transaction(
+      async (tx) => {
+        await tx.$queryRaw`
+          SELECT pg_advisory_xact_lock(
+            hashtextextended(${input.guestCheckoutFingerprint}, 0)
+          )
+        `
+        const openOrderCount = await tx.order.count({
+          where: {
+            guestCheckoutFingerprint: input.guestCheckoutFingerprint,
+            status: 'PLACED',
+            paymentStatus: { not: 'PAID' },
+            paymentExpiresAt: { gt: new Date() }
+          }
+        })
+        if (openOrderCount >= MAX_OPEN_GUEST_ORDERS_PER_FINGERPRINT) {
+          throw new CheckoutPaymentError(
+            'GUEST_CHECKOUT_RATE_LIMITED',
+            'Too many open Guest Orders. Complete or wait for an existing Order before trying again.'
+          )
+        }
+
+        const customer = await tx.customer.create({
+          data: input.guestCustomer,
+          select: { id: true }
+        })
+
+        return placeOrderInTransaction(tx, {
+          ...normalized,
+          customerId: customer.id,
+          checkoutSubmissionId: input.checkoutSubmissionId,
+          checkoutSubmissionFingerprint: fingerprint,
+          guestCheckoutFingerprint: input.guestCheckoutFingerprint
+        })
+      },
+      { timeout: 10000 }
+    )
+  } catch (error) {
+    if (!isPrismaErrorCode(error, 'P2002')) throw error
+    const submittedOrder = await findSubmittedOrder(
+      db,
+      input.checkoutSubmissionId,
+      fingerprint
+    )
+    if (!submittedOrder) throw error
+    placedOrder = submittedOrder
+  }
   const orderAccessToken = createOrderAccessToken(placedOrder.id)
 
   return startCheckoutForOrder({

@@ -20262,6 +20262,7 @@ export namespace Prisma {
     paymentExpiryStartedAt: Date | null
     checkoutSubmissionId: string | null
     checkoutSubmissionFingerprint: string | null
+    guestCheckoutFingerprint: string | null
     paymentExceptionAt: Date | null
     paymentExceptionReason: string | null
     subtotalCents: number | null
@@ -20316,6 +20317,7 @@ export namespace Prisma {
     paymentExpiryStartedAt: Date | null
     checkoutSubmissionId: string | null
     checkoutSubmissionFingerprint: string | null
+    guestCheckoutFingerprint: string | null
     paymentExceptionAt: Date | null
     paymentExceptionReason: string | null
     subtotalCents: number | null
@@ -20370,6 +20372,7 @@ export namespace Prisma {
     paymentExpiryStartedAt: number
     checkoutSubmissionId: number
     checkoutSubmissionFingerprint: number
+    guestCheckoutFingerprint: number
     paymentExceptionAt: number
     paymentExceptionReason: number
     subtotalCents: number
@@ -20440,6 +20443,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: true
     checkoutSubmissionId?: true
     checkoutSubmissionFingerprint?: true
+    guestCheckoutFingerprint?: true
     paymentExceptionAt?: true
     paymentExceptionReason?: true
     subtotalCents?: true
@@ -20494,6 +20498,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: true
     checkoutSubmissionId?: true
     checkoutSubmissionFingerprint?: true
+    guestCheckoutFingerprint?: true
     paymentExceptionAt?: true
     paymentExceptionReason?: true
     subtotalCents?: true
@@ -20548,6 +20553,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: true
     checkoutSubmissionId?: true
     checkoutSubmissionFingerprint?: true
+    guestCheckoutFingerprint?: true
     paymentExceptionAt?: true
     paymentExceptionReason?: true
     subtotalCents?: true
@@ -20689,6 +20695,7 @@ export namespace Prisma {
     paymentExpiryStartedAt: Date | null
     checkoutSubmissionId: string | null
     checkoutSubmissionFingerprint: string | null
+    guestCheckoutFingerprint: string | null
     paymentExceptionAt: Date | null
     paymentExceptionReason: string | null
     subtotalCents: number
@@ -20762,6 +20769,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: boolean
     checkoutSubmissionId?: boolean
     checkoutSubmissionFingerprint?: boolean
+    guestCheckoutFingerprint?: boolean
     paymentExceptionAt?: boolean
     paymentExceptionReason?: boolean
     subtotalCents?: boolean
@@ -20821,6 +20829,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: boolean
     checkoutSubmissionId?: boolean
     checkoutSubmissionFingerprint?: boolean
+    guestCheckoutFingerprint?: boolean
     paymentExceptionAt?: boolean
     paymentExceptionReason?: boolean
     subtotalCents?: boolean
@@ -20876,6 +20885,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: boolean
     checkoutSubmissionId?: boolean
     checkoutSubmissionFingerprint?: boolean
+    guestCheckoutFingerprint?: boolean
     paymentExceptionAt?: boolean
     paymentExceptionReason?: boolean
     subtotalCents?: boolean
@@ -20931,6 +20941,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: boolean
     checkoutSubmissionId?: boolean
     checkoutSubmissionFingerprint?: boolean
+    guestCheckoutFingerprint?: boolean
     paymentExceptionAt?: boolean
     paymentExceptionReason?: boolean
     subtotalCents?: boolean
@@ -20966,7 +20977,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "origin" | "dispatchCarrier" | "trackingNumber" | "dispatchedAt" | "paymentExpiresAt" | "paymentExpiryStartedAt" | "checkoutSubmissionId" | "checkoutSubmissionFingerprint" | "paymentExceptionAt" | "paymentExceptionReason" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+  export type OrderOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "origin" | "dispatchCarrier" | "trackingNumber" | "dispatchedAt" | "paymentExpiresAt" | "paymentExpiryStartedAt" | "checkoutSubmissionId" | "checkoutSubmissionFingerprint" | "guestCheckoutFingerprint" | "paymentExceptionAt" | "paymentExceptionReason" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
   export type OrderInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     customer?: boolean | CustomerDefaultArgs<ExtArgs>
     lines?: boolean | Order$linesArgs<ExtArgs>
@@ -21008,6 +21019,7 @@ export namespace Prisma {
       paymentExpiryStartedAt: Date | null
       checkoutSubmissionId: string | null
       checkoutSubmissionFingerprint: string | null
+      guestCheckoutFingerprint: string | null
       paymentExceptionAt: Date | null
       paymentExceptionReason: string | null
       subtotalCents: number
@@ -21486,6 +21498,7 @@ export namespace Prisma {
     readonly paymentExpiryStartedAt: FieldRef<"Order", 'DateTime'>
     readonly checkoutSubmissionId: FieldRef<"Order", 'String'>
     readonly checkoutSubmissionFingerprint: FieldRef<"Order", 'String'>
+    readonly guestCheckoutFingerprint: FieldRef<"Order", 'String'>
     readonly paymentExceptionAt: FieldRef<"Order", 'DateTime'>
     readonly paymentExceptionReason: FieldRef<"Order", 'String'>
     readonly subtotalCents: FieldRef<"Order", 'Int'>
@@ -30602,6 +30615,7 @@ export namespace Prisma {
     paymentExpiryStartedAt: 'paymentExpiryStartedAt',
     checkoutSubmissionId: 'checkoutSubmissionId',
     checkoutSubmissionFingerprint: 'checkoutSubmissionFingerprint',
+    guestCheckoutFingerprint: 'guestCheckoutFingerprint',
     paymentExceptionAt: 'paymentExceptionAt',
     paymentExceptionReason: 'paymentExceptionReason',
     subtotalCents: 'subtotalCents',
@@ -32219,6 +32233,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     checkoutSubmissionId?: StringNullableFilter<"Order"> | string | null
     checkoutSubmissionFingerprint?: StringNullableFilter<"Order"> | string | null
+    guestCheckoutFingerprint?: StringNullableFilter<"Order"> | string | null
     paymentExceptionAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExceptionReason?: StringNullableFilter<"Order"> | string | null
     subtotalCents?: IntFilter<"Order"> | number
@@ -32277,6 +32292,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: SortOrderInput | SortOrder
     checkoutSubmissionId?: SortOrderInput | SortOrder
     checkoutSubmissionFingerprint?: SortOrderInput | SortOrder
+    guestCheckoutFingerprint?: SortOrderInput | SortOrder
     paymentExceptionAt?: SortOrderInput | SortOrder
     paymentExceptionReason?: SortOrderInput | SortOrder
     subtotalCents?: SortOrder
@@ -32338,6 +32354,7 @@ export namespace Prisma {
     paymentExpiresAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExpiryStartedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     checkoutSubmissionFingerprint?: StringNullableFilter<"Order"> | string | null
+    guestCheckoutFingerprint?: StringNullableFilter<"Order"> | string | null
     paymentExceptionAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExceptionReason?: StringNullableFilter<"Order"> | string | null
     subtotalCents?: IntFilter<"Order"> | number
@@ -32396,6 +32413,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: SortOrderInput | SortOrder
     checkoutSubmissionId?: SortOrderInput | SortOrder
     checkoutSubmissionFingerprint?: SortOrderInput | SortOrder
+    guestCheckoutFingerprint?: SortOrderInput | SortOrder
     paymentExceptionAt?: SortOrderInput | SortOrder
     paymentExceptionReason?: SortOrderInput | SortOrder
     subtotalCents?: SortOrder
@@ -32458,6 +32476,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
     checkoutSubmissionId?: StringNullableWithAggregatesFilter<"Order"> | string | null
     checkoutSubmissionFingerprint?: StringNullableWithAggregatesFilter<"Order"> | string | null
+    guestCheckoutFingerprint?: StringNullableWithAggregatesFilter<"Order"> | string | null
     paymentExceptionAt?: DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
     paymentExceptionReason?: StringNullableWithAggregatesFilter<"Order"> | string | null
     subtotalCents?: IntWithAggregatesFilter<"Order"> | number
@@ -34339,6 +34358,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -34397,6 +34417,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -34453,6 +34474,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -34511,6 +34533,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -34568,6 +34591,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -34621,6 +34645,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -34675,6 +34700,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -36504,6 +36530,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: SortOrder
     checkoutSubmissionId?: SortOrder
     checkoutSubmissionFingerprint?: SortOrder
+    guestCheckoutFingerprint?: SortOrder
     paymentExceptionAt?: SortOrder
     paymentExceptionReason?: SortOrder
     subtotalCents?: SortOrder
@@ -36565,6 +36592,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: SortOrder
     checkoutSubmissionId?: SortOrder
     checkoutSubmissionFingerprint?: SortOrder
+    guestCheckoutFingerprint?: SortOrder
     paymentExceptionAt?: SortOrder
     paymentExceptionReason?: SortOrder
     subtotalCents?: SortOrder
@@ -36619,6 +36647,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: SortOrder
     checkoutSubmissionId?: SortOrder
     checkoutSubmissionFingerprint?: SortOrder
+    guestCheckoutFingerprint?: SortOrder
     paymentExceptionAt?: SortOrder
     paymentExceptionReason?: SortOrder
     subtotalCents?: SortOrder
@@ -39576,6 +39605,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -39632,6 +39662,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -39830,6 +39861,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     checkoutSubmissionId?: StringNullableFilter<"Order"> | string | null
     checkoutSubmissionFingerprint?: StringNullableFilter<"Order"> | string | null
+    guestCheckoutFingerprint?: StringNullableFilter<"Order"> | string | null
     paymentExceptionAt?: DateTimeNullableFilter<"Order"> | Date | string | null
     paymentExceptionReason?: StringNullableFilter<"Order"> | string | null
     subtotalCents?: IntFilter<"Order"> | number
@@ -41266,6 +41298,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -41323,6 +41356,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -41469,6 +41503,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -41526,6 +41561,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -41762,6 +41798,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -41819,6 +41856,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -41999,6 +42037,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -42056,6 +42095,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -42238,6 +42278,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -42295,6 +42336,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -42420,6 +42462,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -42477,6 +42520,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -43041,6 +43085,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: Date | string | null
     checkoutSubmissionId?: string | null
     checkoutSubmissionFingerprint?: string | null
+    guestCheckoutFingerprint?: string | null
     paymentExceptionAt?: Date | string | null
     paymentExceptionReason?: string | null
     subtotalCents: number
@@ -43158,6 +43203,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -43214,6 +43260,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number
@@ -43270,6 +43317,7 @@ export namespace Prisma {
     paymentExpiryStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     checkoutSubmissionId?: NullableStringFieldUpdateOperationsInput | string | null
     checkoutSubmissionFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
+    guestCheckoutFingerprint?: NullableStringFieldUpdateOperationsInput | string | null
     paymentExceptionAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     paymentExceptionReason?: NullableStringFieldUpdateOperationsInput | string | null
     subtotalCents?: IntFieldUpdateOperationsInput | number

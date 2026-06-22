@@ -24,7 +24,9 @@ Files reviewed: `src/server/commerce/order-placement.ts`, `order-lifecycle.ts`,
 const firstPaidTransition = payment.order.paymentStatus !== 'PAID'
 
 if (payment.status !== 'CAPTURED') {
-  await tx.payment.update({ /* ... */ })
+  await tx.payment.update({
+    /* ... */
+  })
 }
 
 if (firstPaidTransition) {
@@ -86,7 +88,7 @@ auto-refund Payments captured after the Order is already PAID.
 
 `beginCheckoutPayment` commits the Order (reserving stock, creating the PENDING
 Payment) in one transaction, then `startCheckoutForOrder` starts Stripe and opens a
-*second* transaction for the session-id write-back.
+_second_ transaction for the session-id write-back.
 
 ```ts
 // src/server/commerce/checkout-payment.ts:144
@@ -108,7 +110,7 @@ and silently consumes Available Stock. Needs a test and an explicit recovery sto
 
 ### H2 · Guest checkout creates an orphan Customer on any placement failure
 
-`beginGuestCheckoutPayment` creates the guest Customer *before* and *outside* the
+`beginGuestCheckoutPayment` creates the guest Customer _before_ and _outside_ the
 placement transaction.
 
 ```ts
@@ -151,6 +153,11 @@ Available Stock on any Product by repeatedly placing guest Orders it never pays
 
 ### H4 · Confirmation/retry emails always link to the German page
 
+**Disposition (2026-06-21): accepted by design.** Transactional emails are
+German-only; the English storefront route exists for development and interface
+testing rather than as a supported Customer communication language. See
+ADR-0012.
+
 `deliverEmailNotification` hardcodes the `/de/` locale in every Order email URL;
 locale is never persisted on the notification.
 
@@ -170,6 +177,13 @@ confirmation/dispatch/cancellation links. Persist the Order locale and use it he
 
 ### M1 · Email delivery has a check-then-act window
 
+**Disposition (2026-06-21): resolved.** Delivery now conditionally claims a
+five-minute database lease before rendering or calling Resend. Concurrent
+workers that lose the claim return without sending; explicit provider failures
+release the lease immediately, while a crashed worker becomes retryable after
+the lease expires. Resend's generation-based idempotency key remains a second
+line of defense.
+
 `deliverEmailNotification` reads `status === 'SENT'` then sends; two concurrent
 deliveries (QStash retry + the recovery cron) can both pass the guard.
 
@@ -184,6 +198,11 @@ if the provider changes, duplicates resurface. A conditional `updateMany` to cla
 row before sending would close the window.
 
 ### M2 · Cron authorization is not constant-time
+
+**Disposition (2026-06-21): resolved.** All cron routes now use one shared
+authorization helper that hashes the received and expected bearer values to
+fixed-length SHA-256 digests before comparing them with `timingSafeEqual`.
+Missing configuration fails closed.
 
 Both cron routes compare the bearer token with `===`.
 
@@ -213,7 +232,7 @@ const expiredOrders = await tx.order.findMany({
     paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
     fulfillmentStatus: 'UNFULFILLED',
     paymentExpiresAt: { lte: cancelledAt }
-  },
+  }
   /* ... */
 })
 ```
@@ -236,8 +255,14 @@ Stripe before cancelling.
   retry double-session (C2), Stripe-failure mid-checkout (H1), guest orphan-on-failure
   (H2), and the Stripe webhook route handler itself (signature handling + the
   500-triggers-retry behavior). The pure `order-quote.ts` and status-only
-  `payment-outcome.test.ts` are well covered; the gaps are all in the *coordination*
+  `payment-outcome.test.ts` are well covered; the gaps are all in the _coordination_
   between payment outcome, stock, and Order lifecycle.
+
+  **Disposition (2026-06-21): partially resolved.** Regression coverage now
+  exists for capture-after-cancellation, Payment Attempt Replacement ordering
+  and fail-closed Stripe expiration, resumable Checkout Session creation after
+  provider failure, and Guest Customer rollback on placement failure. The
+  Stripe webhook route handler remains uncovered.
 
 ---
 

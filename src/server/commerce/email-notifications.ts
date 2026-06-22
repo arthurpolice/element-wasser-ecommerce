@@ -16,6 +16,7 @@ import { isQstashConfigured, publishQstashJson } from '~/server/queue/qstash'
 export const EMAIL_DELIVERY_PATH = '/api/qstash/email/deliver'
 const RECOVERY_BATCH_SIZE = 50
 export const MAX_EMAIL_DELIVERY_ATTEMPTS = 5
+export const EMAIL_DELIVERY_LEASE_MS = 5 * 60 * 1000
 
 type EmailNotificationDb = Pick<PrismaClient, 'emailNotification'>
 
@@ -59,7 +60,10 @@ export async function publishEmailNotificationSafely(
 export async function deliverEmailNotification(
   db: EmailNotificationDb,
   id: string,
-  deps: { resend?: ReturnType<typeof getResendClient> } = {}
+  deps: {
+    resend?: ReturnType<typeof getResendClient>
+    now?: () => Date
+  } = {}
 ) {
   const notification = await db.emailNotification.findUnique({
     where: { id },
@@ -81,6 +85,24 @@ export async function deliverEmailNotification(
   ) {
     return notification
   }
+
+  const claimedAt = deps.now?.() ?? new Date()
+  const leaseExpiredBefore = new Date(
+    claimedAt.getTime() - EMAIL_DELIVERY_LEASE_MS
+  )
+  const claim = await db.emailNotification.updateMany({
+    where: {
+      id,
+      status: 'PENDING',
+      deliveryGeneration: notification.deliveryGeneration,
+      OR: [
+        { lastAttemptAt: null },
+        { lastAttemptAt: { lt: leaseExpiredBefore } }
+      ]
+    },
+    data: { lastAttemptAt: claimedAt }
+  })
+  if (claim.count === 0) return notification
 
   const order = notification.order
   const token = notification.accessExpiresAt
@@ -182,7 +204,7 @@ export async function deliverEmailNotification(
 
     if (result.error) throw new Error(result.error.message)
 
-    const sentAt = new Date()
+    const sentAt = deps.now?.() ?? new Date()
     const providerId = result.data?.id
 
     return db.emailNotification.update({
@@ -236,9 +258,9 @@ export async function deliverEmailNotification(
             : 'PENDING',
         failedAt:
           notification.attemptCount + 1 >= MAX_EMAIL_DELIVERY_ATTEMPTS
-            ? new Date()
+            ? (deps.now?.() ?? new Date())
             : null,
-        lastAttemptAt: new Date(),
+        lastAttemptAt: null,
         attemptCount: { increment: 1 },
         lastError: error instanceof Error ? error.message : 'Unknown error'
       }

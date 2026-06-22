@@ -306,6 +306,42 @@ describe('Email Notifications', () => {
     expect(db.emailNotification.update).not.toHaveBeenCalled()
   })
 
+  it('allows only one concurrent delivery to call the email provider', async () => {
+    const db = createMockDb()
+    let claimed = false
+    db.emailNotification.updateMany.mockImplementation(async () => {
+      if (claimed) return { count: 0 }
+      claimed = true
+      return { count: 1 }
+    })
+    let releaseSend!: () => void
+    const sendStarted = new Promise<void>((resolve) => {
+      releaseSend = resolve
+    })
+    let finishSend!: () => void
+    const sendCanFinish = new Promise<void>((resolve) => {
+      finishSend = resolve
+    })
+    const send = vi.fn(async () => {
+      releaseSend()
+      await sendCanFinish
+      return { data: { id: 'resend-1' }, error: null }
+    })
+    const deps = {
+      resend: { emails: { send } } as never,
+      now: () => new Date('2026-06-21T12:00:00Z')
+    }
+
+    const first = deliverEmailNotification(db as never, 'notification-1', deps)
+    await sendStarted
+    const second = deliverEmailNotification(db as never, 'notification-1', deps)
+    await second
+    finishSend()
+    await first
+
+    expect(send).toHaveBeenCalledTimes(1)
+  })
+
   it('renders German whole-Order cancellation copy with a session-authorized link', async () => {
     const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
       data: { id: 'resend-3' },

@@ -1,13 +1,6 @@
-import { env } from '~/env'
 import { expirePendingPaymentOrders } from '~/server/commerce/order-lifecycle'
+import { isAuthorizedCronRequest } from '~/server/cron-authorization'
 import { db } from '~/server/db'
-
-function isAuthorizedCronRequest(request: Request) {
-  return (
-    Boolean(env.CRON_SECRET) &&
-    request.headers.get('authorization') === `Bearer ${env.CRON_SECRET}`
-  )
-}
 
 export async function GET(request: Request) {
   if (!isAuthorizedCronRequest(request)) {

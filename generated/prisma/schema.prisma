@@ -346,6 +346,7 @@ model Order {
   paymentExpiryStartedAt        DateTime?
   checkoutSubmissionId          String?             @unique
   checkoutSubmissionFingerprint String?
+  guestCheckoutFingerprint      String?
   paymentExceptionAt            DateTime?
   paymentExceptionReason        String?
   subtotalCents                 Int
@@ -385,6 +386,7 @@ model Order {
 
   @@index([customerId])
   @@index([customerEmail])
+  @@index([guestCheckoutFingerprint, status, paymentStatus, paymentExpiresAt])
   @@index([status, paymentStatus, fulfillmentStatus])
   @@index([placedAt])
 }
