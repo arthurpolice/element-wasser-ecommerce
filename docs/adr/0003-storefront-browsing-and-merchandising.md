@@ -16,6 +16,11 @@ Keep Category slugs globally unique for now. Nested storefront paths are generat
 
 Use expandable Category navigation: a desktop sidebar for root Categories and children, and a mobile full-screen Categories menu so Product grids keep usable width. Each expanded root Category includes an "All" link at the top for the root Category aggregate view. Category navigation remains left-aligned on desktop and sits on the same visual plane as the page, without a separate sidebar background. Active and expanded states use typography and rules rather than filled rows or pill backgrounds.
 
+Show only Storefront-visible Categories in Category navigation: an active Category
+appears when its subtree contains at least one active Product. Active empty
+Categories remain resolvable through direct Category URLs and render an empty
+Product grid; emptiness affects discovery, not URL validity.
+
 Use a storefront top navigation for customer utilities: product search, customer sign-in or customer menu, and cart. Customer and cart controls can open floating dropdowns, while sign-in routes directly to authentication. The customer menu links to dedicated Customer Area pages for Orders, Personal Information, and Addresses rather than jumping to sections on one combined page.
 
 Constrain storefront layout content to a centered 1920px frame. Navigation and future footer background bands can extend edge-to-edge, but their children and the page content stay within the centered frame.
@@ -64,3 +69,7 @@ Nested URL generation must stay consistent with the Category tree. If Category s
 Homepage sections can launch before Reviews are populated because Featured Products and automatic fallback Products provide useful content for a small catalog.
 
 The storefront visual system should be scoped separately from existing `dash-*` admin tokens so future customer pages do not inherit admin styling by accident.
+
+Category navigation changes when Category structure or activation changes, when a
+Product enters or leaves the active catalog, or when Product Category membership
+changes.

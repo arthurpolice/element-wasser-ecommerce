@@ -44,6 +44,10 @@ type MockDb = {
     update: Mock<(args: { data: MockRecord }) => Promise<MockRecord>>
     deleteMany: Mock<() => Promise<{ count: number }>>
   }
+  order: {
+    findMany: Mock<() => Promise<MockRecord[]>>
+    findFirst: Mock<() => Promise<MockRecord | null>>
+  }
   $transaction: Mock<
     (callback: (tx: MockDb) => Promise<unknown>) => Promise<unknown>
   >
@@ -75,6 +79,10 @@ function createMockDb(): MockDb {
       findFirst: vi.fn(async () => ({ id: 'address-1' })),
       update: vi.fn(async ({ data }) => ({ id: 'address-1', ...data })),
       deleteMany: vi.fn(async () => ({ count: 1 }))
+    },
+    order: {
+      findMany: vi.fn(async () => []),
+      findFirst: vi.fn(async () => null)
     },
     $transaction: vi.fn(async (callback) => callback(db))
   }
@@ -164,6 +172,7 @@ describe('customer area', () => {
       firstName: 'River',
       lastName: 'Stone',
       salutation: 'FRAU',
+      _count: { orders: 1 },
       addresses: [
         {
           id: 'address-main',
@@ -240,14 +249,7 @@ describe('customer area', () => {
       customer: {
         id: 'customer-1',
         addresses: [{ id: 'address-main', isMain: true }],
-        orders: [
-          {
-            orderNumber: 'EW-2026-00001',
-            lines: [{ productSku: 'EW-FIL-00001' }],
-            shippingStreetLine1: 'Springstrasse 1',
-            billingStreetLine1: 'Springstrasse 1'
-          }
-        ]
+        orderCount: 1
       }
     })
   })
@@ -269,6 +271,63 @@ describe('customer area', () => {
     const [customerUpdateArgs] = firstMockCall(db.customer.update)
     expect(customerUpdateArgs.where).toEqual({ id: 'customer-1' })
     expect(customerUpdateArgs.data).not.toHaveProperty('email')
+  })
+
+  it('paginates Customer Area Order summaries with a stable cursor', async () => {
+    db.customer.findUnique = vi.fn(async () => ({ id: 'customer-1' }))
+    db.order.findMany = vi.fn(async () => [
+      {
+        id: 'order-1',
+        orderNumber: 'EW-2026-00001',
+        placedAt: new Date('2026-05-15T10:00:00Z')
+      },
+      {
+        id: 'order-0',
+        orderNumber: 'EW-2026-00000',
+        placedAt: new Date('2026-05-14T10:00:00Z')
+      }
+    ])
+    const caller = createCustomerCaller(db)
+
+    await expect(caller.myOrders({ limit: 1 })).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          id: 'order-1',
+          orderNumber: 'EW-2026-00001'
+        })
+      ],
+      nextCursor: 'order-1'
+    })
+    expect(db.order.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ placedAt: 'desc' }, { id: 'desc' }],
+        take: 2
+      })
+    )
+  })
+
+  it('loads one owned Order snapshot on demand', async () => {
+    db.order.findFirst = vi.fn(async () => ({
+      id: 'order-1',
+      orderNumber: 'EW-2026-00001',
+      lines: [{ id: 'line-1', productName: 'Filter' }]
+    }))
+    const caller = createCustomerCaller(db)
+
+    await expect(
+      caller.myOrderDetails({ orderId: 'order-1' })
+    ).resolves.toMatchObject({
+      id: 'order-1',
+      lines: [{ id: 'line-1', productName: 'Filter' }]
+    })
+    expect(db.order.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          id: 'order-1',
+          customer: { userId: 'user-1' }
+        }
+      })
+    )
   })
 
   it('marks exactly one Address Book Entry as the Main Address Book Entry', async () => {

@@ -9,6 +9,9 @@ export type RegisteredCustomer = CustomerArea["customer"];
 
 export type CustomerAddress = RegisteredCustomer["addresses"][number];
 
-export type CustomerOrder = RegisteredCustomer["orders"][number];
+export type CustomerOrder =
+  RouterOutputs["customer"]["myOrders"]["items"][number];
 
-export type CustomerOrderLine = CustomerOrder["lines"][number];
+export type CustomerOrderDetails = RouterOutputs["customer"]["myOrderDetails"];
+
+export type CustomerOrderLine = CustomerOrderDetails["lines"][number];

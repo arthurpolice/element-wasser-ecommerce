@@ -21,6 +21,7 @@ import {
 } from '~/server/commerce/product-maintenance'
 import { isPrismaErrorCode } from '~/server/prisma-errors'
 import { syncProductSearchDocumentsForMutation } from '~/server/commerce/product-search'
+import { invalidateProductCatalogCache } from '~/server/commerce/catalog-cache'
 
 const listInputSchema = z.object({
   page: z.number().int().min(1).default(1),
@@ -276,6 +277,7 @@ export const productRouter = createTRPCRouter({
       try {
         const product = await createProduct(ctx.db, input)
         await syncProductSearchDocumentsForMutation(ctx.db, [product.id])
+        invalidateProductCatalogCache()
         return mapProductRow(product)
       } catch (error) {
         if (error instanceof ProductMaintenanceError) {
@@ -337,6 +339,7 @@ export const productRouter = createTRPCRouter({
       try {
         const product = await updateProduct(ctx.db, input)
         await syncProductSearchDocumentsForMutation(ctx.db, [product.id])
+        invalidateProductCatalogCache()
         return mapProductRow(product)
       } catch (error) {
         if (error instanceof ProductMaintenanceError) {

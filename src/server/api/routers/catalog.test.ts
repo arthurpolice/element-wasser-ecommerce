@@ -19,6 +19,13 @@ const categories = [
     slug: 'replacement-cartridges',
     parentId: 'root',
     sortOrder: 0
+  },
+  {
+    id: 'empty',
+    name: 'Empty Category',
+    slug: 'empty-category',
+    parentId: null,
+    sortOrder: 1
   }
 ]
 
@@ -33,6 +40,8 @@ const product = {
   active: true,
   featured: false,
   description: null,
+  approvedReviewCount: 1,
+  approvedReviewRatingSum: 5,
   manufacturer: { name: 'Brita' },
   images: [
     { url: 'https://cdn.example.com/cartridge.jpg', altText: 'Cartridge' }
@@ -74,6 +83,9 @@ function createMockDb() {
           return null
         }
       )
+    },
+    productCategory: {
+      findMany: vi.fn(async () => [{ categoryId: 'child' }])
     },
     $queryRaw: vi.fn(async () => [
       {
@@ -124,6 +136,17 @@ describe('catalog router', () => {
     })
   })
 
+  it('hides active Category subtrees without active Products from navigation', async () => {
+    const caller = createPublicCaller(db)
+
+    await expect(caller.navigationTree()).resolves.toEqual([
+      expect.objectContaining({
+        id: 'root',
+        children: [expect.objectContaining({ id: 'child' })]
+      })
+    ])
+  })
+
   it('lists active products for a category and its descendants', async () => {
     const caller = createPublicCaller(db)
 
@@ -135,7 +158,7 @@ describe('catalog router', () => {
 
     expect(result).toMatchObject({
       categoryId: 'root',
-      totalCount: 1,
+      hasNextPage: false,
       items: [
         expect.objectContaining({
           slug: 'cartridge-pack',

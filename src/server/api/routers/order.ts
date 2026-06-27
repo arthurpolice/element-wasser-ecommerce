@@ -71,6 +71,11 @@ const dispatchInputSchema = orderIdInputSchema.extend({
   trackingNumber: z.string().trim().max(64).optional()
 })
 
+const createSelectionSearchSchema = z.object({
+  q: z.string().trim().min(2),
+  limit: z.number().int().min(1).max(20).default(20)
+})
+
 function buildSearchFilter(
   search: string | undefined
 ): Prisma.OrderWhereInput | undefined {
@@ -253,56 +258,77 @@ export const orderRouter = createTRPCRouter({
       return order
     }),
 
-  listCustomersForCreate: ownerProcedure.query(async ({ ctx }) => {
-    const customers = await ctx.db.customer.findMany({
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        salutation: true,
-        addresses: {
-          select: {
-            id: true,
-            isMain: true,
-            salutation: true,
-            firstName: true,
-            lastName: true,
-            company: true,
-            streetLine1: true,
-            streetLine2: true,
-            postalCode: true,
-            city: true,
-            countryCode: true,
-            phone: true
-          },
-          orderBy: [{ isMain: 'desc' }, { updatedAt: 'desc' }]
-        }
-      },
-      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
-    })
+  listCustomersForCreate: ownerProcedure
+    .input(createSelectionSearchSchema)
+    .query(async ({ ctx, input }) => {
+      const customers = await ctx.db.customer.findMany({
+        where: {
+          OR: [
+            { email: { contains: input.q, mode: 'insensitive' } },
+            { firstName: { contains: input.q, mode: 'insensitive' } },
+            { lastName: { contains: input.q, mode: 'insensitive' } }
+          ]
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          salutation: true,
+          addresses: {
+            where: { isMain: true },
+            select: {
+              id: true,
+              isMain: true,
+              salutation: true,
+              firstName: true,
+              lastName: true,
+              company: true,
+              streetLine1: true,
+              streetLine2: true,
+              postalCode: true,
+              city: true,
+              countryCode: true,
+              phone: true
+            },
+            take: 1
+          }
+        },
+        orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+        take: input.limit
+      })
 
-    return customers
-  }),
+      return customers
+    }),
 
-  listProductsForCreate: ownerProcedure.query(async ({ ctx }) => {
-    const products = await ctx.db.product.findMany({
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        priceCents: true,
-        costCents: true,
-        discountPercent: true,
-        stockOnHand: true,
-        stockReserved: true,
-        active: true
-      },
-      orderBy: { name: 'asc' }
-    })
+  listProductsForCreate: ownerProcedure
+    .input(createSelectionSearchSchema)
+    .query(async ({ ctx, input }) => {
+      const products = await ctx.db.product.findMany({
+        where: {
+          active: true,
+          OR: [
+            { name: { contains: input.q, mode: 'insensitive' } },
+            { sku: { contains: input.q, mode: 'insensitive' } }
+          ]
+        },
+        select: {
+          id: true,
+          name: true,
+          sku: true,
+          priceCents: true,
+          costCents: true,
+          discountPercent: true,
+          stockOnHand: true,
+          stockReserved: true,
+          active: true
+        },
+        orderBy: { name: 'asc' },
+        take: input.limit
+      })
 
-    return products
-  }),
+      return products
+    }),
 
   create: ownerProcedure
     .input(createInputSchema)

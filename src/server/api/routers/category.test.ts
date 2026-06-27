@@ -291,11 +291,6 @@ describe('category router move', () => {
         .sort((left, right) => left.sortOrder - right.sortOrder)
         .map((category) => category.id)
     ).toEqual(['child-a1', 'child-a2', 'root-b'])
-    expect(db.product.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: { in: ['product-1'] } }
-      })
-    )
     expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 
@@ -406,11 +401,6 @@ describe('category router delete', () => {
     expect(
       categories.find((category) => category.id === 'root-a')?.sortOrder
     ).toBe(0)
-    expect(db.product.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { id: { in: ['product-1'] } }
-      })
-    )
     expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 

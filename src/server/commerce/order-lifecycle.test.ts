@@ -8,9 +8,14 @@ import type {
 } from '../../../generated/prisma'
 
 const publishEmailNotificationSafelyMock = vi.hoisted(() => vi.fn())
+const expireStripeCheckoutSessionMock = vi.hoisted(() => vi.fn())
 
 vi.mock('~/server/commerce/email-notifications', () => ({
   publishEmailNotificationSafely: publishEmailNotificationSafelyMock
+}))
+
+vi.mock('~/server/payments/stripe-checkout', () => ({
+  expireStripeCheckoutSession: expireStripeCheckoutSessionMock
 }))
 
 import {
@@ -26,6 +31,8 @@ const now = new Date('2026-05-15T10:00:00Z')
 
 beforeEach(() => {
   publishEmailNotificationSafelyMock.mockReset()
+  expireStripeCheckoutSessionMock.mockReset()
+  expireStripeCheckoutSessionMock.mockResolvedValue({})
 })
 
 type MockOrder = {
@@ -42,6 +49,7 @@ type MockOrder = {
   dispatchedAt: Date | null
   completedAt: Date | null
   paymentExpiresAt: Date
+  paymentExpiryStartedAt: Date | null
   lines: Array<{ productId: string; quantity: number }>
   payments?: Array<{
     id: string
@@ -115,6 +123,7 @@ function createOrder(overrides: Partial<MockOrder> = {}): MockOrder {
     dispatchedAt: null,
     completedAt: null,
     paymentExpiresAt: new Date('2026-05-15T09:59:00Z'),
+    paymentExpiryStartedAt: null,
     lines: [{ productId: 'product-1', quantity: 2 }],
     ...overrides
   }
@@ -141,12 +150,15 @@ function createOrder(overrides: Partial<MockOrder> = {}): MockOrder {
 
 function createMockDb(order = createOrder()): MockDb {
   const db: MockDb = {
-    $queryRaw: vi.fn(async () => []),
+    $queryRaw: vi.fn(async () => [{ id: order.id }]),
     order: {
       findUnique: vi.fn(async () => order),
       findUniqueOrThrow: vi.fn(async () => order),
       findMany: vi.fn(async () => [order]),
-      updateMany: vi.fn(async () => ({ count: 1 })),
+      updateMany: vi.fn(async ({ data }) => {
+        Object.assign(order, data)
+        return { count: 1 }
+      }),
       update: vi.fn(async ({ data }) => {
         Object.assign(order, data)
         return order
@@ -178,10 +190,13 @@ describe('cancelOrder', () => {
 
     await cancelOrder(db as never, { orderId: 'order-1' }, { now: () => now })
 
-    expect(db.product.update).toHaveBeenCalledWith({
-      where: { id: 'product-1' },
-      data: { stockReserved: { decrement: 2 } }
-    })
+    expect(
+      db.$queryRaw.mock.calls.some(([query]) =>
+        String(query).includes(
+          'SET "stockReserved" = product."stockReserved" - requested."quantity"'
+        )
+      )
+    ).toBe(true)
     const [orderUpdateArgs] = firstMockCall(db.order.update)
     expect(orderUpdateArgs).toMatchObject({
       where: { id: 'order-1' },
@@ -296,13 +311,13 @@ describe('fulfillOrder', () => {
 
     await fulfillOrder(db as never, { orderId: 'order-1' }, { now: () => now })
 
-    expect(db.product.update).toHaveBeenCalledWith({
-      where: { id: 'product-1' },
-      data: {
-        stockOnHand: { decrement: 2 },
-        stockReserved: { decrement: 2 }
-      }
-    })
+    expect(
+      db.$queryRaw.mock.calls.some(([query]) =>
+        String(query).includes(
+          '"stockOnHand" = product."stockOnHand" - requested."quantity"'
+        )
+      )
+    ).toBe(true)
     const [orderUpdateArgs] = firstMockCall(db.order.update)
     expect(orderUpdateArgs).toMatchObject({
       where: { id: 'order-1' },
@@ -436,37 +451,48 @@ describe('expirePendingPaymentOrders', () => {
 
     await expirePendingPaymentOrders(db as never, { now: () => now })
 
+    const [claimQuery, claimCutoff, leaseCutoff, batchSize] = firstMockCall(
+      db.$queryRaw
+    )
+    expect(String(claimQuery)).toContain('FOR UPDATE SKIP LOCKED')
+    expect(String(claimQuery)).toContain('"paymentExpiryStartedAt" IS NULL')
+    expect(claimCutoff).toEqual(now)
+    expect(leaseCutoff).toEqual(new Date('2026-05-15T09:50:00Z'))
+    expect(batchSize).toBe(50)
+
     const [orderFindManyArgs] = firstMockCall(db.order.findMany)
     expect(orderFindManyArgs).toMatchObject({
-      where: {
-        status: 'PLACED',
-        paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
-        fulfillmentStatus: 'UNFULFILLED',
-        paymentExpiresAt: { lte: now }
-      }
+      where: { id: { in: ['order-1'] } },
+      orderBy: [{ paymentExpiresAt: 'asc' }, { id: 'asc' }]
     })
     expect(orderFindManyArgs.include).toBeDefined()
-    expect(db.product.update).toHaveBeenCalledWith({
-      where: { id: 'product-1' },
-      data: { stockReserved: { decrement: 2 } }
-    })
+    expect(
+      db.$queryRaw.mock.calls.some(([query]) =>
+        String(query).includes(
+          'SET "stockReserved" = product."stockReserved" - requested."quantity"'
+        )
+      )
+    ).toBe(true)
     const [orderUpdateArgs] = firstMockCall(db.order.updateMany)
     expect(orderUpdateArgs).toEqual({
-      where: {
-        id: 'order-1',
-        status: 'PLACED',
-        paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
-        fulfillmentStatus: 'UNFULFILLED',
-        paymentExpiresAt: { lte: now }
-      },
+      where: { id: { in: ['order-1'] } },
       data: { paymentExpiryStartedAt: now }
     })
     expect(db.emailNotification.upsert).not.toHaveBeenCalled()
   })
 
-  it('does not release Stock Reservations when payment wins the expiry race', async () => {
-    const db = createMockDb()
-    db.order.updateMany = vi.fn(async () => ({ count: 0 }))
+  it('does not release Stock Reservations after its lease has been replaced', async () => {
+    const order = createOrder()
+    const db = createMockDb(order)
+    let transactionCount = 0
+
+    db.$transaction = vi.fn(async (callback) => {
+      transactionCount += 1
+      if (transactionCount === 2) {
+        order.paymentExpiryStartedAt = new Date('2026-05-15T10:01:00Z')
+      }
+      return callback(db)
+    })
 
     const orders = await expirePendingPaymentOrders(db as never, {
       now: () => now
@@ -474,5 +500,57 @@ describe('expirePendingPaymentOrders', () => {
 
     expect(orders).toEqual([])
     expect(db.product.update).not.toHaveBeenCalled()
+    expect(db.payment.updateMany).not.toHaveBeenCalled()
+  })
+
+  it('does not release Stock Reservations when Payment wins after the claim', async () => {
+    const order = createOrder()
+    const db = createMockDb(order)
+    let transactionCount = 0
+
+    db.$transaction = vi.fn(async (callback) => {
+      transactionCount += 1
+      if (transactionCount === 2) {
+        order.paymentStatus = 'PAID'
+      }
+      return callback(db)
+    })
+
+    const orders = await expirePendingPaymentOrders(db as never, {
+      now: () => now
+    })
+
+    expect(orders).toEqual([])
+    expect(db.product.update).not.toHaveBeenCalled()
+    expect(db.payment.updateMany).not.toHaveBeenCalled()
+    expect(db.order.update).toHaveBeenCalledWith({
+      where: { id: 'order-1' },
+      data: { paymentExpiryStartedAt: null }
+    })
+  })
+
+  it('keeps the lease for retry when Stripe expiry fails', async () => {
+    const order = createOrder({
+      payments: [
+        {
+          id: 'payment-1',
+          status: 'PENDING',
+          stripeCheckoutSessionId: 'cs_test_123'
+        }
+      ]
+    })
+    const db = createMockDb(order)
+    expireStripeCheckoutSessionMock.mockRejectedValueOnce(
+      new Error('Stripe unavailable')
+    )
+
+    const orders = await expirePendingPaymentOrders(db as never, {
+      now: () => now
+    })
+
+    expect(orders).toEqual([])
+    expect(order.paymentExpiryStartedAt).toEqual(now)
+    expect(db.product.update).not.toHaveBeenCalled()
+    expect(db.payment.updateMany).not.toHaveBeenCalled()
   })
 })

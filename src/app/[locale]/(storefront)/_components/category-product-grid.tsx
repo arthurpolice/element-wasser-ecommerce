@@ -11,22 +11,21 @@ type CategoryProductGridProps = {
   slugPath: string;
   initialItems: StorefrontProduct[];
   initialPage: number;
+  initialHasNextPage: boolean;
   pageSize: number;
-  totalPages: number;
-  totalCount: number;
 };
 
 export function CategoryProductGrid({
   slugPath,
   initialItems,
   initialPage,
+  initialHasNextPage,
   pageSize,
-  totalPages,
-  totalCount,
 }: CategoryProductGridProps) {
   const t = useTranslations("Storefront.categoryGrid");
   const [page, setPage] = useState(initialPage);
   const [items, setItems] = useState(initialItems);
+  const [hasMore, setHasMore] = useState(initialHasNextPage);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
 
@@ -37,12 +36,11 @@ export function CategoryProductGrid({
     },
   );
 
-  const hasMore = page < totalPages;
-
   useEffect(() => {
     setPage(initialPage);
     setItems(initialItems);
-  }, [initialItems, initialPage, slugPath]);
+    setHasMore(initialHasNextPage);
+  }, [initialHasNextPage, initialItems, initialPage, slugPath]);
 
   useEffect(() => {
     const node = sentinelRef.current;
@@ -82,6 +80,7 @@ export function CategoryProductGrid({
         });
         setPage((current) => current + 1);
       }
+      if (result.data) setHasMore(result.data.hasNextPage);
     } finally {
       loadingRef.current = false;
     }
@@ -89,7 +88,7 @@ export function CategoryProductGrid({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-store-border bg-store-surface/70 px-6 py-16 text-center text-sm text-store-muted">
+      <div className="border-store-border bg-store-surface/70 text-store-muted rounded-2xl border border-dashed px-6 py-16 text-center text-sm">
         {t("empty")}
       </div>
     );
@@ -97,8 +96,8 @@ export function CategoryProductGrid({
 
   return (
     <div className="space-y-8">
-      <p className="text-sm text-store-muted">
-        {t("summary", { count: totalCount })}
+      <p className="text-store-muted text-sm">
+        {t("summary", { count: items.length })}
       </p>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -121,7 +120,7 @@ export function CategoryProductGrid({
         <div className="flex flex-col items-center gap-4">
           <div ref={sentinelRef} aria-hidden="true" className="h-1 w-full" />
           <button
-            className="rounded-full border border-store-border bg-store-surface px-5 py-2.5 text-sm font-medium text-store-ink transition hover:border-store-accent/40 hover:text-store-accent disabled:opacity-50"
+            className="border-store-border bg-store-surface text-store-ink hover:border-store-accent/40 hover:text-store-accent rounded-full border px-5 py-2.5 text-sm font-medium transition disabled:opacity-50"
             disabled={nextPageQuery.isFetching}
             onClick={() => void loadNextPage()}
             type="button"

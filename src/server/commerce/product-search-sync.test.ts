@@ -11,8 +11,10 @@ vi.mock('~/server/queue/qstash', () => ({
 import {
   PRODUCT_SEARCH_REINDEX_QSTASH_PATH,
   PRODUCT_SEARCH_REBUILD_QSTASH_PATH,
-  processProductSearchReindexBatch,
+  processPendingProductSearchReindexes,
+  recordPendingProductSearchReindexes,
   requestProductSearchDocumentRebuild,
+  scheduleProductSearchReindex,
   syncProductSearchDocumentsForMutation
 } from '~/server/commerce/product-search'
 
@@ -56,102 +58,63 @@ describe('Product Search document sync orchestration', () => {
         where: { id: { in: ['product-1', 'product-2'] } }
       })
     )
-    expect(db.$executeRaw).toHaveBeenCalledTimes(2)
+    expect(db.$executeRaw).toHaveBeenCalledTimes(1)
   })
 
-  it('enqueues large affected Product sets for QStash reindexing', async () => {
+  it('records coalescing durable reindex work in one statement', async () => {
     const db = createSearchSyncDb()
-    isQstashConfiguredMock.mockReturnValue(true)
-    publishQstashJsonMock.mockResolvedValue({ messageId: 'msg-1' })
-    const productIds = Array.from({ length: 51 }, (_, index) => `p-${index}`)
 
     await expect(
-      syncProductSearchDocumentsForMutation(db as never, productIds)
-    ).resolves.toEqual({ mode: 'async', enqueuedCount: 51 })
+      recordPendingProductSearchReindexes(db as never, [
+        'product-1',
+        'product-1',
+        'product-2'
+      ])
+    ).resolves.toEqual({ pendingCount: 2 })
 
-    expect(db.product.findMany).not.toHaveBeenCalled()
+    expect(db.$executeRaw).toHaveBeenCalledTimes(1)
+    expect(
+      String((db.$executeRaw.mock.calls as unknown[][])[0]?.[0])
+    ).toContain('ProductSearchReindex')
+  })
+
+  it('publishes a generic wake-up when QStash is configured', async () => {
+    isQstashConfiguredMock.mockReturnValue(true)
+    publishQstashJsonMock.mockResolvedValue({ messageId: 'message-1' })
+
+    await scheduleProductSearchReindex()
+
     expect(publishQstashJsonMock).toHaveBeenCalledWith({
       path: PRODUCT_SEARCH_REINDEX_QSTASH_PATH,
-      body: { productIds },
+      body: {},
       contentBasedDeduplication: true,
       retries: 3,
       label: 'product-search-reindex'
     })
   })
 
-  it('refreshes large affected Product sets synchronously when QStash is unavailable', async () => {
-    const db = createSearchSyncDb()
-    isQstashConfiguredMock.mockReturnValue(false)
-    const productIds = Array.from({ length: 51 }, (_, index) => `p-${index}`)
+  it('processes pending work and completes only captured generations', async () => {
+    const db = {
+      ...createSearchSyncDb(),
+      $queryRaw: vi.fn(async () => [
+        { productId: 'product-1', generation: 2 },
+        { productId: 'product-2', generation: 1 }
+      ])
+    }
 
     await expect(
-      syncProductSearchDocumentsForMutation(db as never, productIds)
-    ).resolves.toEqual({
-      mode: 'sync',
-      requestedCount: 51,
-      refreshedCount: 51
-    })
+      processPendingProductSearchReindexes(db as never, 2)
+    ).resolves.toEqual({ requestedCount: 2, refreshedCount: 2 })
 
-    expect(publishQstashJsonMock).not.toHaveBeenCalled()
-    expect(db.product.findMany).toHaveBeenCalledTimes(2)
-    expect(db.product.findMany).toHaveBeenNthCalledWith(
-      1,
-      expect.objectContaining({
-        where: { id: { in: productIds.slice(0, 50) } }
-      })
-    )
-    expect(db.product.findMany).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        where: { id: { in: productIds.slice(50) } }
-      })
-    )
-    expect(db.$executeRaw).toHaveBeenCalledTimes(51)
-  })
-
-  it('refreshes large affected Product sets synchronously when QStash publishing fails', async () => {
-    const db = createSearchSyncDb()
-    isQstashConfiguredMock.mockReturnValue(true)
-    publishQstashJsonMock.mockRejectedValue(new Error('QStash unavailable'))
-    const productIds = Array.from({ length: 51 }, (_, index) => `p-${index}`)
-
-    await expect(
-      syncProductSearchDocumentsForMutation(db as never, productIds)
-    ).resolves.toEqual({
-      mode: 'sync',
-      requestedCount: 51,
-      refreshedCount: 51
-    })
-
-    expect(publishQstashJsonMock).toHaveBeenCalledTimes(1)
-    expect(db.product.findMany).toHaveBeenCalledTimes(2)
-    expect(db.$executeRaw).toHaveBeenCalledTimes(51)
-  })
-
-  it('processes QStash reindex work in retry-safe batches', async () => {
-    const db = createSearchSyncDb()
-
-    await expect(
-      processProductSearchReindexBatch(
-        db as never,
-        ['product-1', 'product-2', 'product-3'],
-        2
-      )
-    ).resolves.toEqual({ requestedCount: 3, refreshedCount: 3 })
-
-    expect(db.product.findMany).toHaveBeenNthCalledWith(
-      1,
+    expect(db.product.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: { in: ['product-1', 'product-2'] } }
       })
     )
-    expect(db.product.findMany).toHaveBeenNthCalledWith(
-      2,
-      expect.objectContaining({
-        where: { id: { in: ['product-3'] } }
-      })
-    )
-    expect(db.$executeRaw).toHaveBeenCalledTimes(3)
+    expect(db.$executeRaw).toHaveBeenCalledTimes(2)
+    expect(
+      String((db.$executeRaw.mock.calls as unknown[][])[1]?.[0])
+    ).toContain('"generation"')
   })
 
   it('enqueues maintainer-triggered rebuild work in batches', async () => {

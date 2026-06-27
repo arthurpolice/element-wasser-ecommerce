@@ -56,6 +56,15 @@ const addressIdInputSchema = z.object({
   id: z.string().min(1)
 })
 
+const myOrdersInputSchema = z.object({
+  cursor: z.string().min(1).optional(),
+  limit: z.number().int().min(1).max(50).default(20)
+})
+
+const myOrderDetailsInputSchema = z.object({
+  orderId: z.string().min(1)
+})
+
 function buildSearchFilter(
   search: string | undefined
 ): Prisma.CustomerWhereInput | undefined {
@@ -91,31 +100,20 @@ function buildOrderBy(
   }
 }
 
+type CustomerAggregate = {
+  nonCancelledOrderValueCents: number
+  latestOrderAt: Date | null
+}
+
 function mapCustomerRow(
   customer: Prisma.CustomerGetPayload<{
     include: {
       user: { select: { id: true } }
       _count: { select: { orders: true } }
-      orders: {
-        select: { totalCents: true; placedAt: true; status: true }
-      }
     }
-  }>
+  }>,
+  aggregate: CustomerAggregate
 ) {
-  const activeOrders = customer.orders.filter(
-    (order) => order.status !== 'CANCELLED'
-  )
-  const totalSpentCents = activeOrders.reduce(
-    (sum, order) => sum + order.totalCents,
-    0
-  )
-  const latestOrderAt = activeOrders.reduce<Date | null>((latest, order) => {
-    if (!latest || order.placedAt > latest) {
-      return order.placedAt
-    }
-    return latest
-  }, null)
-
   return {
     id: customer.id,
     email: customer.email,
@@ -126,12 +124,26 @@ function mapCustomerRow(
     isRegistered: customer.userId !== null,
     hasLinkedUser: customer.user !== null,
     orderCount: customer._count.orders,
-    totalSpentCents,
-    latestOrderAt
+    nonCancelledOrderValueCents: aggregate.nonCancelledOrderValueCents,
+    latestOrderAt: aggregate.latestOrderAt
   }
 }
 
-const customerAreaOrderSelect = {
+const customerAreaOrderSummarySelect = {
+  id: true,
+  orderNumber: true,
+  status: true,
+  paymentStatus: true,
+  fulfillmentStatus: true,
+  dispatchCarrier: true,
+  trackingNumber: true,
+  dispatchedAt: true,
+  currencyCode: true,
+  totalCents: true,
+  placedAt: true
+} satisfies Prisma.OrderSelect
+
+const customerAreaOrderDetailSelect = {
   id: true,
   orderNumber: true,
   status: true,
@@ -236,10 +248,7 @@ export const customerRouter = createTRPCRouter({
           },
           orderBy: [{ isMain: 'desc' }, { updatedAt: 'desc' }]
         },
-        orders: {
-          select: customerAreaOrderSelect,
-          orderBy: { placedAt: 'desc' }
-        }
+        _count: { select: { orders: true } }
       }
     })
 
@@ -256,9 +265,58 @@ export const customerRouter = createTRPCRouter({
 
     return {
       status: 'registered' as const,
-      customer
+      customer: {
+        id: customer.id,
+        email: customer.email,
+        salutation: customer.salutation,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        addresses: customer.addresses,
+        orderCount: customer._count.orders
+      }
     }
   }),
+
+  myOrders: protectedProcedure
+    .input(myOrdersInputSchema)
+    .query(async ({ ctx, input }) => {
+      const customer = await getRegisteredCustomerOrThrow(
+        ctx.db,
+        ctx.session.user.id
+      )
+      const orders = await ctx.db.order.findMany({
+        where: { customerId: customer.id },
+        select: customerAreaOrderSummarySelect,
+        orderBy: [{ placedAt: 'desc' }, { id: 'desc' }],
+        ...(input.cursor ? { cursor: { id: input.cursor }, skip: 1 } : {}),
+        take: input.limit + 1
+      })
+      const hasNextPage = orders.length > input.limit
+      const items = orders.slice(0, input.limit)
+
+      return {
+        items,
+        nextCursor: hasNextPage ? items.at(-1)?.id : undefined
+      }
+    }),
+
+  myOrderDetails: protectedProcedure
+    .input(myOrderDetailsInputSchema)
+    .query(async ({ ctx, input }) => {
+      const order = await ctx.db.order.findFirst({
+        where: {
+          id: input.orderId,
+          customer: { userId: ctx.session.user.id }
+        },
+        select: customerAreaOrderDetailSelect
+      })
+
+      if (!order) {
+        throw new TRPCError({ code: 'NOT_FOUND' })
+      }
+
+      return order
+    }),
 
   completeOnboarding: protectedProcedure
     .input(completeOnboardingInputSchema)
@@ -483,23 +541,51 @@ export const customerRouter = createTRPCRouter({
         where,
         include: {
           user: { select: { id: true } },
-          _count: { select: { orders: true } },
-          orders: {
-            select: {
-              totalCents: true,
-              placedAt: true,
-              status: true
-            }
-          }
+          _count: { select: { orders: true } }
         },
         orderBy,
         skip,
         take: input.pageSize
       })
     ])
+    const customerIds = customers.map((customer) => customer.id)
+    const [valueAggregates, latestAggregates] = customerIds.length
+      ? await Promise.all([
+          ctx.db.order.groupBy({
+            by: ['customerId'],
+            where: {
+              customerId: { in: customerIds },
+              status: { not: 'CANCELLED' }
+            },
+            _sum: { totalCents: true }
+          }),
+          ctx.db.order.groupBy({
+            by: ['customerId'],
+            where: { customerId: { in: customerIds } },
+            _max: { placedAt: true }
+          })
+        ])
+      : [[], []]
+    const valueByCustomerId = new Map(
+      valueAggregates.map((aggregate) => [
+        aggregate.customerId,
+        aggregate._sum.totalCents ?? 0
+      ])
+    )
+    const latestByCustomerId = new Map(
+      latestAggregates.map((aggregate) => [
+        aggregate.customerId,
+        aggregate._max.placedAt
+      ])
+    )
 
     return {
-      items: customers.map(mapCustomerRow),
+      items: customers.map((customer) =>
+        mapCustomerRow(customer, {
+          nonCancelledOrderValueCents: valueByCustomerId.get(customer.id) ?? 0,
+          latestOrderAt: latestByCustomerId.get(customer.id) ?? null
+        })
+      ),
       page: input.page,
       pageSize: input.pageSize,
       totalCount,
@@ -520,18 +606,14 @@ export const customerRouter = createTRPCRouter({
           },
           include: {
             user: { select: { id: true } },
-            _count: { select: { orders: true } },
-            orders: {
-              select: {
-                totalCents: true,
-                placedAt: true,
-                status: true
-              }
-            }
+            _count: { select: { orders: true } }
           }
         })
 
-        return mapCustomerRow(customer)
+        return mapCustomerRow(customer, {
+          nonCancelledOrderValueCents: 0,
+          latestOrderAt: null
+        })
       } catch (error) {
         if (isPrismaErrorCode(error, 'P2002')) {
           throw new TRPCError({

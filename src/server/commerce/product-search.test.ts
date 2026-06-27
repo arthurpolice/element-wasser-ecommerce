@@ -58,7 +58,8 @@ const storefrontProduct = {
   images: [
     { url: 'https://cdn.example.com/cartridge.jpg', altText: 'Cartridge' }
   ],
-  reviews: [{ rating: 5 }]
+  approvedReviewCount: 1,
+  approvedReviewRatingSum: 5
 }
 
 describe('Product Search', () => {
@@ -239,7 +240,8 @@ describe('Product Search', () => {
       slug: 'aqua-filter',
       featured: false,
       images: [],
-      reviews: []
+      approvedReviewCount: 0,
+      approvedReviewRatingSum: 0
     }
     const db = {
       $queryRaw: vi

@@ -201,29 +201,32 @@ model Manufacturer {
 }
 
 model Product {
-  id              String                 @id @default(cuid())
-  manufacturerId  String
-  manufacturer    Manufacturer           @relation(fields: [manufacturerId], references: [id], onDelete: Restrict)
-  name            String
-  slug            String                 @unique
-  sku             String                 @unique
-  active          Boolean                @default(false)
-  featured        Boolean                @default(false)
-  description     Json?
-  priceCents      Int
-  costCents       Int
-  discountPercent Int?
-  stockOnHand     Int                    @default(0)
-  stockReserved   Int                    @default(0)
-  dispatchMinDays Int
-  dispatchMaxDays Int
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  images          ProductImage[]
-  categories      ProductCategory[]
-  orderLines      OrderLine[]
-  reviews         Review[]
-  searchDocument  ProductSearchDocument?
+  id                      String                 @id @default(cuid())
+  manufacturerId          String
+  manufacturer            Manufacturer           @relation(fields: [manufacturerId], references: [id], onDelete: Restrict)
+  name                    String
+  slug                    String                 @unique
+  sku                     String                 @unique
+  active                  Boolean                @default(false)
+  featured                Boolean                @default(false)
+  description             Json?
+  priceCents              Int
+  costCents               Int
+  discountPercent         Int?
+  stockOnHand             Int                    @default(0)
+  stockReserved           Int                    @default(0)
+  approvedReviewCount     Int                    @default(0)
+  approvedReviewRatingSum Int                    @default(0)
+  dispatchMinDays         Int
+  dispatchMaxDays         Int
+  createdAt               DateTime               @default(now())
+  updatedAt               DateTime               @updatedAt
+  images                  ProductImage[]
+  categories              ProductCategory[]
+  orderLines              OrderLine[]
+  reviews                 Review[]
+  searchDocument          ProductSearchDocument?
+  pendingSearchReindex    ProductSearchReindex?
 
   @@index([manufacturerId])
   @@index([active])
@@ -242,6 +245,16 @@ model ProductSearchDocument {
   updatedAt        DateTime                @updatedAt
 
   @@index([searchVector], type: Gin)
+}
+
+model ProductSearchReindex {
+  productId   String   @id
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  generation  Int      @default(1)
+  requestedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([requestedAt])
 }
 
 model ProductImage {
@@ -387,7 +400,7 @@ model Order {
   @@index([customerId])
   @@index([customerEmail])
   @@index([guestCheckoutFingerprint, status, paymentStatus, paymentExpiresAt])
-  @@index([status, paymentStatus, fulfillmentStatus])
+  @@index([status, paymentStatus, fulfillmentStatus, paymentExpiresAt])
   @@index([placedAt])
 }
 

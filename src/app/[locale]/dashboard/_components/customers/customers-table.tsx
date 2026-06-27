@@ -55,11 +55,11 @@ export function CustomersTable({
         header: t("columns.name"),
         cell: ({ row }) => (
           <div>
-            <p className="font-medium text-dash-ink">
+            <p className="text-dash-ink font-medium">
               {formatCustomerName(row.original)}
             </p>
             {row.original.hasLinkedUser ? (
-              <p className="text-xs text-dash-muted">{t("linkedUser")}</p>
+              <p className="text-dash-muted text-xs">{t("linkedUser")}</p>
             ) : null}
           </div>
         ),
@@ -96,10 +96,10 @@ export function CustomersTable({
       },
       {
         id: "totalSpent",
-        accessorKey: "totalSpentCents",
+        accessorKey: "nonCancelledOrderValueCents",
         header: t("columns.totalSpent"),
         cell: ({ row }) =>
-          format.number(row.original.totalSpentCents / 100, {
+          format.number(row.original.nonCancelledOrderValueCents / 100, {
             style: "currency",
             currency: "CHF",
           }),
@@ -147,13 +147,10 @@ export function CustomersTable({
                 const canSort = header.column.getCanSort();
 
                 return (
-                  <th
-                    key={header.id}
-                    className="px-4 py-3 text-left"
-                  >
+                  <th key={header.id} className="px-4 py-3 text-left">
                     {canSort ? (
                       <button
-                        className="inline-flex items-center gap-1 transition hover:text-dash-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dash-accent/30"
+                        className="hover:text-dash-ink focus-visible:ring-dash-accent/30 inline-flex items-center gap-1 transition focus-visible:ring-2 focus-visible:outline-none"
                         onClick={header.column.getToggleSortingHandler()}
                         type="button"
                       >
@@ -179,11 +176,11 @@ export function CustomersTable({
             </tr>
           ))}
         </thead>
-        <tbody className="divide-y divide-dash-border bg-dash-surface">
+        <tbody className="divide-dash-border bg-dash-surface divide-y">
           {table.getRowModel().rows.map((row) => (
             <tr key={row.id} className={dashTableRowClass}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-4 py-3 text-dash-ink/80">
+                <td key={cell.id} className="text-dash-ink/80 px-4 py-3">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}

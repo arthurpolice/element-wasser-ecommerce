@@ -6,6 +6,9 @@ and Prisma schema indexing.
 Method: static review of query shapes. No code changes were made. Costs are
 reasoned from query structure, not measured; confirm hotspots with
 `EXPLAIN ANALYZE` / query logging before optimizing.
+Decision review completed: 2026-06-22. Accepted decisions were implemented on
+2026-06-22; the two indexing decisions explicitly marked deferred remain
+measurement-gated.
 
 ## Severity legend
 
@@ -16,20 +19,20 @@ reasoned from query structure, not measured; confirm hotspots with
 
 ## Summary table
 
-| # | Area | File | Severity | Pattern |
-|---|------|------|----------|---------|
-| 1 | Storefront product grids load every review | `lib/catalog-product.ts` | P1 | over-fetch / per-row |
-| 2 | Customer Area loads all orders + all lines | `routers/customer.ts` `me` | P1 | unbounded fetch |
-| 3 | Search-doc upsert loops per product, inline | `commerce/product-search.ts` | P1 | N+1 writes on mutation path |
-| 4 | Customer list sums orders in JS | `routers/customer.ts` `list` | P2 | over-fetch + JS aggregate |
-| 5 | Homepage fires query per root category | `routers/catalog.ts` `homepageSections` | P2 | query-per-group |
-| 6 | Whole category tree fetched per request | `routers/catalog.ts` (multiple) | P2 | repeated uncached read |
-| 7 | Create-order modal loads all customers+products | `routers/order.ts` | P2 | unbounded fetch |
-| 8 | Expiry job: many sequential round trips per order | `commerce/order-lifecycle.ts` | P3 | sequential N+1 + Stripe |
-| 9 | Stock reserve/release loops per line | `commerce/order-lifecycle.ts`, `order-placement.ts` | P3 | per-row writes |
-| 10 | `contains` search has no trigram index | `routers/{order,product,customer}.ts` | P4 | seq scan |
-| 11 | `count(*)` per page on filtered lists | all list routers | P4 | expensive count |
-| 12 | Missing `Product(active, featured)` index | `prisma/schema.prisma` | P4 | index |
+| #   | Area                                              | File                                                | Severity | Pattern                     |
+| --- | ------------------------------------------------- | --------------------------------------------------- | -------- | --------------------------- |
+| 1   | Storefront product grids load every review        | `lib/catalog-product.ts`                            | P1       | over-fetch / per-row        |
+| 2   | Customer Area loads all orders + all lines        | `routers/customer.ts` `me`                          | P1       | unbounded fetch             |
+| 3   | Search-doc upsert loops per product, inline       | `commerce/product-search.ts`                        | P1       | N+1 writes on mutation path |
+| 4   | Customer list sums orders in JS                   | `routers/customer.ts` `list`                        | P2       | over-fetch + JS aggregate   |
+| 5   | Homepage fires query per root category            | `routers/catalog.ts` `homepageSections`             | P2       | query-per-group             |
+| 6   | Whole category tree fetched per request           | `routers/catalog.ts` (multiple)                     | P2       | repeated uncached read      |
+| 7   | Create-order modal loads all customers+products   | `routers/order.ts`                                  | P2       | unbounded fetch             |
+| 8   | Expiry job: many sequential round trips per order | `commerce/order-lifecycle.ts`                       | P3       | sequential N+1 + Stripe     |
+| 9   | Stock reserve/release loops per line              | `commerce/order-lifecycle.ts`, `order-placement.ts` | P3       | per-row writes              |
+| 10  | `contains` search has no trigram index            | `routers/{order,product,customer}.ts`               | P4       | seq scan                    |
+| 11  | `count(*)` per page on filtered lists             | all list routers                                    | P4       | expensive count             |
+| 12  | Missing `Product(active, featured)` index         | `prisma/schema.prisma`                              | P4       | index                       |
 
 ---
 
@@ -44,10 +47,14 @@ only to count them and average `rating` in JS.
 // src/lib/catalog-product.ts
 const productInclude = {
   manufacturer: { select: { name: true } },
-  images: { orderBy: { sortOrder: 'asc' }, take: 1, select: { url: true, altText: true } },
+  images: {
+    orderBy: { sortOrder: 'asc' },
+    take: 1,
+    select: { url: true, altText: true }
+  },
   reviews: {
     where: { status: 'APPROVED' },
-    select: { rating: true }          // <- every approved review, every product
+    select: { rating: true } // <- every approved review, every product
   }
 }
 ```
@@ -57,7 +64,8 @@ const productInclude = {
 const reviewCount = product.reviews.length
 const averageRating =
   reviewCount > 0
-    ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+    ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
+      reviewCount
     : null
 ```
 
@@ -67,11 +75,12 @@ row for all 12 products on every page load and every infinite-scroll chunk. Cost
 scales with total review volume, not page size.
 
 Fix options:
+
 - Denormalize `reviewCount` + `ratingSum` (or `averageRating`) onto `Product`,
   updated when a Review is approved/removed. Grid queries then select two columns.
 - Or compute per-product aggregates with a single `review.groupBy({ by: ['productId'],
-  where: { productId: { in: ids }, status: 'APPROVED' }, _avg: { rating: true },
-  _count: true })` after the product fetch, and merge by id.
+where: { productId: { in: ids }, status: 'APPROVED' }, _avg: { rating: true },
+_count: true })` after the product fetch, and merge by id.
 
 The detail page (`getProductBySlug`) can keep loading rating rows; it's one product.
 
@@ -96,6 +105,7 @@ customer's complete history; a repeat buyer with hundreds of orders pays for all
 them on every page load.
 
 Fix:
+
 - Paginate orders (cursor or page) and load line items lazily per opened order, or
   cap with `take` + "view all" route.
 - Split `me` into `me` (profile + addresses) and `myOrders` (paginated) so the
@@ -127,6 +137,7 @@ for (const product of products) {
 inside the owner's mutation. `backfillProductSearchDocuments` has the same per-row loop.
 
 Fix:
+
 - Replace the loop with a single multi-row `INSERT ... SELECT ... ON CONFLICT`
   (build the values list from the batch), keeping the same `setweight(to_tsvector...)`
   expression. One statement per batch instead of N.
@@ -191,9 +202,13 @@ with database aggregates rather than loading Orders into JavaScript.
 // src/server/api/routers/catalog.ts  (homepageSections)
 const sections = await Promise.all(
   rootCategories.map(async (category) => {
-    const featuredProducts = await ctx.db.product.findMany({ /* featured in subtree */ take: 4 })
+    const featuredProducts = await ctx.db.product.findMany({
+      /* featured in subtree */ take: 4
+    })
     if (missingCount > 0) {
-      const products = await ctx.db.product.findMany({ /* fallback fill */ take: missingCount })
+      const products = await ctx.db.product.findMany({
+        /* fallback fill */ take: missingCount
+      })
     }
   })
 )
@@ -204,11 +219,24 @@ connection-pool pressure under load (homepage = highest-traffic route). Each cal
 also recomputes `collectDescendantCategoryIds` in JS.
 
 Fix options:
+
 - One query per "kind": fetch candidate products for all root subtrees in a single
   query that tags each product with its root category (via the `ProductCategory`
   join), then bucket in JS and apply the featured-then-fallback rule.
 - Or cache the homepage payload (it changes only on catalog edits) with
   `revalidate`/tag-based invalidation.
+
+**Decision (accepted 2026-06-22):** Cache the assembled homepage payload with
+tag-based invalidation. Invalidate it when Product storefront presentation,
+activation, Featured Product status, images, Manufacturer, Category structure, or
+Product Category membership changes. Keep the current cold-path query shape
+initially; rewrite it into bulk queries only if cold-load measurements justify the
+additional complexity.
+
+Review approval, rejection, rating edits, and deletion do not invalidate the
+homepage payload. Homepage rating summaries may therefore be stale for at most the
+15-minute cache TTL, while uncached Category and Product Search reads can observe
+the updated Product rating projection immediately.
 
 ### 6. The full category tree is re-fetched on nearly every storefront request
 
@@ -223,7 +251,10 @@ const categories = await ctx.db.category.findMany({
   select: { id: true, slug: true, parentId: true }
 })
 const resolved = resolveCategoryPath(categories, slugSegments)
-const categoryIds = collectDescendantCategoryIds(categories, resolved.categoryId)
+const categoryIds = collectDescendantCategoryIds(
+  categories,
+  resolved.categoryId
+)
 ```
 
 Correct, and cheap for a small catalog, but it's the same unchanging tree fetched
@@ -232,6 +263,20 @@ repeatedly per request. `collectDescendantCategoryIds` is also O(categories²) i
 Fix: cache the active category tree (short TTL or tag-invalidated on category
 mutations) and reuse it across these procedures. This removes one query from every
 storefront navigation/listing request.
+
+**Decision (accepted 2026-06-22):** Category navigation includes only
+Storefront-visible Categories: active Categories whose subtree contains at least
+one active Product. Active empty Categories remain resolvable by direct URL and
+render an empty Product grid. The navigation projection therefore changes on
+Category structure/activation changes, Product activation changes, and Product
+Category membership changes.
+
+Cache two projections independently with tag-based invalidation and a TTL used only
+as recovery protection. The complete active Category tree supports path resolution,
+breadcrumbs, and descendant lookup and is invalidated by Category
+structure/activation mutations. The Storefront-visible Category navigation
+projection is additionally invalidated by Product activation and Product Category
+membership mutations.
 
 ### 7. Create-order modal endpoints load all customers and all products unpaginated
 
@@ -247,6 +292,13 @@ create-order modal becomes the slowest owner screen.
 
 Fix: make both searchable + paginated (typeahead with `take` + `contains`/search
 doc), matching the existing list endpoints' shape.
+
+**Decision (accepted 2026-06-22):** Replace both modal-wide loads with
+server-search typeaheads. Begin searching after two characters and return at most
+20 results. Customer results include identity plus the Main Address Book Entry;
+Product results include active Products with current price and Available Stock.
+Order placement resolves and validates the selected records again rather than
+trusting the typeahead snapshot.
 
 ---
 
@@ -278,6 +330,7 @@ All sequential across orders. After any backlog (scheduler downtime), this is sl
 holds row locks serially.
 
 Fix:
+
 - Drop the redundant `findOrder`; reuse `candidate` (it already has `lines` and
   `payments` via `orderLifecycleInclude`).
 - Bound-concurrency the per-order work (e.g. process in chunks with `Promise.all`),
@@ -285,12 +338,23 @@ Fix:
 - The claim could be a single `updateMany` over all candidate ids up front, then
   process the claimed set.
 
+**Decision (accepted and implemented 2026-06-22):** Each sweep atomically claims
+at most 50 eligible Orders using `FOR UPDATE SKIP LOCKED` and a ten-minute
+`paymentExpiryStartedAt` lease, then processes up to five claimed Orders
+concurrently. Failed or crashed work becomes reclaimable after the lease expires.
+The final transaction verifies lease ownership and rechecks Payment before
+releasing Stock Reservation. An index supports the expiry claim filter. See
+ADR-0007.
+
 ### 9. Stock reservation reserve/release loop one product update per line
 
 ```ts
 // src/server/commerce/order-lifecycle.ts
 for (const line of order.lines) {
-  await tx.product.update({ where: { id: line.productId }, data: { stockReserved: { decrement: line.quantity } } })
+  await tx.product.update({
+    where: { id: line.productId },
+    data: { stockReserved: { decrement: line.quantity } }
+  })
 }
 ```
 
@@ -309,9 +373,16 @@ transaction and the locks it holds.
 Note: the reservation loop in `placeOrder` is intentionally conditional-per-row (it
 relies on `updateMany().count` to detect insufficient stock atomically), so it can't
 trivially collapse to one statement without moving the check into SQL. The
-release/consume loops in `order-lifecycle.ts` *can* be a single statement per order
+release/consume loops in `order-lifecycle.ts` _can_ be a single statement per order
 with a `CASE`-based `UPDATE ... WHERE id IN (...)`, or grouped raw SQL. Lower priority
 than the interactive items.
+
+**Decision (accepted 2026-06-22):** Keep Order placement reservation
+conditional per Product so insufficient stock remains atomically detectable.
+Batch Stock Reservation release and consumption into one parameterized, set-based
+SQL update per Order. Require the affected-row count to equal the number of
+distinct Products and fail the transaction on missing Products or negative stock
+invariants.
 
 ### Redundant compute: `buildOrderLineSnapshot` re-quotes per line
 
@@ -326,6 +397,9 @@ function buildOrderLineSnapshot(product, quantity) {
 `placeOrder` already computed the batch `quote` for all lines; building snapshots then
 calls `quoteOrderLines` again once per line (CPU + Map allocation inside the txn).
 Reuse the already-computed `quote.lines` values instead.
+
+**Decision (accepted 2026-06-22):** Reuse the already-computed batch quote when
+building Order Line snapshots. Do not invoke `quoteOrderLines` again per line.
 
 ---
 
@@ -350,6 +424,11 @@ Prisma can't express trgm ops classes), e.g.
 `CREATE INDEX ... USING gin (lower("customerEmail") gin_trgm_ops)`. Or route owner
 search through the existing `ProductSearchDocument` tsvector approach where applicable.
 
+**Decision (deferred 2026-06-22):** Do not add trigram indexes yet. Revisit with
+production-like row counts and `EXPLAIN ANALYZE`; add indexes only for owner search
+paths where substring scans materially harm interactive latency. Manufacturer-name
+search needs separate query-shape analysis because it crosses a relation.
+
 ### 11. `count(*)` with the same filter runs on every list page
 
 `order.list`, `product.list`, `customer.list`, and `catalog.listCategoryProducts` each
@@ -358,6 +437,12 @@ filter (P4-10) the count is a full filtered scan on every page navigation.
 
 Fix: only count on page 1 (cache total client-side) , use `"hasNextPage"` via
 `take: pageSize + 1`, or accept an approximate count for large tables.
+
+**Decision (accepted 2026-06-22):** Keep exact total counts for owner Order,
+Product, and Customer tables for now because their bounded pagination exposes
+page totals. Storefront Product grids use continuation semantics instead: fetch
+`pageSize + 1`, return `hasNextPage`, and do not compute an exact total for
+infinite-scroll chunks.
 
 ### 12. Add a `Product(active, featured)` composite index for the homepage filter
 
@@ -371,6 +456,12 @@ Also consider: storefront category listings order by `[{ featured: 'desc' }, { n
 'asc' }]` with `skip/take`. Large `OFFSET` paging is O(offset); if deep pagination
 becomes common, switch category grids to keyset/cursor pagination on `(featured, name,
 id)`.
+
+**Decision (deferred 2026-06-22):** Do not add `Product(active, featured)` yet.
+The cached homepage payload removes the lookup from warm requests. Measure the cold
+homepage query with representative data, then add an index only if needed and shape
+it around the observed complete filter and ordering rather than assuming this
+two-column index is sufficient.
 
 ---
 

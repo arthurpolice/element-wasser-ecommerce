@@ -210,25 +210,22 @@ async function resolveShippingSnapshot(
   return snapshotAddressBookEntry(address)
 }
 
-function buildOrderLineSnapshot(product: ProductSnapshot, quantity: number) {
-  const listPriceCents = product.priceCents
-  const quote = quoteOrderLines(
-    [product],
-    [{ productId: product.id, quantity }],
-    0
-  )
-  const quotedLine = quote.lines[0]
-
+function buildOrderLineSnapshot(
+  product: ProductSnapshot,
+  quantity: number,
+  unitPriceCents: number,
+  lineTotalCents: number
+) {
   return {
     productId: product.id,
     productName: product.name,
     productSku: product.sku,
     quantity,
-    listPriceCents,
+    listPriceCents: product.priceCents,
     discountPercent: product.discountPercent,
-    unitPriceCents: quotedLine?.unitPriceCents ?? listPriceCents,
+    unitPriceCents,
     unitCostCents: product.costCents,
-    lineTotalCents: quotedLine?.lineTotalCents ?? listPriceCents * quantity
+    lineTotalCents
   }
 }
 
@@ -337,7 +334,12 @@ export async function placeOrderInTransaction(
       throw new OrderPlacementError('PRODUCT_NOT_FOUND', 'Product not found.')
     }
 
-    return buildOrderLineSnapshot(product, line.quantity)
+    return buildOrderLineSnapshot(
+      product,
+      line.quantity,
+      line.unitPriceCents,
+      line.lineTotalCents
+    )
   })
   const totals = {
     subtotalCents: quote.subtotalCents,

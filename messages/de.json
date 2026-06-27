@@ -107,7 +107,7 @@
         "status": "Status",
         "orderCount": "Bestellungen",
         "latestOrder": "Letzte Bestellung",
-        "totalSpent": "Gesamtumsatz",
+        "totalSpent": "Wert nicht stornierter Bestellungen",
         "createdAt": "Erstellt am"
       },
       "registered": "Registriert",
@@ -213,6 +213,8 @@
     "orders": {
       "title": "Bestellungen",
       "empty": "Noch keine Bestellungen vorhanden.",
+      "loading": "Bestellungen werden geladen…",
+      "loadMore": "Mehr laden",
       "shipping": "Lieferadresse",
       "billing": "Rechnungsadresse",
       "dispatchedWithSwissPost": "An die Schweizerische Post übergeben",

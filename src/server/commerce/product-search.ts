@@ -7,7 +7,6 @@ import {
 import { isQstashConfigured, publishQstashJson } from '~/server/queue/qstash'
 
 export const PRODUCT_SEARCH_SUGGESTION_LIMIT = 6
-export const PRODUCT_SEARCH_SYNC_THRESHOLD = 50
 export const PRODUCT_SEARCH_REINDEX_BATCH_SIZE = 50
 export const PRODUCT_SEARCH_REINDEX_QSTASH_PATH =
   '/api/qstash/catalog/search/reindex'
@@ -20,6 +19,10 @@ type ProductSearchDb = Pick<
 >
 
 type ProductSearchSyncDb = Pick<PrismaClient, '$executeRaw' | 'product'>
+type ProductSearchReindexDb = Pick<
+  PrismaClient,
+  '$executeRaw' | '$queryRaw' | 'product'
+>
 
 type ProductSearchDocumentProduct = {
   id: string
@@ -74,6 +77,11 @@ type ProductSearchCountRow = {
 
 type ProductSearchProductIdRow = {
   productId: string
+}
+
+type PendingProductSearchReindexRow = {
+  productId: string
+  generation: number
 }
 
 type ProductSearchFacetRow = ProductSearchFacet & {
@@ -208,6 +216,76 @@ export async function upsertProductSearchDocument(
   `
 }
 
+async function upsertProductSearchDocuments(
+  db: Pick<PrismaClient, '$executeRaw'>,
+  products: ProductSearchDocumentProduct[]
+) {
+  if (products.length === 0) {
+    return { refreshedCount: 0 }
+  }
+
+  const documents = products.map(buildProductSearchDocument)
+  const productIds = documents.map((document) => document.productId)
+  const productNames = documents.map((document) => document.productNameText)
+  const manufacturers = documents.map((document) => document.manufacturerText)
+  const skus = documents.map((document) => document.skuText)
+  const categories = documents.map((document) => document.categoryText)
+  const descriptions = documents.map((document) => document.descriptionText)
+
+  await db.$executeRaw`
+    INSERT INTO "ProductSearchDocument" (
+      "productId",
+      "productNameText",
+      "manufacturerText",
+      "skuText",
+      "categoryText",
+      "descriptionText",
+      "searchVector",
+      "createdAt",
+      "updatedAt"
+    )
+    SELECT
+      input."productId",
+      input."productNameText",
+      input."manufacturerText",
+      input."skuText",
+      input."categoryText",
+      input."descriptionText",
+      setweight(to_tsvector('simple', input."productNameText"), 'A') ||
+        setweight(to_tsvector('simple', input."manufacturerText"), 'B') ||
+        setweight(to_tsvector('simple', input."skuText"), 'B') ||
+        setweight(to_tsvector('simple', input."categoryText"), 'C') ||
+        setweight(to_tsvector('simple', input."descriptionText"), 'D'),
+      now(),
+      now()
+    FROM unnest(
+      ${productIds}::text[],
+      ${productNames}::text[],
+      ${manufacturers}::text[],
+      ${skus}::text[],
+      ${categories}::text[],
+      ${descriptions}::text[]
+    ) AS input(
+      "productId",
+      "productNameText",
+      "manufacturerText",
+      "skuText",
+      "categoryText",
+      "descriptionText"
+    )
+    ON CONFLICT ("productId") DO UPDATE SET
+      "productNameText" = EXCLUDED."productNameText",
+      "manufacturerText" = EXCLUDED."manufacturerText",
+      "skuText" = EXCLUDED."skuText",
+      "categoryText" = EXCLUDED."categoryText",
+      "descriptionText" = EXCLUDED."descriptionText",
+      "searchVector" = EXCLUDED."searchVector",
+      "updatedAt" = now()
+  `
+
+  return { refreshedCount: products.length }
+}
+
 export async function backfillProductSearchDocuments(
   db: ProductSearchDb,
   options: { productIds?: string[]; batchSize?: number } = {}
@@ -229,9 +307,7 @@ export async function backfillProductSearchDocuments(
       return { processedCount }
     }
 
-    for (const product of products) {
-      await upsertProductSearchDocument(db, product)
-    }
+    await upsertProductSearchDocuments(db, products)
 
     processedCount += products.length
     cursor = products.at(-1)?.id
@@ -261,23 +337,44 @@ export async function refreshProductSearchDocuments(
     select: productSearchDocumentSelect
   })
 
-  for (const product of products) {
-    await upsertProductSearchDocument(db, product)
-  }
-
-  return { refreshedCount: products.length }
+  return upsertProductSearchDocuments(db, products)
 }
 
-export async function scheduleProductSearchReindex(productIds: string[]) {
+export async function recordPendingProductSearchReindexes(
+  db: Pick<PrismaClient, '$executeRaw'>,
+  productIds: string[]
+) {
   const uniqueIds = uniqueProductIds(productIds)
+  if (uniqueIds.length === 0) {
+    return { pendingCount: 0 }
+  }
 
-  if (uniqueIds.length === 0 || !isQstashConfigured()) {
+  await db.$executeRaw`
+    INSERT INTO "ProductSearchReindex" (
+      "productId",
+      "generation",
+      "requestedAt",
+      "updatedAt"
+    )
+    SELECT input."productId", 1, now(), now()
+    FROM unnest(${uniqueIds}::text[]) AS input("productId")
+    ON CONFLICT ("productId") DO UPDATE SET
+      "generation" = "ProductSearchReindex"."generation" + 1,
+      "requestedAt" = now(),
+      "updatedAt" = now()
+  `
+
+  return { pendingCount: uniqueIds.length }
+}
+
+export async function scheduleProductSearchReindex() {
+  if (!isQstashConfigured()) {
     return null
   }
 
   return publishQstashJson({
     path: PRODUCT_SEARCH_REINDEX_QSTASH_PATH,
-    body: { productIds: uniqueIds },
+    body: {},
     contentBasedDeduplication: true,
     retries: 3,
     label: 'product-search-reindex'
@@ -288,28 +385,58 @@ export async function syncProductSearchDocumentsForMutation(
   db: ProductSearchSyncDb,
   productIds: string[]
 ) {
-  const uniqueIds = uniqueProductIds(productIds)
-
-  if (uniqueIds.length <= PRODUCT_SEARCH_SYNC_THRESHOLD) {
-    const result = await refreshProductSearchDocuments(db, uniqueIds)
-    return { mode: 'sync' as const, ...result }
-  }
-
-  try {
-    const enqueuedMessage = await scheduleProductSearchReindex(uniqueIds)
-
-    if (enqueuedMessage) {
-      return {
-        mode: 'async' as const,
-        enqueuedCount: uniqueIds.length
-      }
-    }
-  } catch {
-    // Fall back to local reindexing so catalog mutations do not leave search stale.
-  }
-
-  const result = await processProductSearchReindexBatch(db, uniqueIds)
+  const result = await refreshProductSearchDocuments(db, productIds)
   return { mode: 'sync' as const, ...result }
+}
+
+async function completePendingProductSearchReindexes(
+  db: Pick<PrismaClient, '$executeRaw'>,
+  processedRows: PendingProductSearchReindexRow[]
+) {
+  if (processedRows.length === 0) {
+    return
+  }
+
+  const productIds = processedRows.map((item) => item.productId)
+  const generations = processedRows.map((item) => item.generation)
+
+  await db.$executeRaw`
+    DELETE FROM "ProductSearchReindex" reindex
+    USING unnest(
+      ${productIds}::text[],
+      ${generations}::integer[]
+    ) AS processed("productId", "generation")
+    WHERE reindex."productId" = processed."productId"
+      AND reindex."generation" = processed."generation"
+  `
+}
+
+export async function processPendingProductSearchReindexes(
+  db: ProductSearchReindexDb,
+  batchSize = PRODUCT_SEARCH_REINDEX_BATCH_SIZE
+) {
+  const limit = Math.min(Math.max(batchSize, 1), 200)
+  const pending = await db.$queryRaw<PendingProductSearchReindexRow[]>`
+    SELECT "productId", "generation"
+    FROM "ProductSearchReindex"
+    ORDER BY "requestedAt" ASC, "productId" ASC
+    LIMIT ${limit}
+  `
+
+  if (pending.length === 0) {
+    return { requestedCount: 0, refreshedCount: 0 }
+  }
+
+  const result = await refreshProductSearchDocuments(
+    db,
+    pending.map((item) => item.productId)
+  )
+  await completePendingProductSearchReindexes(db, pending)
+
+  return {
+    requestedCount: pending.length,
+    refreshedCount: result.refreshedCount
+  }
 }
 
 export async function processProductSearchReindexBatch(

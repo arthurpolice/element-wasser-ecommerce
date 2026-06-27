@@ -47,10 +47,6 @@ const productInclude = {
     orderBy: { sortOrder: 'asc' as const },
     take: 1,
     select: { url: true, altText: true }
-  },
-  reviews: {
-    where: { status: 'APPROVED' as const },
-    select: { rating: true }
   }
 } satisfies Prisma.ProductInclude
 
@@ -59,10 +55,6 @@ const productDetailInclude = {
   images: {
     orderBy: { sortOrder: 'asc' as const },
     select: { id: true, url: true, altText: true }
-  },
-  reviews: {
-    where: { status: 'APPROVED' as const },
-    select: { rating: true }
   },
   categories: {
     where: { category: { active: true } },
@@ -133,12 +125,9 @@ export function mapStorefrontProduct(
   product: ProductWithStorefrontRelations
 ): StorefrontProduct {
   const primaryImage = product.images[0]
-  const reviewCount = product.reviews.length
+  const reviewCount = product.approvedReviewCount
   const averageRating =
-    reviewCount > 0
-      ? product.reviews.reduce((sum, review) => sum + review.rating, 0) /
-        reviewCount
-      : null
+    reviewCount > 0 ? product.approvedReviewRatingSum / reviewCount : null
 
   return {
     id: product.id,

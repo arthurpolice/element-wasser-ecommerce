@@ -13,8 +13,16 @@ import {
   replaceProductCategories
 } from '~/lib/product-categories'
 import { toSlug } from '~/lib/slug'
-import { syncProductSearchDocumentsForMutation } from '~/server/commerce/product-search'
+import {
+  recordPendingProductSearchReindexes,
+  scheduleProductSearchReindex,
+  syncProductSearchDocumentsForMutation
+} from '~/server/commerce/product-search'
 import { isPrismaErrorCode } from '~/server/prisma-errors'
+import {
+  invalidateCategoryStructureCache,
+  invalidateProductCatalogCache
+} from '~/server/commerce/catalog-cache'
 
 const createInputSchema = z.object({
   name: z.string().trim().min(1),
@@ -293,6 +301,15 @@ async function moveCategoryInTransaction(
   return mapCategoryRow(category)
 }
 
+async function publishPendingSearchReindexSafely() {
+  try {
+    await scheduleProductSearchReindex()
+  } catch {
+    // Durable ProductSearchReindex rows remain for the recovery cron.
+    console.error('Failed to schedule product search reindex')
+  }
+}
+
 export const categoryRouter = createTRPCRouter({
   listFlat: ownerProcedure.query(async ({ ctx }) => {
     const categories = await ctx.db.category.findMany({
@@ -359,6 +376,7 @@ export const categoryRouter = createTRPCRouter({
           })
         })
 
+        invalidateCategoryStructureCache()
         return mapCategoryRow(category)
       } catch (error) {
         if (isPrismaErrorCode(error, 'P2002')) {
@@ -391,25 +409,29 @@ export const categoryRouter = createTRPCRouter({
         await assertValidParent(ctx.db, input.id, input.parentId)
       }
 
-      const category = await ctx.db.category.update({
-        where: { id: input.id },
-        data: {
-          ...(input.name !== undefined ? { name: input.name } : {}),
-          ...(input.parentId !== undefined ? { parentId: input.parentId } : {}),
-          ...(input.sortOrder !== undefined
-            ? { sortOrder: input.sortOrder }
-            : {}),
-          ...(input.active !== undefined ? { active: input.active } : {})
-        },
-        include: {
-          _count: { select: { products: true, children: true } }
-        }
+      const category = await ctx.db.$transaction(async (tx) => {
+        const affectedProductIds = await getProductIdsForCategory(tx, input.id)
+        const updated = await tx.category.update({
+          where: { id: input.id },
+          data: {
+            ...(input.name !== undefined ? { name: input.name } : {}),
+            ...(input.parentId !== undefined
+              ? { parentId: input.parentId }
+              : {}),
+            ...(input.sortOrder !== undefined
+              ? { sortOrder: input.sortOrder }
+              : {}),
+            ...(input.active !== undefined ? { active: input.active } : {})
+          },
+          include: {
+            _count: { select: { products: true, children: true } }
+          }
+        })
+        await recordPendingProductSearchReindexes(tx, affectedProductIds)
+        return updated
       })
-
-      await syncProductSearchDocumentsForMutation(
-        ctx.db,
-        await getProductIdsForCategory(ctx.db, input.id)
-      )
+      await publishPendingSearchReindexSafely()
+      invalidateCategoryStructureCache()
 
       return mapCategoryRow(category)
     }),
@@ -418,13 +440,16 @@ export const categoryRouter = createTRPCRouter({
     .input(moveInputSchema)
     .mutation(async ({ ctx, input }) => {
       try {
-        const category = await ctx.db.$transaction((tx) =>
-          moveCategoryInTransaction(tx, input)
-        )
-        await syncProductSearchDocumentsForMutation(
-          ctx.db,
-          await getProductIdsForCategory(ctx.db, input.categoryId)
-        )
+        const category = await ctx.db.$transaction(async (tx) => {
+          const moved = await moveCategoryInTransaction(tx, input)
+          await recordPendingProductSearchReindexes(
+            tx,
+            await getProductIdsForCategory(tx, input.categoryId)
+          )
+          return moved
+        })
+        await publishPendingSearchReindexSafely()
+        invalidateCategoryStructureCache()
 
         return category
       } catch (error) {
@@ -469,6 +494,7 @@ export const categoryRouter = createTRPCRouter({
       )
 
       await ctx.db.$transaction(async (tx) => {
+        await recordPendingProductSearchReindexes(tx, affectedProductIds)
         await tx.category.delete({
           where: { id: input.id }
         })
@@ -476,8 +502,8 @@ export const categoryRouter = createTRPCRouter({
         const siblingIds = await getSiblingIds(tx, category.parentId)
         await normalizeSiblingSortOrders(tx, siblingIds)
       })
-
-      await syncProductSearchDocumentsForMutation(ctx.db, affectedProductIds)
+      await publishPendingSearchReindexSafely()
+      invalidateCategoryStructureCache()
 
       return { id: input.id }
     }),
@@ -504,6 +530,7 @@ export const categoryRouter = createTRPCRouter({
       })
 
       await syncProductSearchDocumentsForMutation(ctx.db, [input.productId])
+      invalidateProductCatalogCache()
 
       return { productId: input.productId, categoryIds: input.categoryIds }
     })

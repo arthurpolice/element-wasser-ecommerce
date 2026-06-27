@@ -64,6 +64,11 @@ export type Product = $Result.DefaultSelection<Prisma.$ProductPayload>
  */
 export type ProductSearchDocument = $Result.DefaultSelection<Prisma.$ProductSearchDocumentPayload>
 /**
+ * Model ProductSearchReindex
+ * 
+ */
+export type ProductSearchReindex = $Result.DefaultSelection<Prisma.$ProductSearchReindexPayload>
+/**
  * Model ProductImage
  * 
  */
@@ -549,6 +554,16 @@ export class PrismaClient<
     * ```
     */
   get productSearchDocument(): Prisma.ProductSearchDocumentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.productSearchReindex`: Exposes CRUD operations for the **ProductSearchReindex** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProductSearchReindices
+    * const productSearchReindices = await prisma.productSearchReindex.findMany()
+    * ```
+    */
+  get productSearchReindex(): Prisma.ProductSearchReindexDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.productImage`: Exposes CRUD operations for the **ProductImage** model.
@@ -1123,6 +1138,7 @@ export namespace Prisma {
     Manufacturer: 'Manufacturer',
     Product: 'Product',
     ProductSearchDocument: 'ProductSearchDocument',
+    ProductSearchReindex: 'ProductSearchReindex',
     ProductImage: 'ProductImage',
     Category: 'Category',
     ProductCategory: 'ProductCategory',
@@ -1151,7 +1167,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "emailNotification" | "emailDeliveryAttempt" | "resendWebhookEvent" | "orderLine" | "payment" | "review" | "reviewInvite"
+      modelProps: "post" | "user" | "session" | "account" | "verification" | "customer" | "address" | "manufacturer" | "product" | "productSearchDocument" | "productSearchReindex" | "productImage" | "category" | "productCategory" | "orderNumberSequence" | "productSkuSequence" | "order" | "emailNotification" | "emailDeliveryAttempt" | "resendWebhookEvent" | "orderLine" | "payment" | "review" | "reviewInvite"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1876,6 +1892,80 @@ export namespace Prisma {
           count: {
             args: Prisma.ProductSearchDocumentCountArgs<ExtArgs>
             result: $Utils.Optional<ProductSearchDocumentCountAggregateOutputType> | number
+          }
+        }
+      }
+      ProductSearchReindex: {
+        payload: Prisma.$ProductSearchReindexPayload<ExtArgs>
+        fields: Prisma.ProductSearchReindexFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProductSearchReindexFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProductSearchReindexFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>
+          }
+          findFirst: {
+            args: Prisma.ProductSearchReindexFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProductSearchReindexFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>
+          }
+          findMany: {
+            args: Prisma.ProductSearchReindexFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>[]
+          }
+          create: {
+            args: Prisma.ProductSearchReindexCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>
+          }
+          createMany: {
+            args: Prisma.ProductSearchReindexCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ProductSearchReindexCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>[]
+          }
+          delete: {
+            args: Prisma.ProductSearchReindexDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>
+          }
+          update: {
+            args: Prisma.ProductSearchReindexUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProductSearchReindexDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProductSearchReindexUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ProductSearchReindexUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>[]
+          }
+          upsert: {
+            args: Prisma.ProductSearchReindexUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProductSearchReindexPayload>
+          }
+          aggregate: {
+            args: Prisma.ProductSearchReindexAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProductSearchReindex>
+          }
+          groupBy: {
+            args: Prisma.ProductSearchReindexGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProductSearchReindexGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProductSearchReindexCountArgs<ExtArgs>
+            result: $Utils.Optional<ProductSearchReindexCountAggregateOutputType> | number
           }
         }
       }
@@ -2959,6 +3049,7 @@ export namespace Prisma {
     manufacturer?: ManufacturerOmit
     product?: ProductOmit
     productSearchDocument?: ProductSearchDocumentOmit
+    productSearchReindex?: ProductSearchReindexOmit
     productImage?: ProductImageOmit
     category?: CategoryOmit
     productCategory?: ProductCategoryOmit
@@ -12420,6 +12511,8 @@ export namespace Prisma {
     discountPercent: number | null
     stockOnHand: number | null
     stockReserved: number | null
+    approvedReviewCount: number | null
+    approvedReviewRatingSum: number | null
     dispatchMinDays: number | null
     dispatchMaxDays: number | null
   }
@@ -12430,6 +12523,8 @@ export namespace Prisma {
     discountPercent: number | null
     stockOnHand: number | null
     stockReserved: number | null
+    approvedReviewCount: number | null
+    approvedReviewRatingSum: number | null
     dispatchMinDays: number | null
     dispatchMaxDays: number | null
   }
@@ -12447,6 +12542,8 @@ export namespace Prisma {
     discountPercent: number | null
     stockOnHand: number | null
     stockReserved: number | null
+    approvedReviewCount: number | null
+    approvedReviewRatingSum: number | null
     dispatchMinDays: number | null
     dispatchMaxDays: number | null
     createdAt: Date | null
@@ -12466,6 +12563,8 @@ export namespace Prisma {
     discountPercent: number | null
     stockOnHand: number | null
     stockReserved: number | null
+    approvedReviewCount: number | null
+    approvedReviewRatingSum: number | null
     dispatchMinDays: number | null
     dispatchMaxDays: number | null
     createdAt: Date | null
@@ -12486,6 +12585,8 @@ export namespace Prisma {
     discountPercent: number
     stockOnHand: number
     stockReserved: number
+    approvedReviewCount: number
+    approvedReviewRatingSum: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt: number
@@ -12500,6 +12601,8 @@ export namespace Prisma {
     discountPercent?: true
     stockOnHand?: true
     stockReserved?: true
+    approvedReviewCount?: true
+    approvedReviewRatingSum?: true
     dispatchMinDays?: true
     dispatchMaxDays?: true
   }
@@ -12510,6 +12613,8 @@ export namespace Prisma {
     discountPercent?: true
     stockOnHand?: true
     stockReserved?: true
+    approvedReviewCount?: true
+    approvedReviewRatingSum?: true
     dispatchMinDays?: true
     dispatchMaxDays?: true
   }
@@ -12527,6 +12632,8 @@ export namespace Prisma {
     discountPercent?: true
     stockOnHand?: true
     stockReserved?: true
+    approvedReviewCount?: true
+    approvedReviewRatingSum?: true
     dispatchMinDays?: true
     dispatchMaxDays?: true
     createdAt?: true
@@ -12546,6 +12653,8 @@ export namespace Prisma {
     discountPercent?: true
     stockOnHand?: true
     stockReserved?: true
+    approvedReviewCount?: true
+    approvedReviewRatingSum?: true
     dispatchMinDays?: true
     dispatchMaxDays?: true
     createdAt?: true
@@ -12566,6 +12675,8 @@ export namespace Prisma {
     discountPercent?: true
     stockOnHand?: true
     stockReserved?: true
+    approvedReviewCount?: true
+    approvedReviewRatingSum?: true
     dispatchMinDays?: true
     dispatchMaxDays?: true
     createdAt?: true
@@ -12673,6 +12784,8 @@ export namespace Prisma {
     discountPercent: number | null
     stockOnHand: number
     stockReserved: number
+    approvedReviewCount: number
+    approvedReviewRatingSum: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt: Date
@@ -12712,6 +12825,8 @@ export namespace Prisma {
     discountPercent?: boolean
     stockOnHand?: boolean
     stockReserved?: boolean
+    approvedReviewCount?: boolean
+    approvedReviewRatingSum?: boolean
     dispatchMinDays?: boolean
     dispatchMaxDays?: boolean
     createdAt?: boolean
@@ -12722,6 +12837,7 @@ export namespace Prisma {
     orderLines?: boolean | Product$orderLinesArgs<ExtArgs>
     reviews?: boolean | Product$reviewsArgs<ExtArgs>
     searchDocument?: boolean | Product$searchDocumentArgs<ExtArgs>
+    pendingSearchReindex?: boolean | Product$pendingSearchReindexArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["product"]>
 
@@ -12739,6 +12855,8 @@ export namespace Prisma {
     discountPercent?: boolean
     stockOnHand?: boolean
     stockReserved?: boolean
+    approvedReviewCount?: boolean
+    approvedReviewRatingSum?: boolean
     dispatchMinDays?: boolean
     dispatchMaxDays?: boolean
     createdAt?: boolean
@@ -12760,6 +12878,8 @@ export namespace Prisma {
     discountPercent?: boolean
     stockOnHand?: boolean
     stockReserved?: boolean
+    approvedReviewCount?: boolean
+    approvedReviewRatingSum?: boolean
     dispatchMinDays?: boolean
     dispatchMaxDays?: boolean
     createdAt?: boolean
@@ -12781,13 +12901,15 @@ export namespace Prisma {
     discountPercent?: boolean
     stockOnHand?: boolean
     stockReserved?: boolean
+    approvedReviewCount?: boolean
+    approvedReviewRatingSum?: boolean
     dispatchMinDays?: boolean
     dispatchMaxDays?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "manufacturerId" | "name" | "slug" | "sku" | "active" | "featured" | "description" | "priceCents" | "costCents" | "discountPercent" | "stockOnHand" | "stockReserved" | "dispatchMinDays" | "dispatchMaxDays" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "manufacturerId" | "name" | "slug" | "sku" | "active" | "featured" | "description" | "priceCents" | "costCents" | "discountPercent" | "stockOnHand" | "stockReserved" | "approvedReviewCount" | "approvedReviewRatingSum" | "dispatchMinDays" | "dispatchMaxDays" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
   export type ProductInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     manufacturer?: boolean | ManufacturerDefaultArgs<ExtArgs>
     images?: boolean | Product$imagesArgs<ExtArgs>
@@ -12795,6 +12917,7 @@ export namespace Prisma {
     orderLines?: boolean | Product$orderLinesArgs<ExtArgs>
     reviews?: boolean | Product$reviewsArgs<ExtArgs>
     searchDocument?: boolean | Product$searchDocumentArgs<ExtArgs>
+    pendingSearchReindex?: boolean | Product$pendingSearchReindexArgs<ExtArgs>
     _count?: boolean | ProductCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProductIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12813,6 +12936,7 @@ export namespace Prisma {
       orderLines: Prisma.$OrderLinePayload<ExtArgs>[]
       reviews: Prisma.$ReviewPayload<ExtArgs>[]
       searchDocument: Prisma.$ProductSearchDocumentPayload<ExtArgs> | null
+      pendingSearchReindex: Prisma.$ProductSearchReindexPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -12828,6 +12952,8 @@ export namespace Prisma {
       discountPercent: number | null
       stockOnHand: number
       stockReserved: number
+      approvedReviewCount: number
+      approvedReviewRatingSum: number
       dispatchMinDays: number
       dispatchMaxDays: number
       createdAt: Date
@@ -13232,6 +13358,7 @@ export namespace Prisma {
     orderLines<T extends Product$orderLinesArgs<ExtArgs> = {}>(args?: Subset<T, Product$orderLinesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$OrderLinePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     reviews<T extends Product$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Product$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     searchDocument<T extends Product$searchDocumentArgs<ExtArgs> = {}>(args?: Subset<T, Product$searchDocumentArgs<ExtArgs>>): Prisma__ProductSearchDocumentClient<$Result.GetResult<Prisma.$ProductSearchDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    pendingSearchReindex<T extends Product$pendingSearchReindexArgs<ExtArgs> = {}>(args?: Subset<T, Product$pendingSearchReindexArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13274,6 +13401,8 @@ export namespace Prisma {
     readonly discountPercent: FieldRef<"Product", 'Int'>
     readonly stockOnHand: FieldRef<"Product", 'Int'>
     readonly stockReserved: FieldRef<"Product", 'Int'>
+    readonly approvedReviewCount: FieldRef<"Product", 'Int'>
+    readonly approvedReviewRatingSum: FieldRef<"Product", 'Int'>
     readonly dispatchMinDays: FieldRef<"Product", 'Int'>
     readonly dispatchMaxDays: FieldRef<"Product", 'Int'>
     readonly createdAt: FieldRef<"Product", 'DateTime'>
@@ -13791,6 +13920,25 @@ export namespace Prisma {
      */
     include?: ProductSearchDocumentInclude<ExtArgs> | null
     where?: ProductSearchDocumentWhereInput
+  }
+
+  /**
+   * Product.pendingSearchReindex
+   */
+  export type Product$pendingSearchReindexArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    where?: ProductSearchReindexWhereInput
   }
 
   /**
@@ -14740,6 +14888,1090 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProductSearchDocumentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ProductSearchReindex
+   */
+
+  export type AggregateProductSearchReindex = {
+    _count: ProductSearchReindexCountAggregateOutputType | null
+    _avg: ProductSearchReindexAvgAggregateOutputType | null
+    _sum: ProductSearchReindexSumAggregateOutputType | null
+    _min: ProductSearchReindexMinAggregateOutputType | null
+    _max: ProductSearchReindexMaxAggregateOutputType | null
+  }
+
+  export type ProductSearchReindexAvgAggregateOutputType = {
+    generation: number | null
+  }
+
+  export type ProductSearchReindexSumAggregateOutputType = {
+    generation: number | null
+  }
+
+  export type ProductSearchReindexMinAggregateOutputType = {
+    productId: string | null
+    generation: number | null
+    requestedAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductSearchReindexMaxAggregateOutputType = {
+    productId: string | null
+    generation: number | null
+    requestedAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProductSearchReindexCountAggregateOutputType = {
+    productId: number
+    generation: number
+    requestedAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ProductSearchReindexAvgAggregateInputType = {
+    generation?: true
+  }
+
+  export type ProductSearchReindexSumAggregateInputType = {
+    generation?: true
+  }
+
+  export type ProductSearchReindexMinAggregateInputType = {
+    productId?: true
+    generation?: true
+    requestedAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductSearchReindexMaxAggregateInputType = {
+    productId?: true
+    generation?: true
+    requestedAt?: true
+    updatedAt?: true
+  }
+
+  export type ProductSearchReindexCountAggregateInputType = {
+    productId?: true
+    generation?: true
+    requestedAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ProductSearchReindexAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductSearchReindex to aggregate.
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchReindices to fetch.
+     */
+    orderBy?: ProductSearchReindexOrderByWithRelationInput | ProductSearchReindexOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProductSearchReindexWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchReindices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchReindices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProductSearchReindices
+    **/
+    _count?: true | ProductSearchReindexCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ProductSearchReindexAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ProductSearchReindexSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProductSearchReindexMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProductSearchReindexMaxAggregateInputType
+  }
+
+  export type GetProductSearchReindexAggregateType<T extends ProductSearchReindexAggregateArgs> = {
+        [P in keyof T & keyof AggregateProductSearchReindex]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProductSearchReindex[P]>
+      : GetScalarType<T[P], AggregateProductSearchReindex[P]>
+  }
+
+
+
+
+  export type ProductSearchReindexGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProductSearchReindexWhereInput
+    orderBy?: ProductSearchReindexOrderByWithAggregationInput | ProductSearchReindexOrderByWithAggregationInput[]
+    by: ProductSearchReindexScalarFieldEnum[] | ProductSearchReindexScalarFieldEnum
+    having?: ProductSearchReindexScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProductSearchReindexCountAggregateInputType | true
+    _avg?: ProductSearchReindexAvgAggregateInputType
+    _sum?: ProductSearchReindexSumAggregateInputType
+    _min?: ProductSearchReindexMinAggregateInputType
+    _max?: ProductSearchReindexMaxAggregateInputType
+  }
+
+  export type ProductSearchReindexGroupByOutputType = {
+    productId: string
+    generation: number
+    requestedAt: Date
+    updatedAt: Date
+    _count: ProductSearchReindexCountAggregateOutputType | null
+    _avg: ProductSearchReindexAvgAggregateOutputType | null
+    _sum: ProductSearchReindexSumAggregateOutputType | null
+    _min: ProductSearchReindexMinAggregateOutputType | null
+    _max: ProductSearchReindexMaxAggregateOutputType | null
+  }
+
+  type GetProductSearchReindexGroupByPayload<T extends ProductSearchReindexGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProductSearchReindexGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProductSearchReindexGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProductSearchReindexGroupByOutputType[P]>
+            : GetScalarType<T[P], ProductSearchReindexGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProductSearchReindexSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    productId?: boolean
+    generation?: boolean
+    requestedAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productSearchReindex"]>
+
+  export type ProductSearchReindexSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    productId?: boolean
+    generation?: boolean
+    requestedAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productSearchReindex"]>
+
+  export type ProductSearchReindexSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    productId?: boolean
+    generation?: boolean
+    requestedAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["productSearchReindex"]>
+
+  export type ProductSearchReindexSelectScalar = {
+    productId?: boolean
+    generation?: boolean
+    requestedAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ProductSearchReindexOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"productId" | "generation" | "requestedAt" | "updatedAt", ExtArgs["result"]["productSearchReindex"]>
+  export type ProductSearchReindexInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ProductSearchReindexIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ProductSearchReindexIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+
+  export type $ProductSearchReindexPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProductSearchReindex"
+    objects: {
+      product: Prisma.$ProductPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      productId: string
+      generation: number
+      requestedAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["productSearchReindex"]>
+    composites: {}
+  }
+
+  type ProductSearchReindexGetPayload<S extends boolean | null | undefined | ProductSearchReindexDefaultArgs> = $Result.GetResult<Prisma.$ProductSearchReindexPayload, S>
+
+  type ProductSearchReindexCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProductSearchReindexFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProductSearchReindexCountAggregateInputType | true
+    }
+
+  export interface ProductSearchReindexDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProductSearchReindex'], meta: { name: 'ProductSearchReindex' } }
+    /**
+     * Find zero or one ProductSearchReindex that matches the filter.
+     * @param {ProductSearchReindexFindUniqueArgs} args - Arguments to find a ProductSearchReindex
+     * @example
+     * // Get one ProductSearchReindex
+     * const productSearchReindex = await prisma.productSearchReindex.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProductSearchReindexFindUniqueArgs>(args: SelectSubset<T, ProductSearchReindexFindUniqueArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProductSearchReindex that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProductSearchReindexFindUniqueOrThrowArgs} args - Arguments to find a ProductSearchReindex
+     * @example
+     * // Get one ProductSearchReindex
+     * const productSearchReindex = await prisma.productSearchReindex.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProductSearchReindexFindUniqueOrThrowArgs>(args: SelectSubset<T, ProductSearchReindexFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductSearchReindex that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexFindFirstArgs} args - Arguments to find a ProductSearchReindex
+     * @example
+     * // Get one ProductSearchReindex
+     * const productSearchReindex = await prisma.productSearchReindex.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProductSearchReindexFindFirstArgs>(args?: SelectSubset<T, ProductSearchReindexFindFirstArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProductSearchReindex that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexFindFirstOrThrowArgs} args - Arguments to find a ProductSearchReindex
+     * @example
+     * // Get one ProductSearchReindex
+     * const productSearchReindex = await prisma.productSearchReindex.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProductSearchReindexFindFirstOrThrowArgs>(args?: SelectSubset<T, ProductSearchReindexFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProductSearchReindices that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProductSearchReindices
+     * const productSearchReindices = await prisma.productSearchReindex.findMany()
+     * 
+     * // Get first 10 ProductSearchReindices
+     * const productSearchReindices = await prisma.productSearchReindex.findMany({ take: 10 })
+     * 
+     * // Only select the `productId`
+     * const productSearchReindexWithProductIdOnly = await prisma.productSearchReindex.findMany({ select: { productId: true } })
+     * 
+     */
+    findMany<T extends ProductSearchReindexFindManyArgs>(args?: SelectSubset<T, ProductSearchReindexFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ProductSearchReindex.
+     * @param {ProductSearchReindexCreateArgs} args - Arguments to create a ProductSearchReindex.
+     * @example
+     * // Create one ProductSearchReindex
+     * const ProductSearchReindex = await prisma.productSearchReindex.create({
+     *   data: {
+     *     // ... data to create a ProductSearchReindex
+     *   }
+     * })
+     * 
+     */
+    create<T extends ProductSearchReindexCreateArgs>(args: SelectSubset<T, ProductSearchReindexCreateArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ProductSearchReindices.
+     * @param {ProductSearchReindexCreateManyArgs} args - Arguments to create many ProductSearchReindices.
+     * @example
+     * // Create many ProductSearchReindices
+     * const productSearchReindex = await prisma.productSearchReindex.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ProductSearchReindexCreateManyArgs>(args?: SelectSubset<T, ProductSearchReindexCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ProductSearchReindices and returns the data saved in the database.
+     * @param {ProductSearchReindexCreateManyAndReturnArgs} args - Arguments to create many ProductSearchReindices.
+     * @example
+     * // Create many ProductSearchReindices
+     * const productSearchReindex = await prisma.productSearchReindex.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ProductSearchReindices and only return the `productId`
+     * const productSearchReindexWithProductIdOnly = await prisma.productSearchReindex.createManyAndReturn({
+     *   select: { productId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ProductSearchReindexCreateManyAndReturnArgs>(args?: SelectSubset<T, ProductSearchReindexCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ProductSearchReindex.
+     * @param {ProductSearchReindexDeleteArgs} args - Arguments to delete one ProductSearchReindex.
+     * @example
+     * // Delete one ProductSearchReindex
+     * const ProductSearchReindex = await prisma.productSearchReindex.delete({
+     *   where: {
+     *     // ... filter to delete one ProductSearchReindex
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProductSearchReindexDeleteArgs>(args: SelectSubset<T, ProductSearchReindexDeleteArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProductSearchReindex.
+     * @param {ProductSearchReindexUpdateArgs} args - Arguments to update one ProductSearchReindex.
+     * @example
+     * // Update one ProductSearchReindex
+     * const productSearchReindex = await prisma.productSearchReindex.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProductSearchReindexUpdateArgs>(args: SelectSubset<T, ProductSearchReindexUpdateArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProductSearchReindices.
+     * @param {ProductSearchReindexDeleteManyArgs} args - Arguments to filter ProductSearchReindices to delete.
+     * @example
+     * // Delete a few ProductSearchReindices
+     * const { count } = await prisma.productSearchReindex.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProductSearchReindexDeleteManyArgs>(args?: SelectSubset<T, ProductSearchReindexDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductSearchReindices.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProductSearchReindices
+     * const productSearchReindex = await prisma.productSearchReindex.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProductSearchReindexUpdateManyArgs>(args: SelectSubset<T, ProductSearchReindexUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProductSearchReindices and returns the data updated in the database.
+     * @param {ProductSearchReindexUpdateManyAndReturnArgs} args - Arguments to update many ProductSearchReindices.
+     * @example
+     * // Update many ProductSearchReindices
+     * const productSearchReindex = await prisma.productSearchReindex.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ProductSearchReindices and only return the `productId`
+     * const productSearchReindexWithProductIdOnly = await prisma.productSearchReindex.updateManyAndReturn({
+     *   select: { productId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ProductSearchReindexUpdateManyAndReturnArgs>(args: SelectSubset<T, ProductSearchReindexUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ProductSearchReindex.
+     * @param {ProductSearchReindexUpsertArgs} args - Arguments to update or create a ProductSearchReindex.
+     * @example
+     * // Update or create a ProductSearchReindex
+     * const productSearchReindex = await prisma.productSearchReindex.upsert({
+     *   create: {
+     *     // ... data to create a ProductSearchReindex
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProductSearchReindex we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProductSearchReindexUpsertArgs>(args: SelectSubset<T, ProductSearchReindexUpsertArgs<ExtArgs>>): Prisma__ProductSearchReindexClient<$Result.GetResult<Prisma.$ProductSearchReindexPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ProductSearchReindices.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexCountArgs} args - Arguments to filter ProductSearchReindices to count.
+     * @example
+     * // Count the number of ProductSearchReindices
+     * const count = await prisma.productSearchReindex.count({
+     *   where: {
+     *     // ... the filter for the ProductSearchReindices we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProductSearchReindexCountArgs>(
+      args?: Subset<T, ProductSearchReindexCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProductSearchReindexCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProductSearchReindex.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProductSearchReindexAggregateArgs>(args: Subset<T, ProductSearchReindexAggregateArgs>): Prisma.PrismaPromise<GetProductSearchReindexAggregateType<T>>
+
+    /**
+     * Group by ProductSearchReindex.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProductSearchReindexGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProductSearchReindexGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProductSearchReindexGroupByArgs['orderBy'] }
+        : { orderBy?: ProductSearchReindexGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProductSearchReindexGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProductSearchReindexGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProductSearchReindex model
+   */
+  readonly fields: ProductSearchReindexFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProductSearchReindex.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProductSearchReindexClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProductSearchReindex model
+   */
+  interface ProductSearchReindexFieldRefs {
+    readonly productId: FieldRef<"ProductSearchReindex", 'String'>
+    readonly generation: FieldRef<"ProductSearchReindex", 'Int'>
+    readonly requestedAt: FieldRef<"ProductSearchReindex", 'DateTime'>
+    readonly updatedAt: FieldRef<"ProductSearchReindex", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProductSearchReindex findUnique
+   */
+  export type ProductSearchReindexFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchReindex to fetch.
+     */
+    where: ProductSearchReindexWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchReindex findUniqueOrThrow
+   */
+  export type ProductSearchReindexFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchReindex to fetch.
+     */
+    where: ProductSearchReindexWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchReindex findFirst
+   */
+  export type ProductSearchReindexFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchReindex to fetch.
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchReindices to fetch.
+     */
+    orderBy?: ProductSearchReindexOrderByWithRelationInput | ProductSearchReindexOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductSearchReindices.
+     */
+    cursor?: ProductSearchReindexWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchReindices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchReindices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSearchReindices.
+     */
+    distinct?: ProductSearchReindexScalarFieldEnum | ProductSearchReindexScalarFieldEnum[]
+  }
+
+  /**
+   * ProductSearchReindex findFirstOrThrow
+   */
+  export type ProductSearchReindexFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchReindex to fetch.
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchReindices to fetch.
+     */
+    orderBy?: ProductSearchReindexOrderByWithRelationInput | ProductSearchReindexOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProductSearchReindices.
+     */
+    cursor?: ProductSearchReindexWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchReindices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchReindices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSearchReindices.
+     */
+    distinct?: ProductSearchReindexScalarFieldEnum | ProductSearchReindexScalarFieldEnum[]
+  }
+
+  /**
+   * ProductSearchReindex findMany
+   */
+  export type ProductSearchReindexFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * Filter, which ProductSearchReindices to fetch.
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProductSearchReindices to fetch.
+     */
+    orderBy?: ProductSearchReindexOrderByWithRelationInput | ProductSearchReindexOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProductSearchReindices.
+     */
+    cursor?: ProductSearchReindexWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProductSearchReindices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProductSearchReindices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProductSearchReindices.
+     */
+    distinct?: ProductSearchReindexScalarFieldEnum | ProductSearchReindexScalarFieldEnum[]
+  }
+
+  /**
+   * ProductSearchReindex create
+   */
+  export type ProductSearchReindexCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ProductSearchReindex.
+     */
+    data: XOR<ProductSearchReindexCreateInput, ProductSearchReindexUncheckedCreateInput>
+  }
+
+  /**
+   * ProductSearchReindex createMany
+   */
+  export type ProductSearchReindexCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ProductSearchReindices.
+     */
+    data: ProductSearchReindexCreateManyInput | ProductSearchReindexCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ProductSearchReindex createManyAndReturn
+   */
+  export type ProductSearchReindexCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * The data used to create many ProductSearchReindices.
+     */
+    data: ProductSearchReindexCreateManyInput | ProductSearchReindexCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProductSearchReindex update
+   */
+  export type ProductSearchReindexUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProductSearchReindex.
+     */
+    data: XOR<ProductSearchReindexUpdateInput, ProductSearchReindexUncheckedUpdateInput>
+    /**
+     * Choose, which ProductSearchReindex to update.
+     */
+    where: ProductSearchReindexWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchReindex updateMany
+   */
+  export type ProductSearchReindexUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProductSearchReindices.
+     */
+    data: XOR<ProductSearchReindexUpdateManyMutationInput, ProductSearchReindexUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductSearchReindices to update
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * Limit how many ProductSearchReindices to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductSearchReindex updateManyAndReturn
+   */
+  export type ProductSearchReindexUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * The data used to update ProductSearchReindices.
+     */
+    data: XOR<ProductSearchReindexUpdateManyMutationInput, ProductSearchReindexUncheckedUpdateManyInput>
+    /**
+     * Filter which ProductSearchReindices to update
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * Limit how many ProductSearchReindices to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProductSearchReindex upsert
+   */
+  export type ProductSearchReindexUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ProductSearchReindex to update in case it exists.
+     */
+    where: ProductSearchReindexWhereUniqueInput
+    /**
+     * In case the ProductSearchReindex found by the `where` argument doesn't exist, create a new ProductSearchReindex with this data.
+     */
+    create: XOR<ProductSearchReindexCreateInput, ProductSearchReindexUncheckedCreateInput>
+    /**
+     * In case the ProductSearchReindex was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProductSearchReindexUpdateInput, ProductSearchReindexUncheckedUpdateInput>
+  }
+
+  /**
+   * ProductSearchReindex delete
+   */
+  export type ProductSearchReindexDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
+    /**
+     * Filter which ProductSearchReindex to delete.
+     */
+    where: ProductSearchReindexWhereUniqueInput
+  }
+
+  /**
+   * ProductSearchReindex deleteMany
+   */
+  export type ProductSearchReindexDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProductSearchReindices to delete
+     */
+    where?: ProductSearchReindexWhereInput
+    /**
+     * Limit how many ProductSearchReindices to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProductSearchReindex without action
+   */
+  export type ProductSearchReindexDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProductSearchReindex
+     */
+    select?: ProductSearchReindexSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProductSearchReindex
+     */
+    omit?: ProductSearchReindexOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProductSearchReindexInclude<ExtArgs> | null
   }
 
 
@@ -30516,6 +31748,8 @@ export namespace Prisma {
     discountPercent: 'discountPercent',
     stockOnHand: 'stockOnHand',
     stockReserved: 'stockReserved',
+    approvedReviewCount: 'approvedReviewCount',
+    approvedReviewRatingSum: 'approvedReviewRatingSum',
     dispatchMinDays: 'dispatchMinDays',
     dispatchMaxDays: 'dispatchMaxDays',
     createdAt: 'createdAt',
@@ -30537,6 +31771,16 @@ export namespace Prisma {
   };
 
   export type ProductSearchDocumentScalarFieldEnum = (typeof ProductSearchDocumentScalarFieldEnum)[keyof typeof ProductSearchDocumentScalarFieldEnum]
+
+
+  export const ProductSearchReindexScalarFieldEnum: {
+    productId: 'productId',
+    generation: 'generation',
+    requestedAt: 'requestedAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ProductSearchReindexScalarFieldEnum = (typeof ProductSearchReindexScalarFieldEnum)[keyof typeof ProductSearchReindexScalarFieldEnum]
 
 
   export const ProductImageScalarFieldEnum: {
@@ -31727,6 +32971,8 @@ export namespace Prisma {
     discountPercent?: IntNullableFilter<"Product"> | number | null
     stockOnHand?: IntFilter<"Product"> | number
     stockReserved?: IntFilter<"Product"> | number
+    approvedReviewCount?: IntFilter<"Product"> | number
+    approvedReviewRatingSum?: IntFilter<"Product"> | number
     dispatchMinDays?: IntFilter<"Product"> | number
     dispatchMaxDays?: IntFilter<"Product"> | number
     createdAt?: DateTimeFilter<"Product"> | Date | string
@@ -31737,6 +32983,7 @@ export namespace Prisma {
     orderLines?: OrderLineListRelationFilter
     reviews?: ReviewListRelationFilter
     searchDocument?: XOR<ProductSearchDocumentNullableScalarRelationFilter, ProductSearchDocumentWhereInput> | null
+    pendingSearchReindex?: XOR<ProductSearchReindexNullableScalarRelationFilter, ProductSearchReindexWhereInput> | null
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -31753,6 +33000,8 @@ export namespace Prisma {
     discountPercent?: SortOrderInput | SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
     createdAt?: SortOrder
@@ -31763,6 +33012,7 @@ export namespace Prisma {
     orderLines?: OrderLineOrderByRelationAggregateInput
     reviews?: ReviewOrderByRelationAggregateInput
     searchDocument?: ProductSearchDocumentOrderByWithRelationInput
+    pendingSearchReindex?: ProductSearchReindexOrderByWithRelationInput
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -31782,6 +33032,8 @@ export namespace Prisma {
     discountPercent?: IntNullableFilter<"Product"> | number | null
     stockOnHand?: IntFilter<"Product"> | number
     stockReserved?: IntFilter<"Product"> | number
+    approvedReviewCount?: IntFilter<"Product"> | number
+    approvedReviewRatingSum?: IntFilter<"Product"> | number
     dispatchMinDays?: IntFilter<"Product"> | number
     dispatchMaxDays?: IntFilter<"Product"> | number
     createdAt?: DateTimeFilter<"Product"> | Date | string
@@ -31792,6 +33044,7 @@ export namespace Prisma {
     orderLines?: OrderLineListRelationFilter
     reviews?: ReviewListRelationFilter
     searchDocument?: XOR<ProductSearchDocumentNullableScalarRelationFilter, ProductSearchDocumentWhereInput> | null
+    pendingSearchReindex?: XOR<ProductSearchReindexNullableScalarRelationFilter, ProductSearchReindexWhereInput> | null
   }, "id" | "slug" | "sku">
 
   export type ProductOrderByWithAggregationInput = {
@@ -31808,6 +33061,8 @@ export namespace Prisma {
     discountPercent?: SortOrderInput | SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
     createdAt?: SortOrder
@@ -31836,6 +33091,8 @@ export namespace Prisma {
     discountPercent?: IntNullableWithAggregatesFilter<"Product"> | number | null
     stockOnHand?: IntWithAggregatesFilter<"Product"> | number
     stockReserved?: IntWithAggregatesFilter<"Product"> | number
+    approvedReviewCount?: IntWithAggregatesFilter<"Product"> | number
+    approvedReviewRatingSum?: IntWithAggregatesFilter<"Product"> | number
     dispatchMinDays?: IntWithAggregatesFilter<"Product"> | number
     dispatchMaxDays?: IntWithAggregatesFilter<"Product"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
@@ -31910,6 +33167,58 @@ export namespace Prisma {
     descriptionText?: StringWithAggregatesFilter<"ProductSearchDocument"> | string
     createdAt?: DateTimeWithAggregatesFilter<"ProductSearchDocument"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ProductSearchDocument"> | Date | string
+  }
+
+  export type ProductSearchReindexWhereInput = {
+    AND?: ProductSearchReindexWhereInput | ProductSearchReindexWhereInput[]
+    OR?: ProductSearchReindexWhereInput[]
+    NOT?: ProductSearchReindexWhereInput | ProductSearchReindexWhereInput[]
+    productId?: StringFilter<"ProductSearchReindex"> | string
+    generation?: IntFilter<"ProductSearchReindex"> | number
+    requestedAt?: DateTimeFilter<"ProductSearchReindex"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductSearchReindex"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }
+
+  export type ProductSearchReindexOrderByWithRelationInput = {
+    productId?: SortOrder
+    generation?: SortOrder
+    requestedAt?: SortOrder
+    updatedAt?: SortOrder
+    product?: ProductOrderByWithRelationInput
+  }
+
+  export type ProductSearchReindexWhereUniqueInput = Prisma.AtLeast<{
+    productId?: string
+    AND?: ProductSearchReindexWhereInput | ProductSearchReindexWhereInput[]
+    OR?: ProductSearchReindexWhereInput[]
+    NOT?: ProductSearchReindexWhereInput | ProductSearchReindexWhereInput[]
+    generation?: IntFilter<"ProductSearchReindex"> | number
+    requestedAt?: DateTimeFilter<"ProductSearchReindex"> | Date | string
+    updatedAt?: DateTimeFilter<"ProductSearchReindex"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }, "productId">
+
+  export type ProductSearchReindexOrderByWithAggregationInput = {
+    productId?: SortOrder
+    generation?: SortOrder
+    requestedAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ProductSearchReindexCountOrderByAggregateInput
+    _avg?: ProductSearchReindexAvgOrderByAggregateInput
+    _max?: ProductSearchReindexMaxOrderByAggregateInput
+    _min?: ProductSearchReindexMinOrderByAggregateInput
+    _sum?: ProductSearchReindexSumOrderByAggregateInput
+  }
+
+  export type ProductSearchReindexScalarWhereWithAggregatesInput = {
+    AND?: ProductSearchReindexScalarWhereWithAggregatesInput | ProductSearchReindexScalarWhereWithAggregatesInput[]
+    OR?: ProductSearchReindexScalarWhereWithAggregatesInput[]
+    NOT?: ProductSearchReindexScalarWhereWithAggregatesInput | ProductSearchReindexScalarWhereWithAggregatesInput[]
+    productId?: StringWithAggregatesFilter<"ProductSearchReindex"> | string
+    generation?: IntWithAggregatesFilter<"ProductSearchReindex"> | number
+    requestedAt?: DateTimeWithAggregatesFilter<"ProductSearchReindex"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ProductSearchReindex"> | Date | string
   }
 
   export type ProductImageWhereInput = {
@@ -33853,6 +35162,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -33863,6 +35174,7 @@ export namespace Prisma {
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateInput = {
@@ -33879,6 +35191,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -33888,6 +35202,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductUpdateInput = {
@@ -33903,6 +35218,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33913,6 +35230,7 @@ export namespace Prisma {
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -33929,6 +35247,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33938,6 +35258,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductCreateManyInput = {
@@ -33954,6 +35275,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -33973,6 +35296,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33993,6 +35318,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34039,6 +35366,54 @@ export namespace Prisma {
     categoryText?: StringFieldUpdateOperationsInput | string
     descriptionText?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchReindexCreateInput = {
+    generation?: number
+    requestedAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutPendingSearchReindexInput
+  }
+
+  export type ProductSearchReindexUncheckedCreateInput = {
+    productId: string
+    generation?: number
+    requestedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductSearchReindexUpdateInput = {
+    generation?: IntFieldUpdateOperationsInput | number
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutPendingSearchReindexNestedInput
+  }
+
+  export type ProductSearchReindexUncheckedUpdateInput = {
+    productId?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchReindexCreateManyInput = {
+    productId: string
+    generation?: number
+    requestedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductSearchReindexUpdateManyMutationInput = {
+    generation?: IntFieldUpdateOperationsInput | number
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchReindexUncheckedUpdateManyInput = {
+    productId?: StringFieldUpdateOperationsInput | string
+    generation?: IntFieldUpdateOperationsInput | number
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -36077,6 +37452,11 @@ export namespace Prisma {
     isNot?: ProductSearchDocumentWhereInput | null
   }
 
+  export type ProductSearchReindexNullableScalarRelationFilter = {
+    is?: ProductSearchReindexWhereInput | null
+    isNot?: ProductSearchReindexWhereInput | null
+  }
+
   export type ProductImageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -36103,6 +37483,8 @@ export namespace Prisma {
     discountPercent?: SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
     createdAt?: SortOrder
@@ -36115,6 +37497,8 @@ export namespace Prisma {
     discountPercent?: SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
   }
@@ -36132,6 +37516,8 @@ export namespace Prisma {
     discountPercent?: SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
     createdAt?: SortOrder
@@ -36151,6 +37537,8 @@ export namespace Prisma {
     discountPercent?: SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
     createdAt?: SortOrder
@@ -36163,6 +37551,8 @@ export namespace Prisma {
     discountPercent?: SortOrder
     stockOnHand?: SortOrder
     stockReserved?: SortOrder
+    approvedReviewCount?: SortOrder
+    approvedReviewRatingSum?: SortOrder
     dispatchMinDays?: SortOrder
     dispatchMaxDays?: SortOrder
   }
@@ -36261,6 +37651,35 @@ export namespace Prisma {
     descriptionText?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type ProductSearchReindexCountOrderByAggregateInput = {
+    productId?: SortOrder
+    generation?: SortOrder
+    requestedAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductSearchReindexAvgOrderByAggregateInput = {
+    generation?: SortOrder
+  }
+
+  export type ProductSearchReindexMaxOrderByAggregateInput = {
+    productId?: SortOrder
+    generation?: SortOrder
+    requestedAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductSearchReindexMinOrderByAggregateInput = {
+    productId?: SortOrder
+    generation?: SortOrder
+    requestedAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProductSearchReindexSumOrderByAggregateInput = {
+    generation?: SortOrder
   }
 
   export type ProductImageCountOrderByAggregateInput = {
@@ -37747,6 +39166,12 @@ export namespace Prisma {
     connect?: ProductSearchDocumentWhereUniqueInput
   }
 
+  export type ProductSearchReindexCreateNestedOneWithoutProductInput = {
+    create?: XOR<ProductSearchReindexCreateWithoutProductInput, ProductSearchReindexUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductSearchReindexCreateOrConnectWithoutProductInput
+    connect?: ProductSearchReindexWhereUniqueInput
+  }
+
   export type ProductImageUncheckedCreateNestedManyWithoutProductInput = {
     create?: XOR<ProductImageCreateWithoutProductInput, ProductImageUncheckedCreateWithoutProductInput> | ProductImageCreateWithoutProductInput[] | ProductImageUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ProductImageCreateOrConnectWithoutProductInput | ProductImageCreateOrConnectWithoutProductInput[]
@@ -37777,6 +39202,12 @@ export namespace Prisma {
 
   export type ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput = {
     connect?: ProductSearchDocumentWhereUniqueInput
+  }
+
+  export type ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput = {
+    create?: XOR<ProductSearchReindexCreateWithoutProductInput, ProductSearchReindexUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductSearchReindexCreateOrConnectWithoutProductInput
+    connect?: ProductSearchReindexWhereUniqueInput
   }
 
   export type IntFieldUpdateOperationsInput = {
@@ -37866,6 +39297,16 @@ export namespace Prisma {
     update?: XOR<XOR<ProductSearchDocumentUpdateToOneWithWhereWithoutProductInput, ProductSearchDocumentUpdateWithoutProductInput>, ProductSearchDocumentUncheckedUpdateWithoutProductInput>
   }
 
+  export type ProductSearchReindexUpdateOneWithoutProductNestedInput = {
+    create?: XOR<ProductSearchReindexCreateWithoutProductInput, ProductSearchReindexUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductSearchReindexCreateOrConnectWithoutProductInput
+    upsert?: ProductSearchReindexUpsertWithoutProductInput
+    disconnect?: ProductSearchReindexWhereInput | boolean
+    delete?: ProductSearchReindexWhereInput | boolean
+    connect?: ProductSearchReindexWhereUniqueInput
+    update?: XOR<XOR<ProductSearchReindexUpdateToOneWithWhereWithoutProductInput, ProductSearchReindexUpdateWithoutProductInput>, ProductSearchReindexUncheckedUpdateWithoutProductInput>
+  }
+
   export type ProductImageUncheckedUpdateManyWithoutProductNestedInput = {
     create?: XOR<ProductImageCreateWithoutProductInput, ProductImageUncheckedCreateWithoutProductInput> | ProductImageCreateWithoutProductInput[] | ProductImageUncheckedCreateWithoutProductInput[]
     connectOrCreate?: ProductImageCreateOrConnectWithoutProductInput | ProductImageCreateOrConnectWithoutProductInput[]
@@ -37929,12 +39370,36 @@ export namespace Prisma {
     update?: XOR<XOR<ProductSearchDocumentUpdateToOneWithWhereWithoutProductInput, ProductSearchDocumentUpdateWithoutProductInput>, ProductSearchDocumentUncheckedUpdateWithoutProductInput>
   }
 
+  export type ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput = {
+    create?: XOR<ProductSearchReindexCreateWithoutProductInput, ProductSearchReindexUncheckedCreateWithoutProductInput>
+    connectOrCreate?: ProductSearchReindexCreateOrConnectWithoutProductInput
+    upsert?: ProductSearchReindexUpsertWithoutProductInput
+    disconnect?: ProductSearchReindexWhereInput | boolean
+    delete?: ProductSearchReindexWhereInput | boolean
+    connect?: ProductSearchReindexWhereUniqueInput
+    update?: XOR<XOR<ProductSearchReindexUpdateToOneWithWhereWithoutProductInput, ProductSearchReindexUpdateWithoutProductInput>, ProductSearchReindexUncheckedUpdateWithoutProductInput>
+  }
+
   export type ProductUpdateOneRequiredWithoutSearchDocumentNestedInput = {
     create?: XOR<ProductCreateWithoutSearchDocumentInput, ProductUncheckedCreateWithoutSearchDocumentInput>
     connectOrCreate?: ProductCreateOrConnectWithoutSearchDocumentInput
     upsert?: ProductUpsertWithoutSearchDocumentInput
     connect?: ProductWhereUniqueInput
     update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutSearchDocumentInput, ProductUpdateWithoutSearchDocumentInput>, ProductUncheckedUpdateWithoutSearchDocumentInput>
+  }
+
+  export type ProductCreateNestedOneWithoutPendingSearchReindexInput = {
+    create?: XOR<ProductCreateWithoutPendingSearchReindexInput, ProductUncheckedCreateWithoutPendingSearchReindexInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutPendingSearchReindexInput
+    connect?: ProductWhereUniqueInput
+  }
+
+  export type ProductUpdateOneRequiredWithoutPendingSearchReindexNestedInput = {
+    create?: XOR<ProductCreateWithoutPendingSearchReindexInput, ProductUncheckedCreateWithoutPendingSearchReindexInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutPendingSearchReindexInput
+    upsert?: ProductUpsertWithoutPendingSearchReindexInput
+    connect?: ProductWhereUniqueInput
+    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutPendingSearchReindexInput, ProductUpdateWithoutPendingSearchReindexInput>, ProductUncheckedUpdateWithoutPendingSearchReindexInput>
   }
 
   export type ProductCreateNestedOneWithoutImagesInput = {
@@ -40011,6 +41476,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40020,6 +41487,7 @@ export namespace Prisma {
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutManufacturerInput = {
@@ -40035,6 +41503,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40044,6 +41514,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutManufacturerInput = {
@@ -40089,6 +41560,8 @@ export namespace Prisma {
     discountPercent?: IntNullableFilter<"Product"> | number | null
     stockOnHand?: IntFilter<"Product"> | number
     stockReserved?: IntFilter<"Product"> | number
+    approvedReviewCount?: IntFilter<"Product"> | number
+    approvedReviewRatingSum?: IntFilter<"Product"> | number
     dispatchMinDays?: IntFilter<"Product"> | number
     dispatchMaxDays?: IntFilter<"Product"> | number
     createdAt?: DateTimeFilter<"Product"> | Date | string
@@ -40248,6 +41721,23 @@ export namespace Prisma {
   export type ReviewCreateManyProductInputEnvelope = {
     data: ReviewCreateManyProductInput | ReviewCreateManyProductInput[]
     skipDuplicates?: boolean
+  }
+
+  export type ProductSearchReindexCreateWithoutProductInput = {
+    generation?: number
+    requestedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductSearchReindexUncheckedCreateWithoutProductInput = {
+    generation?: number
+    requestedAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProductSearchReindexCreateOrConnectWithoutProductInput = {
+    where: ProductSearchReindexWhereUniqueInput
+    create: XOR<ProductSearchReindexCreateWithoutProductInput, ProductSearchReindexUncheckedCreateWithoutProductInput>
   }
 
   export type ManufacturerUpsertWithoutProductsInput = {
@@ -40410,6 +41900,29 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ProductSearchReindexUpsertWithoutProductInput = {
+    update: XOR<ProductSearchReindexUpdateWithoutProductInput, ProductSearchReindexUncheckedUpdateWithoutProductInput>
+    create: XOR<ProductSearchReindexCreateWithoutProductInput, ProductSearchReindexUncheckedCreateWithoutProductInput>
+    where?: ProductSearchReindexWhereInput
+  }
+
+  export type ProductSearchReindexUpdateToOneWithWhereWithoutProductInput = {
+    where?: ProductSearchReindexWhereInput
+    data: XOR<ProductSearchReindexUpdateWithoutProductInput, ProductSearchReindexUncheckedUpdateWithoutProductInput>
+  }
+
+  export type ProductSearchReindexUpdateWithoutProductInput = {
+    generation?: IntFieldUpdateOperationsInput | number
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProductSearchReindexUncheckedUpdateWithoutProductInput = {
+    generation?: IntFieldUpdateOperationsInput | number
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type ProductCreateWithoutSearchDocumentInput = {
     id?: string
     name: string
@@ -40423,6 +41936,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40432,6 +41947,7 @@ export namespace Prisma {
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutSearchDocumentInput = {
@@ -40448,6 +41964,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40456,6 +41974,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutSearchDocumentInput = {
@@ -40487,6 +42006,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40496,6 +42017,7 @@ export namespace Prisma {
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutSearchDocumentInput = {
@@ -40512,6 +42034,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40520,6 +42044,131 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
+  }
+
+  export type ProductCreateWithoutPendingSearchReindexInput = {
+    id?: string
+    name: string
+    slug: string
+    sku: string
+    active?: boolean
+    featured?: boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents: number
+    costCents: number
+    discountPercent?: number | null
+    stockOnHand?: number
+    stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
+    dispatchMinDays: number
+    dispatchMaxDays: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    manufacturer: ManufacturerCreateNestedOneWithoutProductsInput
+    images?: ProductImageCreateNestedManyWithoutProductInput
+    categories?: ProductCategoryCreateNestedManyWithoutProductInput
+    orderLines?: OrderLineCreateNestedManyWithoutProductInput
+    reviews?: ReviewCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+  }
+
+  export type ProductUncheckedCreateWithoutPendingSearchReindexInput = {
+    id?: string
+    manufacturerId: string
+    name: string
+    slug: string
+    sku: string
+    active?: boolean
+    featured?: boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents: number
+    costCents: number
+    discountPercent?: number | null
+    stockOnHand?: number
+    stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
+    dispatchMinDays: number
+    dispatchMaxDays: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    images?: ProductImageUncheckedCreateNestedManyWithoutProductInput
+    categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
+    orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
+    searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutPendingSearchReindexInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutPendingSearchReindexInput, ProductUncheckedCreateWithoutPendingSearchReindexInput>
+  }
+
+  export type ProductUpsertWithoutPendingSearchReindexInput = {
+    update: XOR<ProductUpdateWithoutPendingSearchReindexInput, ProductUncheckedUpdateWithoutPendingSearchReindexInput>
+    create: XOR<ProductCreateWithoutPendingSearchReindexInput, ProductUncheckedCreateWithoutPendingSearchReindexInput>
+    where?: ProductWhereInput
+  }
+
+  export type ProductUpdateToOneWithWhereWithoutPendingSearchReindexInput = {
+    where?: ProductWhereInput
+    data: XOR<ProductUpdateWithoutPendingSearchReindexInput, ProductUncheckedUpdateWithoutPendingSearchReindexInput>
+  }
+
+  export type ProductUpdateWithoutPendingSearchReindexInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents?: IntFieldUpdateOperationsInput | number
+    costCents?: IntFieldUpdateOperationsInput | number
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    stockOnHand?: IntFieldUpdateOperationsInput | number
+    stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
+    dispatchMinDays?: IntFieldUpdateOperationsInput | number
+    dispatchMaxDays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    manufacturer?: ManufacturerUpdateOneRequiredWithoutProductsNestedInput
+    images?: ProductImageUpdateManyWithoutProductNestedInput
+    categories?: ProductCategoryUpdateManyWithoutProductNestedInput
+    orderLines?: OrderLineUpdateManyWithoutProductNestedInput
+    reviews?: ReviewUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutPendingSearchReindexInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    manufacturerId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    sku?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+    featured?: BoolFieldUpdateOperationsInput | boolean
+    description?: NullableJsonNullValueInput | InputJsonValue
+    priceCents?: IntFieldUpdateOperationsInput | number
+    costCents?: IntFieldUpdateOperationsInput | number
+    discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
+    stockOnHand?: IntFieldUpdateOperationsInput | number
+    stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
+    dispatchMinDays?: IntFieldUpdateOperationsInput | number
+    dispatchMaxDays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    images?: ProductImageUncheckedUpdateManyWithoutProductNestedInput
+    categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
+    orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
+    searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductCreateWithoutImagesInput = {
@@ -40535,6 +42184,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40544,6 +42195,7 @@ export namespace Prisma {
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutImagesInput = {
@@ -40560,6 +42212,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40568,6 +42222,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutImagesInput = {
@@ -40599,6 +42254,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40608,6 +42265,7 @@ export namespace Prisma {
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutImagesInput = {
@@ -40624,6 +42282,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40632,6 +42292,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type CategoryCreateWithoutChildrenInput = {
@@ -40817,6 +42478,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40826,6 +42489,7 @@ export namespace Prisma {
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutCategoriesInput = {
@@ -40842,6 +42506,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -40850,6 +42516,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutCategoriesInput = {
@@ -40910,6 +42577,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40919,6 +42588,7 @@ export namespace Prisma {
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutCategoriesInput = {
@@ -40935,6 +42605,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40943,6 +42615,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type CategoryUpsertWithoutProductsInput = {
@@ -41912,6 +43585,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -41921,6 +43596,7 @@ export namespace Prisma {
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     reviews?: ReviewCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutOrderLinesInput = {
@@ -41937,6 +43613,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -41945,6 +43623,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     reviews?: ReviewUncheckedCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutOrderLinesInput = {
@@ -42157,6 +43836,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42166,6 +43847,7 @@ export namespace Prisma {
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutOrderLinesInput = {
@@ -42182,6 +43864,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42190,6 +43874,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ReviewUpsertWithoutOrderLineInput = {
@@ -42587,6 +44272,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -42596,6 +44283,7 @@ export namespace Prisma {
     categories?: ProductCategoryCreateNestedManyWithoutProductInput
     orderLines?: OrderLineCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexCreateNestedOneWithoutProductInput
   }
 
   export type ProductUncheckedCreateWithoutReviewsInput = {
@@ -42612,6 +44300,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -42620,6 +44310,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedCreateNestedManyWithoutProductInput
     orderLines?: OrderLineUncheckedCreateNestedManyWithoutProductInput
     searchDocument?: ProductSearchDocumentUncheckedCreateNestedOneWithoutProductInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedCreateNestedOneWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutReviewsInput = {
@@ -42721,6 +44412,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42730,6 +44423,7 @@ export namespace Prisma {
     categories?: ProductCategoryUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutReviewsInput = {
@@ -42746,6 +44440,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42754,6 +44450,7 @@ export namespace Prisma {
     categories?: ProductCategoryUncheckedUpdateManyWithoutProductNestedInput
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type CustomerUpsertWithoutReviewsInput = {
@@ -43405,6 +45102,8 @@ export namespace Prisma {
     discountPercent?: number | null
     stockOnHand?: number
     stockReserved?: number
+    approvedReviewCount?: number
+    approvedReviewRatingSum?: number
     dispatchMinDays: number
     dispatchMaxDays: number
     createdAt?: Date | string
@@ -43424,6 +45123,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43433,6 +45134,7 @@ export namespace Prisma {
     orderLines?: OrderLineUpdateManyWithoutProductNestedInput
     reviews?: ReviewUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateWithoutManufacturerInput = {
@@ -43448,6 +45150,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43457,6 +45161,7 @@ export namespace Prisma {
     orderLines?: OrderLineUncheckedUpdateManyWithoutProductNestedInput
     reviews?: ReviewUncheckedUpdateManyWithoutProductNestedInput
     searchDocument?: ProductSearchDocumentUncheckedUpdateOneWithoutProductNestedInput
+    pendingSearchReindex?: ProductSearchReindexUncheckedUpdateOneWithoutProductNestedInput
   }
 
   export type ProductUncheckedUpdateManyWithoutManufacturerInput = {
@@ -43472,6 +45177,8 @@ export namespace Prisma {
     discountPercent?: NullableIntFieldUpdateOperationsInput | number | null
     stockOnHand?: IntFieldUpdateOperationsInput | number
     stockReserved?: IntFieldUpdateOperationsInput | number
+    approvedReviewCount?: IntFieldUpdateOperationsInput | number
+    approvedReviewRatingSum?: IntFieldUpdateOperationsInput | number
     dispatchMinDays?: IntFieldUpdateOperationsInput | number
     dispatchMaxDays?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

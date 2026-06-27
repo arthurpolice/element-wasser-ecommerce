@@ -48,13 +48,13 @@ export default async function CategoryPage({
         <div className="mx-auto max-w-6xl space-y-8">
           <RevealOnScroll>
             <header className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-store-muted">
+              <p className="text-store-muted text-xs tracking-[0.18em] uppercase">
                 {t("eyebrow")}
               </p>
-              <h1 className="font-display text-4xl font-semibold tracking-tight text-store-ink">
+              <h1 className="font-display text-store-ink text-4xl font-semibold tracking-tight">
                 {category.name}
               </h1>
-              <p className="max-w-2xl text-sm leading-6 text-store-muted">
+              <p className="text-store-muted max-w-2xl text-sm leading-6">
                 {t("description")}
               </p>
             </header>
@@ -63,10 +63,9 @@ export default async function CategoryPage({
           <CategoryProductGrid
             initialItems={productPage.items}
             initialPage={productPage.page}
+            initialHasNextPage={productPage.hasNextPage}
             pageSize={productPage.pageSize}
             slugPath={slugPath}
-            totalCount={productPage.totalCount}
-            totalPages={productPage.totalPages}
           />
         </div>
       </StorefrontShell>

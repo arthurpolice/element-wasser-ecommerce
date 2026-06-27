@@ -107,7 +107,7 @@
         "status": "Status",
         "orderCount": "Orders",
         "latestOrder": "Latest order",
-        "totalSpent": "Total spent",
+        "totalSpent": "Non-cancelled order value",
         "createdAt": "Created"
       },
       "registered": "Registered",
@@ -213,6 +213,8 @@
     "orders": {
       "title": "Orders",
       "empty": "No Orders yet.",
+      "loading": "Loading Orders…",
+      "loadMore": "Load more",
       "shipping": "Shipping Address",
       "billing": "Billing Address",
       "dispatchedWithSwissPost": "Handed over to Swiss Post",

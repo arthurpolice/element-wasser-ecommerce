@@ -176,6 +176,10 @@ _Avoid_: Brand, supplier
 A navigational grouping for products. Categories can be nested, and a product can appear in multiple categories. Catalog maintenance links each product to the categories where it should appear in the storefront.
 _Avoid_: Collection, tag
 
+**Storefront-visible Category**:
+An active Category whose subtree contains at least one active Product. It appears in storefront Category navigation; an active Category that is not storefront-visible can still be reached through its direct Category URL.
+_Avoid_: Non-empty Category, populated Category
+
 **Stock On Hand**:
 The current physical quantity available in inventory before reservations.
 _Avoid_: Inventory

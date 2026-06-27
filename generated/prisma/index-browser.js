@@ -226,6 +226,8 @@ exports.Prisma.ProductScalarFieldEnum = {
   discountPercent: 'discountPercent',
   stockOnHand: 'stockOnHand',
   stockReserved: 'stockReserved',
+  approvedReviewCount: 'approvedReviewCount',
+  approvedReviewRatingSum: 'approvedReviewRatingSum',
   dispatchMinDays: 'dispatchMinDays',
   dispatchMaxDays: 'dispatchMaxDays',
   createdAt: 'createdAt',
@@ -240,6 +242,13 @@ exports.Prisma.ProductSearchDocumentScalarFieldEnum = {
   categoryText: 'categoryText',
   descriptionText: 'descriptionText',
   createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProductSearchReindexScalarFieldEnum = {
+  productId: 'productId',
+  generation: 'generation',
+  requestedAt: 'requestedAt',
   updatedAt: 'updatedAt'
 };
 
@@ -570,6 +579,7 @@ exports.Prisma.ModelName = {
   Manufacturer: 'Manufacturer',
   Product: 'Product',
   ProductSearchDocument: 'ProductSearchDocument',
+  ProductSearchReindex: 'ProductSearchReindex',
   ProductImage: 'ProductImage',
   Category: 'Category',
   ProductCategory: 'ProductCategory',

@@ -15,6 +15,7 @@ import type {
   CustomerAddress,
   CustomerArea,
   CustomerOrder,
+  CustomerOrderDetails as CustomerOrderDetailsType,
   CustomerOrderLine,
   RegisteredCustomer,
 } from "~/app/[locale]/customer-area/_components/customer-area-types";
@@ -68,7 +69,7 @@ export function CustomerAreaSummary({
         <Info label={t("registered.email")} value={customer.email} />
         <Info
           label={t("registered.orders")}
-          value={String(customer.orders.length)}
+          value={String(customer.orderCount)}
         />
       </div>
     </section>
@@ -336,8 +337,19 @@ export function CustomerAddresses({
   );
 }
 
-export function CustomerOrders({ customer }: { customer: RegisteredCustomer }) {
+export function CustomerOrders({
+  customer: _customer,
+}: {
+  customer: RegisteredCustomer;
+}) {
   const t = useTranslations("CustomerArea");
+  const ordersQuery = api.customer.myOrders.useInfiniteQuery(
+    { limit: 20 },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
+  const orders = ordersQuery.data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
     <section>
@@ -345,14 +357,28 @@ export function CustomerOrders({ customer }: { customer: RegisteredCustomer }) {
         {t("orders.title")}
       </h2>
       <div className="divide-store-border/70 border-store-border/70 mt-5 divide-y border-t">
-        {customer.orders.length === 0 ? (
+        {ordersQuery.isLoading ? (
+          <p className="text-store-muted py-4 text-sm">{t("orders.loading")}</p>
+        ) : orders.length === 0 ? (
           <p className="text-store-muted py-4 text-sm">{t("orders.empty")}</p>
         ) : (
-          customer.orders.map((order) => (
+          orders.map((order) => (
             <CustomerOrderDetails key={order.id} order={order} />
           ))
         )}
       </div>
+      {ordersQuery.hasNextPage ? (
+        <button
+          className={textButtonClass}
+          disabled={ordersQuery.isFetchingNextPage}
+          onClick={() => ordersQuery.fetchNextPage()}
+          type="button"
+        >
+          {ordersQuery.isFetchingNextPage
+            ? t("orders.loading")
+            : t("orders.loadMore")}
+        </button>
+      ) : null}
     </section>
   );
 }
@@ -443,9 +469,17 @@ function CustomerOrderDetails({ order }: { order: CustomerOrder }) {
   const t = useTranslations("CustomerArea");
   const format = useFormatter();
   const trackingUrl = getSwissPostTrackingUrl(order.trackingNumber);
+  const [open, setOpen] = useState(false);
+  const detailQuery = api.customer.myOrderDetails.useQuery(
+    { orderId: order.id },
+    { enabled: open },
+  );
 
   return (
-    <details className="py-4">
+    <details
+      className="py-4"
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
       <summary className="cursor-pointer list-none">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -465,50 +499,72 @@ function CustomerOrderDetails({ order }: { order: CustomerOrder }) {
           </p>
         </div>
       </summary>
-      <div className="text-store-muted mt-4 grid gap-4 text-sm">
-        <p>
-          {order.status} · {order.paymentStatus} · {order.fulfillmentStatus}
-        </p>
-        {order.dispatchedAt ? (
-          <div className="border-store-border bg-store-paper border-l-2 px-4 py-3">
-            <p className="text-store-ink font-semibold">
-              {t("orders.dispatchedWithSwissPost")}
-            </p>
-            <p>
-              {format.dateTime(order.dispatchedAt, {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
-            </p>
-            {trackingUrl ? (
-              <a
-                className="text-store-accent mt-2 inline-flex font-semibold underline underline-offset-4"
-                href={trackingUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                {t("orders.trackShipment")}
-              </a>
-            ) : null}
-          </div>
-        ) : null}
-        {order.lines.map((line) => (
-          <CustomerOrderLineRow
-            key={line.id}
-            currencyCode={order.currencyCode}
-            line={line}
-          />
-        ))}
-        <p>
-          {t("orders.shipping")}: {order.shippingStreetLine1},{" "}
-          {order.shippingPostalCode} {order.shippingCity}
-        </p>
-        <p>
-          {t("orders.billing")}: {order.billingStreetLine1},{" "}
-          {order.billingPostalCode} {order.billingCity}
-        </p>
-      </div>
+      {detailQuery.isLoading ? (
+        <p className="text-store-muted mt-4 text-sm">{t("orders.loading")}</p>
+      ) : detailQuery.data ? (
+        <CustomerOrderExpandedDetails
+          details={detailQuery.data}
+          trackingUrl={trackingUrl}
+        />
+      ) : null}
     </details>
+  );
+}
+
+function CustomerOrderExpandedDetails({
+  details: order,
+  trackingUrl,
+}: {
+  details: CustomerOrderDetailsType;
+  trackingUrl: string | null;
+}) {
+  const t = useTranslations("CustomerArea");
+  const format = useFormatter();
+
+  return (
+    <div className="text-store-muted mt-4 grid gap-4 text-sm">
+      <p>
+        {order.status} · {order.paymentStatus} · {order.fulfillmentStatus}
+      </p>
+      {order.dispatchedAt ? (
+        <div className="border-store-border bg-store-paper border-l-2 px-4 py-3">
+          <p className="text-store-ink font-semibold">
+            {t("orders.dispatchedWithSwissPost")}
+          </p>
+          <p>
+            {format.dateTime(order.dispatchedAt, {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </p>
+          {trackingUrl ? (
+            <a
+              className="text-store-accent mt-2 inline-flex font-semibold underline underline-offset-4"
+              href={trackingUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {t("orders.trackShipment")}
+            </a>
+          ) : null}
+        </div>
+      ) : null}
+      {order.lines.map((line) => (
+        <CustomerOrderLineRow
+          key={line.id}
+          currencyCode={order.currencyCode}
+          line={line}
+        />
+      ))}
+      <p>
+        {t("orders.shipping")}: {order.shippingStreetLine1},{" "}
+        {order.shippingPostalCode} {order.shippingCity}
+      </p>
+      <p>
+        {t("orders.billing")}: {order.billingStreetLine1},{" "}
+        {order.billingPostalCode} {order.billingCity}
+      </p>
+    </div>
   );
 }
 

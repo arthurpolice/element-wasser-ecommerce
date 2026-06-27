@@ -10,6 +10,7 @@ import { orderEmailNotificationKey } from '~/server/commerce/email-notification-
 import { SWISS_POST_CARRIER_CODE } from '~/lib/order-tracking'
 import { expireStripeCheckoutSession } from '~/server/payments/stripe-checkout'
 import { projectOrderPaymentStatus } from '~/server/commerce/payment-outcome'
+import { mapWithConcurrency } from '~/utils/map-with-concurrency'
 
 export const orderLifecycleInclude = {
   ...orderListInclude
@@ -43,6 +44,10 @@ type OrderLifecycleDeps = {
 
 type Db = Pick<PrismaClient, '$transaction'>
 
+export const PAYMENT_EXPIRY_BATCH_SIZE = 50
+export const PAYMENT_EXPIRY_CONCURRENCY = 5
+export const PAYMENT_EXPIRY_LEASE_DURATION_MS = 10 * 60 * 1000
+
 function nowFromDeps(deps: OrderLifecycleDeps) {
   return deps.now?.() ?? new Date()
 }
@@ -73,11 +78,24 @@ async function releaseStockReservation(
   tx: Prisma.TransactionClient,
   order: Pick<OrderLifecycleRow, 'lines'>
 ) {
-  for (const line of order.lines) {
-    await tx.product.update({
-      where: { id: line.productId },
-      data: { stockReserved: { decrement: line.quantity } }
-    })
+  const quantities = aggregateProductQuantities(order.lines)
+  if (quantities.length === 0) return
+  const productIds = quantities.map((item) => item.productId)
+  const requestedQuantities = quantities.map((item) => item.quantity)
+  const updated = await tx.$queryRaw<Array<{ id: string }>>`
+    UPDATE "Product" product
+    SET "stockReserved" = product."stockReserved" - requested."quantity"
+    FROM unnest(
+      ${productIds}::text[],
+      ${requestedQuantities}::integer[]
+    ) AS requested("productId", "quantity")
+    WHERE product."id" = requested."productId"
+      AND product."stockReserved" >= requested."quantity"
+    RETURNING product."id"
+  `
+
+  if (updated.length !== quantities.length) {
+    throw new Error('Stock Reservation release invariant violated.')
   }
 }
 
@@ -85,15 +103,44 @@ async function consumeStockReservation(
   tx: Prisma.TransactionClient,
   order: Pick<OrderLifecycleRow, 'lines'>
 ) {
-  for (const line of order.lines) {
-    await tx.product.update({
-      where: { id: line.productId },
-      data: {
-        stockOnHand: { decrement: line.quantity },
-        stockReserved: { decrement: line.quantity }
-      }
-    })
+  const quantities = aggregateProductQuantities(order.lines)
+  if (quantities.length === 0) return
+  const productIds = quantities.map((item) => item.productId)
+  const requestedQuantities = quantities.map((item) => item.quantity)
+  const updated = await tx.$queryRaw<Array<{ id: string }>>`
+    UPDATE "Product" product
+    SET
+      "stockOnHand" = product."stockOnHand" - requested."quantity",
+      "stockReserved" = product."stockReserved" - requested."quantity"
+    FROM unnest(
+      ${productIds}::text[],
+      ${requestedQuantities}::integer[]
+    ) AS requested("productId", "quantity")
+    WHERE product."id" = requested."productId"
+      AND product."stockOnHand" >= requested."quantity"
+      AND product."stockReserved" >= requested."quantity"
+    RETURNING product."id"
+  `
+
+  if (updated.length !== quantities.length) {
+    throw new Error('Stock Reservation consumption invariant violated.')
   }
+}
+
+function aggregateProductQuantities(
+  lines: Array<{ productId: string; quantity: number }>
+) {
+  const quantities = new Map<string, number>()
+  for (const line of lines) {
+    quantities.set(
+      line.productId,
+      (quantities.get(line.productId) ?? 0) + line.quantity
+    )
+  }
+  return Array.from(quantities, ([productId, quantity]) => ({
+    productId,
+    quantity
+  }))
 }
 
 export async function cancelOrder(
@@ -340,87 +387,106 @@ export async function expirePendingPaymentOrders(
   deps: OrderLifecycleDeps = {}
 ): Promise<OrderListRow[]> {
   const cancelledAt = nowFromDeps(deps)
-  const expiredOrders = await db.$transaction((tx) =>
-    tx.order.findMany({
-      where: {
-        status: 'PLACED',
-        paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
-        fulfillmentStatus: 'UNFULFILLED',
-        paymentExpiresAt: { lte: cancelledAt }
-      },
-      include: orderLifecycleInclude
-    })
+  const leaseExpiredBefore = new Date(
+    cancelledAt.getTime() - PAYMENT_EXPIRY_LEASE_DURATION_MS
   )
+  const expiredOrders = await db.$transaction(async (tx) => {
+    const claimedRows = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "Order"
+      WHERE "status" = 'PLACED'
+        AND "paymentStatus" IN ('PENDING', 'FAILED', 'CANCELLED')
+        AND "fulfillmentStatus" = 'UNFULFILLED'
+        AND "paymentExpiresAt" <= ${cancelledAt}
+        AND (
+          "paymentExpiryStartedAt" IS NULL
+          OR "paymentExpiryStartedAt" <= ${leaseExpiredBefore}
+      )
+      ORDER BY "paymentExpiresAt" ASC, "id" ASC
+      LIMIT ${PAYMENT_EXPIRY_BATCH_SIZE}
+      FOR UPDATE SKIP LOCKED
+    `
+    const claimedIds = claimedRows.map((row) => row.id)
 
-  const cancelledOrders: OrderListRow[] = []
-
-  for (const candidate of expiredOrders) {
-    const claimed = await db.$transaction(async (tx) => {
-      const claim = await tx.order.updateMany({
-        where: {
-          id: candidate.id,
-          status: 'PLACED',
-          paymentStatus: { in: ['PENDING', 'FAILED', 'CANCELLED'] },
-          fulfillmentStatus: 'UNFULFILLED',
-          paymentExpiresAt: { lte: cancelledAt }
-        },
-        data: { paymentExpiryStartedAt: cancelledAt }
-      })
-      return claim.count === 1
-    })
-
-    if (!claimed) continue
-
-    const activePayment = (candidate.payments ?? []).find(
-      (payment) => payment.status === 'PENDING'
-    )
-    if (activePayment?.stripeCheckoutSessionId) {
-      try {
-        await expireStripeCheckoutSession(activePayment.stripeCheckoutSessionId)
-      } catch {
-        continue
-      }
+    if (claimedIds.length === 0) {
+      return []
     }
 
-    const cancelled = await db.$transaction(async (tx) => {
-      await tx.$queryRaw`
-        SELECT "id" FROM "Order" WHERE "id" = ${candidate.id} FOR UPDATE
-      `
-      const order = await findOrder(tx, candidate.id)
-      if (order.paymentStatus === 'PAID') {
-        await tx.order.update({
-          where: { id: order.id },
-          data: { paymentExpiryStartedAt: null }
-        })
-        return null
-      }
-
-      await tx.payment.updateMany({
-        where: { orderId: order.id, status: 'PENDING' },
-        data: {
-          status: 'CANCELLED',
-          failureReason: 'Payment Window expired.'
-        }
-      })
-      await releaseStockReservation(tx, order)
-      await tx.order.update({
-        where: { id: order.id },
-        data: {
-          status: 'CANCELLED',
-          fulfillmentStatus: 'CANCELLED',
-          paymentExpiryStartedAt: null,
-          cancelledAt
-        }
-      })
-      await projectOrderPaymentStatus(tx, order.id, cancelledAt)
-      return tx.order.findUniqueOrThrow({
-        where: { id: order.id },
-        include: orderListInclude
-      })
+    await tx.order.updateMany({
+      where: { id: { in: claimedIds } },
+      data: { paymentExpiryStartedAt: cancelledAt }
     })
 
-    if (cancelled) cancelledOrders.push(cancelled)
-  }
+    return tx.order.findMany({
+      where: { id: { in: claimedIds } },
+      include: orderLifecycleInclude,
+      orderBy: [{ paymentExpiresAt: 'asc' }, { id: 'asc' }]
+    })
+  })
 
-  return cancelledOrders
+  const results = await mapWithConcurrency(
+    expiredOrders,
+    PAYMENT_EXPIRY_CONCURRENCY,
+    async (candidate) => {
+      const activePayment = (candidate.payments ?? []).find(
+        (payment) => payment.status === 'PENDING'
+      )
+      if (activePayment?.stripeCheckoutSessionId) {
+        try {
+          await expireStripeCheckoutSession(
+            activePayment.stripeCheckoutSessionId
+          )
+        } catch {
+          return null
+        }
+      }
+
+      return db.$transaction(async (tx) => {
+        await tx.$queryRaw`
+          SELECT "id" FROM "Order" WHERE "id" = ${candidate.id} FOR UPDATE
+        `
+        const order = await findOrder(tx, candidate.id)
+        if (
+          order.paymentExpiryStartedAt?.getTime() !== cancelledAt.getTime() ||
+          order.status !== 'PLACED' ||
+          order.fulfillmentStatus !== 'UNFULFILLED'
+        ) {
+          return null
+        }
+
+        if (order.paymentStatus === 'PAID') {
+          await tx.order.update({
+            where: { id: order.id },
+            data: { paymentExpiryStartedAt: null }
+          })
+          return null
+        }
+
+        await tx.payment.updateMany({
+          where: { orderId: order.id, status: 'PENDING' },
+          data: {
+            status: 'CANCELLED',
+            failureReason: 'Payment Window expired.'
+          }
+        })
+        await releaseStockReservation(tx, order)
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'CANCELLED',
+            fulfillmentStatus: 'CANCELLED',
+            paymentExpiryStartedAt: null,
+            cancelledAt
+          }
+        })
+        await projectOrderPaymentStatus(tx, order.id, cancelledAt)
+        return tx.order.findUniqueOrThrow({
+          where: { id: order.id },
+          include: orderListInclude
+        })
+      })
+    }
+  )
+
+  return results.filter((order): order is OrderListRow => order !== null)
 }
