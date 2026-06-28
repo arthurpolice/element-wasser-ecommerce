@@ -1,6 +1,6 @@
 import type { JSONContent } from '@tiptap/react'
 import type { ReactNode } from 'react'
-import type { Prisma } from '../../../../../generated/prisma'
+import type { Prisma } from '../../../../../generated/prisma/client'
 
 type ProductDescriptionProps = {
   description: Prisma.JsonValue

@@ -5,7 +5,7 @@ import type {
   OrderOrigin,
   OrderPaymentStatus,
   OrderStatus
-} from '../../../generated/prisma'
+} from '../../../generated/prisma/client'
 
 const publishEmailNotificationSafelyMock = vi.hoisted(() => vi.fn())
 const expireStripeCheckoutSessionMock = vi.hoisted(() => vi.fn())

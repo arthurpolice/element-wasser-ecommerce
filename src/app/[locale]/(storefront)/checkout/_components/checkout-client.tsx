@@ -14,6 +14,7 @@ import {
   FaShoppingBag,
   FaSpinner
 } from 'react-icons/fa'
+import { authClient } from '~/server/better-auth/client'
 
 import {
   useStorefrontCart,
@@ -74,6 +75,8 @@ function arePreviewLinesEqual(
 }
 
 export function CheckoutClient() {
+  const { data, isPending } = authClient.useSession()
+  const sessionExists = data?.session
   const t = useTranslations('Storefront.checkout')
   const locale = useLocale()
   const utils = api.useUtils()
@@ -269,12 +272,12 @@ export function CheckoutClient() {
               {t('description')}
             </p>
           </div>
-          <Link
+          {!isPending && !sessionExists && <Link
             className="text-store-muted decoration-store-border hover:text-store-accent hover:decoration-store-accent text-sm font-semibold underline underline-offset-4 transition lg:text-right"
             href="/sign-in"
           >
             {t('signInHint')}
-          </Link>
+          </Link>}
         </div>
       </div>
 
@@ -305,7 +308,6 @@ export function CheckoutClient() {
                   newAddress={newAddress}
                   onFieldChange={updateNewAddressField}
                   onCreateAddress={handleCreateAddress}
-                  ready={progression.addressComplete}
                   selectedAddress={selectedAddress ?? null}
                   selectedAddressId={selectedAddressId}
                   setSelectedAddressId={setSelectedAddressId}
@@ -329,7 +331,6 @@ export function CheckoutClient() {
               <PaymentMethodPicker
                 disabled={!progression.paymentUnlocked}
                 paymentMethod={paymentMethod}
-                ready={progression.paymentComplete}
                 setPaymentMethod={setPaymentMethod}
               />
             </CheckoutSection>
@@ -478,26 +479,8 @@ function CheckoutSection({
         </h2>
       </div>
       <div className="min-w-0">{children}</div>
-      <div className="mt-5 flex items-center justify-between gap-4 lg:mt-0 lg:justify-end">
-        <StepStateBadge complete={complete} />
-      </div>
     </section>
   )
-}
-
-function StepStateBadge({ complete }: { complete: boolean }) {
-  const t = useTranslations('Storefront.checkout')
-
-  if (complete) {
-    return (
-      <span className="text-store-accent inline-flex items-center gap-2 text-xs font-semibold">
-        <FaCheck aria-hidden="true" className="size-3" />
-        {t('stepStates.complete')}
-      </span>
-    )
-  }
-
-  return null
 }
 
 function StepInlineStatus({ complete }: { complete: boolean }) {
@@ -542,7 +525,6 @@ function RegisteredAddressStep({
   newAddress,
   onCreateAddress,
   onFieldChange,
-  ready,
   selectedAddress,
   selectedAddressId,
   setSelectedAddressId,
@@ -554,7 +536,6 @@ function RegisteredAddressStep({
   newAddress: GuestCheckoutAddress
   onCreateAddress: () => void
   onFieldChange: (field: keyof GuestCheckoutAddress, value: string) => void
-  ready: boolean
   selectedAddress: RegisteredCheckoutAddress | null
   selectedAddressId: string | null
   setSelectedAddressId: (id: string) => void
@@ -573,7 +554,6 @@ function RegisteredAddressStep({
         <p>{customer.email}</p>
       </div>
 
-      {customer.addresses.length > 0 ? (
         <div className="grid gap-3">
           {customer.addresses.map((address) => (
             <label
@@ -608,17 +588,12 @@ function RegisteredAddressStep({
             </label>
           ))}
         </div>
-      ) : (
-        <p className="border-store-border bg-store-surface/55 text-store-muted border p-4 text-sm">
-          {t('addressBook.empty')}
-        </p>
-      )}
 
       {selectedAddress ? (
         <p className="sr-only">{formatAddressBookEntry(selectedAddress)}</p>
       ) : null}
 
-      <button
+      {(customer.addresses.length > 0) && <button
         className="text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 justify-self-start text-sm font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
         onClick={() => setShowNewAddressForm(!showNewAddressForm)}
         type="button"
@@ -626,7 +601,7 @@ function RegisteredAddressStep({
         {showNewAddressForm
           ? t('addressBook.cancelNew')
           : t('addressBook.addNew')}
-      </button>
+      </button>}
 
       {showNewAddressForm || customer.addresses.length === 0 ? (
         <AddressBookEntryForm
@@ -637,8 +612,6 @@ function RegisteredAddressStep({
           ready={newAddressReady}
         />
       ) : null}
-
-      <StepInlineStatus complete={ready} />
     </div>
   )
 }
@@ -940,12 +913,10 @@ function SelectField({
 function PaymentMethodPicker({
   disabled,
   paymentMethod,
-  ready,
   setPaymentMethod
 }: {
   disabled: boolean
   paymentMethod: CheckoutPaymentMethod | null
-  ready: boolean
   setPaymentMethod: (method: CheckoutPaymentMethod) => void
 }) {
   const t = useTranslations('Storefront.checkout')
@@ -976,7 +947,6 @@ function PaymentMethodPicker({
           value="TWINT"
         />
       </div>
-      <StepInlineStatus complete={ready} />
     </fieldset>
   )
 }

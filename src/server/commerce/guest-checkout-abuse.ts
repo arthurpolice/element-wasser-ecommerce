@@ -9,9 +9,9 @@ function clientIp(headers: Headers) {
   const forwardedIp = forwardedFor?.split(',')[0]?.trim()
 
   return (
-    forwardedIp ||
-    headers.get('x-real-ip')?.trim() ||
-    headers.get('x-vercel-forwarded-for')?.trim() ||
+    forwardedIp ??
+    headers.get('x-real-ip')?.trim() ??
+    headers.get('x-vercel-forwarded-for')?.trim() ??
     'unknown'
   )
 }

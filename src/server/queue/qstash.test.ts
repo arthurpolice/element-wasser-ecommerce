@@ -47,6 +47,7 @@ vi.mock('@upstash/qstash/nextjs', () => ({
 import {
   isQstashConfigured,
   publishQstashJson,
+  qstashDeduplicationId,
   verifyQstashSignature
 } from '~/server/queue/qstash'
 
@@ -149,6 +150,14 @@ describe('qstash queue helpers', () => {
           body: { orderId: 'order_123' }
         })
       ).rejects.toThrow('QStash publishing is not configured.')
+    })
+  })
+
+  describe('qstashDeduplicationId', () => {
+    it('builds deduplication IDs without colon separators', () => {
+      expect(
+        qstashDeduplicationId('email:notification', 'notification-1', 0)
+      ).toBe('email_notification_notification-1_0')
     })
   })
 

@@ -1,4 +1,4 @@
-import type { Prisma } from '../../generated/prisma'
+import type { Prisma } from '../../generated/prisma/client'
 import { calculateAvailableStock } from '~/lib/order-quote'
 
 export type StorefrontProductImage = {

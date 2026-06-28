@@ -206,7 +206,7 @@ function createCheckoutStartDb() {
     },
     order: {
       findUnique: vi.fn(async () => storedOrder),
-      create: vi.fn(async ({ data }: { data: Record<string, any> }) => {
+      create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
         storedOrder = {
           id: 'order-1',
           ...data,

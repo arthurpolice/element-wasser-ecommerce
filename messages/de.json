@@ -165,7 +165,7 @@
         "HERR": "Herr",
         "FRAU": "Frau"
       },
-      "submit": "Registrierten Kunden anlegen",
+      "submit": "Registrieren",
       "submitting": "Wird angelegt…",
       "validation": {
         "emailRequired": "E-Mail ist erforderlich.",

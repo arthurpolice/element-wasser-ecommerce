@@ -8,6 +8,8 @@ const inputSchema = z.object({ emailNotificationId: z.string().min(1) })
 
 export const POST = verifyQstashSignature(async (request: Request) => {
   const input = inputSchema.parse(await request.json())
-  await deliverEmailNotification(db, input.emailNotificationId)
-  return Response.json({ delivered: true })
+  const result = await deliverEmailNotification(db, input.emailNotificationId)
+  return Response.json(
+    result && 'skipped' in result ? result : { delivered: true }
+  )
 })

@@ -1,4 +1,4 @@
-import type { EmailNotificationType } from '../../../generated/prisma'
+import type { EmailNotificationType } from '../../../generated/prisma/client'
 
 export function orderEmailNotificationKey(input: {
   orderId: string

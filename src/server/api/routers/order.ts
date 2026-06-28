@@ -1,4 +1,4 @@
-import { Salutation, type Prisma } from '../../../../generated/prisma'
+import { Salutation, type Prisma } from '../../../../generated/prisma/client'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 

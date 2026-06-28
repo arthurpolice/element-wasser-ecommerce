@@ -13,7 +13,9 @@ const publishQstashJsonMock = vi.hoisted(() => vi.fn())
 vi.mock('~/env', () => ({ env: envMock }))
 vi.mock('~/server/queue/qstash', () => ({
   isQstashConfigured: () => true,
-  publishQstashJson: publishQstashJsonMock
+  publishQstashJson: publishQstashJsonMock,
+  qstashDeduplicationId: (...parts: Array<number | string>) =>
+    parts.map((part) => String(part).replaceAll(':', '_')).join('_')
 }))
 
 import {
@@ -227,6 +229,7 @@ const createMockDb = () => ({
 
 describe('Email Notifications', () => {
   beforeEach(() => {
+    envMock.NODE_ENV = 'test'
     publishQstashJsonMock.mockReset()
   })
 
@@ -237,7 +240,7 @@ describe('Email Notifications', () => {
       expect.objectContaining({
         path: '/api/qstash/email/deliver',
         body: { emailNotificationId: 'notification-1' },
-        deduplicationId: 'notification-1:0'
+        deduplicationId: 'notification-1_0'
       })
     )
   })
@@ -253,7 +256,7 @@ describe('Email Notifications', () => {
 
     expect(publishQstashJsonMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        deduplicationId: 'notification-1:1'
+        deduplicationId: 'notification-1_1'
       })
     )
   })
@@ -289,6 +292,35 @@ describe('Email Notifications', () => {
         }
       }
     })
+  })
+
+  it('returns the rendered message without calling Resend in development', async () => {
+    envMock.NODE_ENV = 'development'
+    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
+      data: { id: 'resend-1' },
+      error: null
+    }))
+    const db = createMockDb()
+
+    const result = await deliverEmailNotification(db as never, 'notification-1', {
+      resend: { emails: { send } } as never
+    })
+
+    expect(send).not.toHaveBeenCalled()
+    expect(db.emailNotification.update).not.toHaveBeenCalled()
+    expect(result).toMatchObject({
+      delivered: false,
+      skipped: 'development',
+      message: {
+        from: 'no-reply@element-wasser.example',
+        replyTo: 'bestellungen@element-wasser.example',
+        to: 'anna@example.com',
+        subject: 'Ihre Bestellung EW-2026-00001 wurde aufgegeben'
+      }
+    })
+    expect(result && 'message' in result ? result.message.text : '').toContain(
+      'Bestellung ansehen'
+    )
   })
 
   it('does not resend an already-sent notification', async () => {

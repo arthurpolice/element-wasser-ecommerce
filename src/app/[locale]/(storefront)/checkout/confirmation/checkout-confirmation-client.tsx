@@ -183,11 +183,6 @@ export function CheckoutConfirmationClient({
               status: tPaymentStatus(order.paymentStatus)
             })}
           </div>
-          <p className="text-store-muted mt-2 text-sm">
-            {t('fulfillmentStatus', {
-              status: tFulfillmentStatus(order.fulfillmentStatus)
-            })}
-          </p>
           {order.dispatchedAt ? (
             <div className="border-store-border bg-store-paper mt-6 border-l-2 px-4 py-4">
               <p className="text-store-ink font-semibold">

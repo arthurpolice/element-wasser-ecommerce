@@ -1,4 +1,4 @@
-import type { Prisma, PrismaClient } from '../../../generated/prisma'
+import type { Prisma, PrismaClient } from '../../../generated/prisma/client'
 import type Stripe from 'stripe'
 
 import { env } from '~/env'

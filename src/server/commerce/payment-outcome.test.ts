@@ -5,7 +5,7 @@ import type {
   OrderOrigin,
   OrderPaymentStatus,
   PaymentStatus
-} from '../../../generated/prisma'
+} from '../../../generated/prisma/client'
 
 const publishEmailNotificationSafelyMock = vi.hoisted(() =>
   vi.fn(async () => true)

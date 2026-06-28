@@ -1,7 +1,9 @@
 'use client'
 
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { useState } from 'react'
 import {
   FaRegTrashAlt,
   FaRegUserCircle,
@@ -9,13 +11,13 @@ import {
   FaSignOutAlt
 } from 'react-icons/fa'
 
-import { signOutAction } from '~/app/[locale]/_components/auth-actions'
 import {
   useStorefrontCart,
   type StorefrontAddedCartItem,
   type StorefrontCartItem
 } from '~/app/[locale]/(storefront)/_components/storefront-cart'
 import { Link } from '~/i18n/navigation'
+import { authClient } from '~/server/better-auth/client'
 
 export type StorefrontDropdown = 'user' | 'cart' | 'added'
 
@@ -124,7 +126,10 @@ function UserDropdown({
   animationClass: string
   name: string
 }) {
+  const router = useRouter()
   const t = useTranslations('Storefront.topNav')
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   return (
     <div className={`${dropdownClass} ${animationClass}`}>
@@ -146,15 +151,40 @@ function UserDropdown({
         </Link>
       </div>
       <form
-        action={signOutAction}
         className="border-store-border/70 mt-5 border-t pt-5"
+        onSubmit={(event) => {
+          event.preventDefault()
+          void (async () => {
+            setError(null)
+            setSubmitting(true)
+
+            try {
+              await authClient.signOut()
+              router.replace('/')
+              router.refresh()
+            } catch {
+              setError('Could not sign out. Please try again.')
+            } finally {
+              setSubmitting(false)
+            }
+          })()
+        }}
       >
+        {error ? (
+          <p
+            aria-live="polite"
+            className="mb-3 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          >
+            {error}
+          </p>
+        ) : null}
         <button
           className="text-store-muted decoration-store-border hover:text-store-ink hover:decoration-store-ink focus-visible:ring-store-accent/25 inline-flex items-center gap-2 text-sm font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
+          disabled={submitting}
           type="submit"
         >
           <FaSignOutAlt aria-hidden="true" className="size-3.5" />
-          {t('signOut')}
+          {submitting ? 'Signing out...' : t('signOut')}
         </button>
       </form>
     </div>

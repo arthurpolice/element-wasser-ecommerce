@@ -5,7 +5,7 @@ import {
   type OrderStatus,
   type Prisma,
   Salutation
-} from '../../../../generated/prisma'
+} from '../../../../generated/prisma/client'
 import { TRPCError } from '@trpc/server'
 import {
   createTRPCRouter,

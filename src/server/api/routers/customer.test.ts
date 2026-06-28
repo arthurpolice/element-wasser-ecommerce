@@ -4,7 +4,7 @@ import type { Mock } from 'vitest'
 import { createCallerFactory } from '~/server/api/trpc'
 import { customerRouter } from '~/server/api/routers/customer'
 import { firstMockCall } from '~/test/mock-calls'
-import type { Salutation } from '../../../../generated/prisma'
+import type { Salutation } from '../../../../generated/prisma/client'
 
 const createCaller = createCallerFactory(customerRouter)
 

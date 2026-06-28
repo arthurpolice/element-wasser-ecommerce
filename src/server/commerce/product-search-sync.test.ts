@@ -5,7 +5,9 @@ const publishQstashJsonMock = vi.hoisted(() => vi.fn())
 
 vi.mock('~/server/queue/qstash', () => ({
   isQstashConfigured: isQstashConfiguredMock,
-  publishQstashJson: publishQstashJsonMock
+  publishQstashJson: publishQstashJsonMock,
+  qstashDeduplicationId: (...parts: Array<number | string>) =>
+    parts.map((part) => String(part).replaceAll(':', '_')).join('_')
 }))
 
 import {
@@ -145,7 +147,7 @@ describe('Product Search document sync orchestration', () => {
       expect.objectContaining({
         path: PRODUCT_SEARCH_REBUILD_QSTASH_PATH,
         body: { productIds: ['product-1', 'product-2'] },
-        deduplicationId: 'product-search-rebuild:missing:0:product-1,product-2',
+        deduplicationId: 'product-search-rebuild_missing_0_product-1,product-2',
         retries: 3,
         label: 'product-search-rebuild'
       })
@@ -153,7 +155,7 @@ describe('Product Search document sync orchestration', () => {
     expect(publishQstashJsonMock).toHaveBeenCalledWith(
       expect.objectContaining({
         body: { productIds: ['product-3'] },
-        deduplicationId: 'product-search-rebuild:missing:1:product-3'
+        deduplicationId: 'product-search-rebuild_missing_1_product-3'
       })
     )
   })

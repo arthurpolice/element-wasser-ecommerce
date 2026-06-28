@@ -1,5 +1,5 @@
 import { render } from '@react-email/render'
-import type { PrismaClient } from '../../../generated/prisma'
+import type { PrismaClient } from '../../../generated/prisma/client'
 
 import { env } from '~/env'
 import { createOrderAccessToken } from './order-access-token'
@@ -11,7 +11,11 @@ import { PaymentConfirmedEmail } from '~/server/email/templates/payment-confirme
 import { PaymentFailedEmail } from '~/server/email/templates/payment-failed'
 import { NewPaidOrderEmail } from '~/server/email/templates/new-paid-order'
 import { getResendClient } from '~/server/email/resend'
-import { isQstashConfigured, publishQstashJson } from '~/server/queue/qstash'
+import {
+  isQstashConfigured,
+  publishQstashJson,
+  qstashDeduplicationId
+} from '~/server/queue/qstash'
 
 export const EMAIL_DELIVERY_PATH = '/api/qstash/email/deliver'
 const RECOVERY_BATCH_SIZE = 50
@@ -19,6 +23,21 @@ export const MAX_EMAIL_DELIVERY_ATTEMPTS = 5
 export const EMAIL_DELIVERY_LEASE_MS = 5 * 60 * 1000
 
 type EmailNotificationDb = Pick<PrismaClient, 'emailNotification'>
+
+type EmailMessage = {
+  from: string
+  replyTo: string
+  to: string
+  subject: string
+  html: string
+  text: string
+}
+
+export type EmailDeliveryDevelopmentPreview = {
+  delivered: false
+  skipped: 'development'
+  message: EmailMessage
+}
 
 function formatMoney(cents: number, currencyCode: string) {
   return new Intl.NumberFormat('de-CH', {
@@ -39,7 +58,7 @@ export async function publishEmailNotification(id: string, generation = 0) {
   await publishQstashJson({
     path: EMAIL_DELIVERY_PATH,
     body: { emailNotificationId: id },
-    deduplicationId: `${id}:${generation}`,
+    deduplicationId: qstashDeduplicationId(id, generation),
     retries: 5
   })
   return true
@@ -186,17 +205,26 @@ export async function deliverEmailNotification(
     render(email),
     render(email, { plainText: true })
   ])
+  const message = {
+    from: env.EMAIL_FROM ?? 'dev@element-wasser.local',
+    replyTo: env.EMAIL_REPLY_TO ?? 'dev@element-wasser.local',
+    to: notification.recipientEmail,
+    subject,
+    html,
+    text
+  }
+
+  if (env.NODE_ENV === 'development') {
+    return {
+      delivered: false,
+      skipped: 'development',
+      message
+    } satisfies EmailDeliveryDevelopmentPreview
+  }
 
   try {
     const result = await (deps.resend ?? getResendClient()).emails.send(
-      {
-        from: env.EMAIL_FROM!,
-        replyTo: env.EMAIL_REPLY_TO!,
-        to: notification.recipientEmail,
-        subject,
-        html,
-        text
-      },
+      message,
       {
         idempotencyKey: `${notification.id}:${notification.deliveryGeneration}`
       }

@@ -6,7 +6,7 @@ import { createCallerFactory } from '~/server/api/trpc'
 import { startStripeCheckout } from '~/server/payments/stripe-checkout'
 import { firstMockCall } from '~/test/mock-calls'
 import { createOrderAccessToken } from '~/server/commerce/order-access-token'
-import type { Salutation } from '../../../../generated/prisma'
+import type { Salutation } from '../../../../generated/prisma/client'
 
 vi.mock('~/server/payments/stripe-checkout', () => ({
   startStripeCheckout: vi.fn(async () => ({

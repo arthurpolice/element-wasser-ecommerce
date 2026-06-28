@@ -6,6 +6,7 @@ import { verifySignatureAppRouter } from '@upstash/qstash/nextjs'
 import { env } from '~/env'
 
 const QSTASH_ROUTE_PREFIX = '/api/qstash/'
+const QSTASH_DEDUPLICATION_ID_SEPARATOR = '_'
 
 type PublishQstashJsonInput = Pick<
   PublishJsonRequest,
@@ -97,6 +98,16 @@ function getQstashSigningConfig() {
     currentSigningKey,
     nextSigningKey
   }
+}
+
+export function qstashDeduplicationId(
+  ...parts: Array<number | string>
+): string {
+  return parts
+    .map((part) =>
+      String(part).replaceAll(':', QSTASH_DEDUPLICATION_ID_SEPARATOR)
+    )
+    .join(QSTASH_DEDUPLICATION_ID_SEPARATOR)
 }
 
 export async function publishQstashJson({

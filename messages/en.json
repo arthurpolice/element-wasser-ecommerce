@@ -165,7 +165,7 @@
         "HERR": "Mr",
         "FRAU": "Ms"
       },
-      "submit": "Create Registered Customer",
+      "submit": "Register",
       "submitting": "Creating…",
       "validation": {
         "emailRequired": "Email is required.",
@@ -185,7 +185,7 @@
     "contact": {
       "title": "Customer information",
       "emailReadOnly": "Email changes are handled through sign-in support, not the Customer Area.",
-      "save": "Save customer information",
+      "save": "Save",
       "saving": "Saving…",
       "error": "Could not save customer information."
     },

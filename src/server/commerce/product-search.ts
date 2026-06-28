@@ -1,10 +1,14 @@
-import type { Prisma, PrismaClient } from '../../../generated/prisma'
+import type { Prisma, PrismaClient } from '../../../generated/prisma/client'
 import {
   mapStorefrontProduct,
   storefrontProductInclude,
   type StorefrontProduct
 } from '~/lib/catalog-product'
-import { isQstashConfigured, publishQstashJson } from '~/server/queue/qstash'
+import {
+  isQstashConfigured,
+  publishQstashJson,
+  qstashDeduplicationId
+} from '~/server/queue/qstash'
 
 export const PRODUCT_SEARCH_SUGGESTION_LIMIT = 6
 export const PRODUCT_SEARCH_REINDEX_BATCH_SIZE = 50
@@ -549,7 +553,12 @@ export async function requestProductSearchDocumentRebuild(
           publishQstashJson({
             path: PRODUCT_SEARCH_REBUILD_QSTASH_PATH,
             body: { productIds: batch },
-            deduplicationId: `product-search-rebuild:${input.mode}:${index}:${batch.join(',')}`,
+            deduplicationId: qstashDeduplicationId(
+              'product-search-rebuild',
+              input.mode,
+              index,
+              batch.join(',')
+            ),
             retries: 3,
             label: 'product-search-rebuild'
           })

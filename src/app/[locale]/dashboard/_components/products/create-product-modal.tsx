@@ -48,6 +48,7 @@ export function CreateProductDialog() {
   const tForm = useTranslations("Products.create");
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const manufacturerListRef = useRef<HTMLDivElement>(null);
   const [manufacturerSearch, setManufacturerSearch] = useState("");
   const [showManufacturerSuggestions, setShowManufacturerSuggestions] =
@@ -132,6 +133,9 @@ export function CreateProductDialog() {
 
     if (open && !dialog.open) {
       dialog.showModal();
+      window.requestAnimationFrame(() => {
+        formRef.current?.scrollTo({ top: 0 });
+      });
       return;
     }
 
@@ -236,7 +240,8 @@ export function CreateProductDialog() {
         onClose={handleClose}
       >
         <form
-          className="max-h-[calc(100vh-2rem)] overflow-y-auto p-6"
+          ref={formRef}
+          className="max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain p-6"
           onSubmit={handleSubmit(handleCreateSubmit)}
         >
           <div className="flex items-start justify-between gap-4">

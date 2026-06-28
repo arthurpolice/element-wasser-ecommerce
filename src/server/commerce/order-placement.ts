@@ -5,7 +5,7 @@ import type {
   Prisma,
   PrismaClient,
   Salutation
-} from '../../../generated/prisma'
+} from '../../../generated/prisma/client'
 import {
   normalizeOrderQuoteLines,
   quoteOrderLines,

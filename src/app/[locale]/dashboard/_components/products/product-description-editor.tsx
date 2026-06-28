@@ -251,6 +251,7 @@ export function ProductDescriptionEditor({
         code: false,
         codeBlock: false,
         horizontalRule: false,
+        link: false,
         strike: false,
       }),
       Link.configure({

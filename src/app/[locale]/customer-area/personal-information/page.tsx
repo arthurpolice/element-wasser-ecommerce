@@ -6,6 +6,7 @@ import {
 } from "~/app/[locale]/customer-area/_components/customer-area-details";
 import { CustomerAreaPageFrame } from "~/app/[locale]/customer-area/_components/customer-area-page-frame";
 import {
+  customerAreaPaths,
   loadCustomerArea,
   redirectToCustomerOnboarding,
 } from "~/app/[locale]/customer-area/_lib/load-customer-area";
@@ -20,13 +21,11 @@ export default async function PersonalInformationPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("CustomerArea");
-  const customerArea = await loadCustomerArea(
-    locale,
-    "/customer-area/personal-information",
-  );
+  const path = customerAreaPaths.personalInformation;
+  const customerArea = await loadCustomerArea(locale, path);
 
   if (customerArea.status === "needs-onboarding") {
-    redirectToCustomerOnboarding(locale);
+    redirectToCustomerOnboarding(locale, path);
   }
 
   return (

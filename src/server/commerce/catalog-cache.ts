@@ -1,5 +1,5 @@
 import { revalidateTag, unstable_cache } from 'next/cache'
-import type { PrismaClient } from '../../../generated/prisma'
+import type { PrismaClient } from '../../../generated/prisma/client'
 
 import { collectDescendantCategoryIds } from '~/lib/category-path'
 import {

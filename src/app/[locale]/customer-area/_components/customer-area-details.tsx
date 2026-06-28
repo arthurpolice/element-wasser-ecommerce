@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "next/navigation";
 
 import {
   inputClass,
@@ -82,8 +83,11 @@ export function CustomerPersonalInformation({
   customer: RegisteredCustomer;
 }) {
   const t = useTranslations("CustomerArea");
+  const params = useSearchParams();
+  const callbackUrl = params.get('callbackUrl') 
   const router = useRouter();
   const refresh = () => router.refresh();
+  const redirect = () => router.push(callbackUrl ?? "/")
 
   const contactForm = useForm<CreateCustomerFormValues>({
     resolver: zodResolver(
@@ -103,7 +107,7 @@ export function CustomerPersonalInformation({
   });
 
   const updateContact = api.customer.updateContact.useMutation({
-    onSuccess: refresh,
+    onSuccess: callbackUrl ? redirect : refresh,
   });
 
   return (

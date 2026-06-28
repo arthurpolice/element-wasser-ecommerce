@@ -1,4 +1,4 @@
-import { Prisma } from '../../generated/prisma'
+import { Prisma } from '../../generated/prisma/client'
 
 export function isPrismaErrorCode(error: unknown, code: string): boolean {
   return (

@@ -1,0 +1,5 @@
+-- RenameIndex
+ALTER INDEX "Order_guestCheckoutFingerprint_status_paymentStatus_paymentExpi" RENAME TO "Order_guestCheckoutFingerprint_status_paymentStatus_payment_idx";
+
+-- RenameIndex
+ALTER INDEX "Order_status_paymentStatus_fulfillmentStatus_paymentExpiresAt_i" RENAME TO "Order_status_paymentStatus_fulfillmentStatus_paymentExpires_idx";
