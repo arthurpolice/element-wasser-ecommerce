@@ -1,43 +1,87 @@
-"use client";
+'use client'
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useFormatter, useTranslations } from "next-intl";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useSearchParams } from "next/navigation";
+import { zodResolver } from '@hookform/resolvers/zod'
+import Image from 'next/image'
+import { useFormatter, useTranslations } from 'next-intl'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'next/navigation'
+import { FaPencilAlt, FaRegTrashAlt } from 'react-icons/fa'
 
 import {
   inputClass,
   Input,
   smallTextButtonClass,
-  textButtonClass,
-} from "~/app/[locale]/customer-area/_components/customer-area-form-controls";
+  textButtonClass
+} from '~/app/[locale]/customer-area/_components/customer-area-form-controls'
 import type {
   CustomerAddress,
   CustomerArea,
   CustomerOrder,
   CustomerOrderDetails as CustomerOrderDetailsType,
-  CustomerOrderLine,
-  RegisteredCustomer,
-} from "~/app/[locale]/customer-area/_components/customer-area-types";
-import { useRouter } from "~/i18n/navigation";
+  RegisteredCustomer
+} from '~/app/[locale]/customer-area/_components/customer-area-types'
+import { useRouter } from '~/i18n/navigation'
 import {
   createCustomerFormSchema,
-  type CreateCustomerFormValues,
-} from "~/lib/form-schemas";
-import { api } from "~/trpc/react";
-import { getSwissPostTrackingUrl } from "~/lib/order-tracking";
+  type CreateCustomerFormValues
+} from '~/lib/form-schemas'
+import { api } from '~/trpc/react'
+import { getSwissPostTrackingUrl } from '~/lib/order-tracking'
 
 type AddressFormValues = CreateCustomerFormValues & {
-  company: string;
-  streetLine1: string;
-  streetLine2: string;
-  postalCode: string;
-  city: string;
-  countryCode: string;
-  phone: string;
-  isMain: boolean;
-};
+  company: string
+  streetLine1: string
+  streetLine2: string
+  postalCode: string
+  city: string
+  countryCode: string
+  phone: string
+  isMain: boolean
+}
+
+type CustomerOrderListLine = CustomerOrder['lines'][number]
+
+const addressIconButtonClass =
+  'border-store-border text-store-muted hover:border-store-accent/40 hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex size-9 items-center justify-center rounded-full border transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-60'
+
+function formatDayMonthYear(date: Date) {
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+
+  return `${day}/${month}/${date.getFullYear()}`
+}
+
+function formatPostalLine({
+  city,
+  countryCode,
+  postalCode
+}: {
+  city: string
+  countryCode: string
+  postalCode: string
+}) {
+  return `${countryCode}-${postalCode} ${city}`
+}
+
+function AddressSummaryRow({
+  label,
+  lines
+}: {
+  label: string
+  lines: Array<string | null>
+}) {
+  return (
+    <div className="grid gap-3 py-5 md:grid-cols-[4rem_minmax(0,1fr)_minmax(12rem,0.9fr)] md:items-start md:gap-6">
+      <dt className="text-store-ink font-semibold md:col-span-2">{label}</dt>
+      <dd className="text-store-ink space-y-0.5 leading-5">
+        {lines.filter(Boolean).map((line) => (
+          <p key={line}>{line}</p>
+        ))}
+      </dd>
+    </div>
+  )
+}
 
 export function CustomerAreaDetails({ customer }: CustomerArea) {
   return (
@@ -47,73 +91,73 @@ export function CustomerAreaDetails({ customer }: CustomerArea) {
       <CustomerAddresses customer={customer} />
       <CustomerOrders customer={customer} />
     </div>
-  );
+  )
 }
 
 export function CustomerAreaSummary({
-  customer,
+  customer
 }: {
-  customer: RegisteredCustomer;
+  customer: RegisteredCustomer
 }) {
-  const t = useTranslations("CustomerArea");
+  const t = useTranslations('CustomerArea')
 
   return (
     <section className="border-store-border/70 border-b pb-8">
       <p className="text-store-water text-xs font-semibold tracking-[0.18em] uppercase">
-        {t("registered.eyebrow")}
+        {t('registered.eyebrow')}
       </p>
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         <Info
-          label={t("registered.name")}
+          label={t('registered.name')}
           value={`${customer.firstName} ${customer.lastName}`}
         />
-        <Info label={t("registered.email")} value={customer.email} />
+        <Info label={t('registered.email')} value={customer.email} />
         <Info
-          label={t("registered.orders")}
+          label={t('registered.orders')}
           value={String(customer.orderCount)}
         />
       </div>
     </section>
-  );
+  )
 }
 
 export function CustomerPersonalInformation({
-  customer,
+  customer
 }: {
-  customer: RegisteredCustomer;
+  customer: RegisteredCustomer
 }) {
-  const t = useTranslations("CustomerArea");
-  const params = useSearchParams();
-  const callbackUrl = params.get('callbackUrl') 
-  const router = useRouter();
-  const refresh = () => router.refresh();
-  const redirect = () => router.push(callbackUrl ?? "/")
+  const t = useTranslations('CustomerArea')
+  const params = useSearchParams()
+  const callbackUrl = params.get('callbackUrl')
+  const router = useRouter()
+  const refresh = () => router.refresh()
+  const redirect = () => router.push(callbackUrl ?? '/')
 
   const contactForm = useForm<CreateCustomerFormValues>({
     resolver: zodResolver(
       createCustomerFormSchema({
-        emailRequired: t("onboarding.validation.emailRequired"),
-        emailInvalid: t("onboarding.validation.emailInvalid"),
-        firstNameRequired: t("onboarding.validation.firstNameRequired"),
-        lastNameRequired: t("onboarding.validation.lastNameRequired"),
-      }),
+        emailRequired: t('onboarding.validation.emailRequired'),
+        emailInvalid: t('onboarding.validation.emailInvalid'),
+        firstNameRequired: t('onboarding.validation.firstNameRequired'),
+        lastNameRequired: t('onboarding.validation.lastNameRequired')
+      })
     ),
     defaultValues: {
       email: customer.email,
       firstName: customer.firstName,
       lastName: customer.lastName,
-      salutation: customer.salutation ?? "",
-    },
-  });
+      salutation: customer.salutation ?? ''
+    }
+  })
 
   const updateContact = api.customer.updateContact.useMutation({
-    onSuccess: callbackUrl ? redirect : refresh,
-  });
+    onSuccess: callbackUrl ? redirect : refresh
+  })
 
   return (
     <section className="border-store-border/70 border-b pb-10">
       <h2 className="font-display text-store-ink text-xl font-semibold">
-        {t("contact.title")}
+        {t('contact.title')}
       </h2>
       <form
         className="mt-5 grid gap-4"
@@ -121,106 +165,127 @@ export function CustomerPersonalInformation({
           updateContact.mutate({
             firstName: values.firstName,
             lastName: values.lastName,
-            salutation: values.salutation || undefined,
-          }),
+            salutation: values.salutation || undefined
+          })
         )}
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Input
-            label={t("onboarding.fields.firstName")}
-            register={contactForm.register("firstName")}
+            label={t('onboarding.fields.firstName')}
+            register={contactForm.register('firstName')}
           />
           <Input
-            label={t("onboarding.fields.lastName")}
-            register={contactForm.register("lastName")}
+            label={t('onboarding.fields.lastName')}
+            register={contactForm.register('lastName')}
           />
         </div>
         <div>
           <p className="text-store-muted mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
-            {t("onboarding.fields.email")}
+            {t('onboarding.fields.email')}
           </p>
           <p className="border-store-border text-store-muted border-b py-2 text-sm">
             {customer.email}
           </p>
           <p className="text-store-muted mt-2 text-xs">
-            {t("contact.emailReadOnly")}
+            {t('contact.emailReadOnly')}
           </p>
         </div>
-        <select className={inputClass} {...contactForm.register("salutation")}>
-          <option value="">{t("onboarding.fields.salutationNone")}</option>
-          <option value="HERR">{t("onboarding.salutations.HERR")}</option>
-          <option value="FRAU">{t("onboarding.salutations.FRAU")}</option>
+        <select className={inputClass} {...contactForm.register('salutation')}>
+          <option value="">{t('onboarding.fields.salutationNone')}</option>
+          <option value="HERR">{t('onboarding.salutations.HERR')}</option>
+          <option value="FRAU">{t('onboarding.salutations.FRAU')}</option>
         </select>
         {updateContact.error ? (
           <p className="text-sm text-red-700">
-            {updateContact.error.data?.code === "CONFLICT"
-              ? t("onboarding.validation.emailConflict")
-              : t("contact.error")}
+            {updateContact.error.data?.code === 'CONFLICT'
+              ? t('onboarding.validation.emailConflict')
+              : t('contact.error')}
           </p>
         ) : null}
         <button className={textButtonClass} type="submit">
-          {updateContact.isPending ? t("contact.saving") : t("contact.save")}
+          {updateContact.isPending ? t('contact.saving') : t('contact.save')}
         </button>
       </form>
     </section>
-  );
+  )
 }
 
 export function CustomerAddresses({
-  customer,
+  customer
 }: {
-  customer: RegisteredCustomer;
+  customer: RegisteredCustomer
 }) {
-  const t = useTranslations("CustomerArea");
-  const router = useRouter();
-  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
-  const refresh = () => router.refresh();
+  const t = useTranslations('CustomerArea')
+  const router = useRouter()
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
+  const [showAddressForm, setShowAddressForm] = useState(false)
+  const refresh = () => router.refresh()
 
   const defaultAddressValues: AddressFormValues = {
     email: customer.email,
     firstName: customer.firstName,
     lastName: customer.lastName,
-    salutation: customer.salutation ?? "",
-    company: "",
-    streetLine1: "",
-    streetLine2: "",
-    postalCode: "",
-    city: "",
-    countryCode: "CH",
-    phone: "",
-    isMain: customer.addresses.length === 0,
-  };
+    salutation: customer.salutation ?? '',
+    company: '',
+    streetLine1: '',
+    streetLine2: '',
+    postalCode: '',
+    city: '',
+    countryCode: 'CH',
+    phone: '',
+    isMain: customer.addresses.length === 0
+  }
 
   const addressForm = useForm<AddressFormValues>({
-    defaultValues: defaultAddressValues,
-  });
+    defaultValues: defaultAddressValues
+  })
 
   const createAddress = api.customer.createAddress.useMutation({
-    onSuccess: refresh,
-  });
+    onSuccess: () => {
+      setShowAddressForm(false)
+      addressForm.reset(defaultAddressValues)
+      refresh()
+    }
+  })
   const updateAddress = api.customer.updateAddress.useMutation({
     onSuccess: () => {
-      setEditingAddressId(null);
-      addressForm.reset(defaultAddressValues);
-      refresh();
-    },
-  });
+      setEditingAddressId(null)
+      setShowAddressForm(false)
+      addressForm.reset(defaultAddressValues)
+      refresh()
+    }
+  })
   const setMainAddress = api.customer.setMainAddress.useMutation({
-    onSuccess: refresh,
-  });
+    onSuccess: refresh
+  })
   const deleteAddress = api.customer.deleteAddress.useMutation({
-    onSuccess: refresh,
-  });
+    onSuccess: refresh
+  })
 
   return (
     <section className="border-store-border/70 border-b pb-10">
-      <h2 className="font-display text-store-ink text-xl font-semibold">
-        {t("addresses.title")}
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-store-ink text-xl font-semibold">
+          {t('addresses.title')}
+        </h2>
+        {!showAddressForm ? (
+          <button
+            className={textButtonClass}
+            onClick={() => {
+              setEditingAddressId(null)
+              addressForm.reset(defaultAddressValues)
+              setShowAddressForm(true)
+            }}
+            type="button"
+          >
+            {t('addresses.newAddress')}
+          </button>
+        ) : null}
+      </div>
       <div className="divide-store-border/70 mt-5 divide-y">
         {customer.addresses.length === 0 ? (
           <p className="text-store-muted py-3 text-sm">
-            {t("addresses.empty")}
+            {t('addresses.empty')}
           </p>
         ) : (
           customer.addresses.map((address) => (
@@ -230,8 +295,9 @@ export function CustomerAddresses({
               customer={customer}
               onDelete={() => deleteAddress.mutate({ id: address.id })}
               onEdit={(values) => {
-                setEditingAddressId(address.id);
-                addressForm.reset(values);
+                setEditingAddressId(address.id)
+                addressForm.reset(values)
+                setShowAddressForm(true)
               }}
               onMakeMain={() => setMainAddress.mutate({ id: address.id })}
             />
@@ -239,132 +305,133 @@ export function CustomerAddresses({
         )}
       </div>
 
-      <form
-        className="border-store-border mt-6 grid gap-4 border-t pt-6"
-        onSubmit={addressForm.handleSubmit((values) => {
-          const input = {
-            firstName: values.firstName,
-            lastName: values.lastName,
-            salutation: values.salutation || undefined,
-            company: values.company || undefined,
-            streetLine1: values.streetLine1,
-            streetLine2: values.streetLine2 || undefined,
-            postalCode: values.postalCode,
-            city: values.city,
-            countryCode: values.countryCode,
-            phone: values.phone || undefined,
-            isMain: values.isMain,
-          };
+      {showAddressForm ? (
+        <form
+          className="border-store-border mt-6 grid gap-4 border-t pt-6"
+          onSubmit={addressForm.handleSubmit((values) => {
+            const input = {
+              firstName: values.firstName,
+              lastName: values.lastName,
+              salutation: values.salutation || undefined,
+              company: values.company || undefined,
+              streetLine1: values.streetLine1,
+              streetLine2: values.streetLine2 || undefined,
+              postalCode: values.postalCode,
+              city: values.city,
+              countryCode: values.countryCode,
+              phone: values.phone || undefined,
+              isMain: values.isMain
+            }
 
-          if (editingAddressId) {
-            updateAddress.mutate({ id: editingAddressId, ...input });
-            return;
-          }
+            if (editingAddressId) {
+              updateAddress.mutate({ id: editingAddressId, ...input })
+              return
+            }
 
-          createAddress.mutate(input);
-        })}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-display text-base font-semibold">
-            {editingAddressId
-              ? t("addresses.editTitle")
-              : t("addresses.create")}
-          </h3>
-          {editingAddressId ? (
+            createAddress.mutate(input)
+          })}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="font-display text-base font-semibold">
+              {editingAddressId
+                ? t('addresses.editTitle')
+                : t('addresses.create')}
+            </h3>
             <button
               className={smallTextButtonClass}
               onClick={() => {
-                setEditingAddressId(null);
-                addressForm.reset(defaultAddressValues);
+                setEditingAddressId(null)
+                addressForm.reset(defaultAddressValues)
+                setShowAddressForm(false)
               }}
               type="button"
             >
-              {t("addresses.cancelEdit")}
+              {t('addresses.cancel')}
             </button>
-          ) : null}
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label={t('onboarding.fields.firstName')}
+              register={addressForm.register('firstName')}
+            />
+            <Input
+              label={t('onboarding.fields.lastName')}
+              register={addressForm.register('lastName')}
+            />
+          </div>
           <Input
-            label={t("onboarding.fields.firstName")}
-            register={addressForm.register("firstName")}
-          />
-          <Input
-            label={t("onboarding.fields.lastName")}
-            register={addressForm.register("lastName")}
-          />
-        </div>
-        <Input
-          label={t("addresses.company")}
-          register={addressForm.register("company")}
-        />
-        <Input
-          label={t("addresses.streetLine1")}
-          register={addressForm.register("streetLine1")}
-        />
-        <Input
-          label={t("addresses.streetLine2")}
-          register={addressForm.register("streetLine2")}
-        />
-        <div className="grid gap-4 sm:grid-cols-[0.7fr_1fr_0.5fr]">
-          <Input
-            label={t("addresses.postalCode")}
-            register={addressForm.register("postalCode")}
+            label={t('addresses.company')}
+            register={addressForm.register('company')}
           />
           <Input
-            label={t("addresses.city")}
-            register={addressForm.register("city")}
+            label={t('addresses.streetLine1')}
+            register={addressForm.register('streetLine1')}
           />
           <Input
-            label={t("addresses.countryCode")}
-            register={addressForm.register("countryCode")}
+            label={t('addresses.streetLine2')}
+            register={addressForm.register('streetLine2')}
           />
-        </div>
-        <Input
-          label={t("addresses.phone")}
-          register={addressForm.register("phone")}
-        />
-        <label className="text-store-ink flex items-center gap-2 text-sm">
-          <input
-            className="size-4"
-            type="checkbox"
-            {...addressForm.register("isMain")}
+          <div className="grid gap-4 sm:grid-cols-[0.7fr_1fr_0.5fr]">
+            <Input
+              label={t('addresses.postalCode')}
+              register={addressForm.register('postalCode')}
+            />
+            <Input
+              label={t('addresses.city')}
+              register={addressForm.register('city')}
+            />
+            <Input
+              label={t('addresses.countryCode')}
+              register={addressForm.register('countryCode')}
+            />
+          </div>
+          <Input
+            label={t('addresses.phone')}
+            register={addressForm.register('phone')}
           />
-          {t("addresses.setAsMain")}
-        </label>
-        <button className={textButtonClass} type="submit">
-          {createAddress.isPending || updateAddress.isPending
-            ? t("addresses.saving")
-            : t("addresses.save")}
-        </button>
-      </form>
+          <label className="text-store-ink flex items-center gap-2 text-sm">
+            <input
+              className="size-4"
+              type="checkbox"
+              {...addressForm.register('isMain')}
+            />
+            {t('addresses.setAsMain')}
+          </label>
+          <button className={textButtonClass} type="submit">
+            {createAddress.isPending || updateAddress.isPending
+              ? t('addresses.saving')
+              : t('addresses.save')}
+          </button>
+        </form>
+      ) : null}
     </section>
-  );
+  )
 }
 
 export function CustomerOrders({
-  customer: _customer,
+  customer: _customer
 }: {
-  customer: RegisteredCustomer;
+  customer: RegisteredCustomer
 }) {
-  const t = useTranslations("CustomerArea");
+  const t = useTranslations('CustomerArea')
   const ordersQuery = api.customer.myOrders.useInfiniteQuery(
     { limit: 20 },
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-    },
-  );
-  const orders = ordersQuery.data?.pages.flatMap((page) => page.items) ?? [];
+      getNextPageParam: (lastPage) => lastPage.nextCursor
+    }
+  )
+  const orders = ordersQuery.data?.pages.flatMap((page) => page.items) ?? []
 
   return (
     <section>
       <h2 className="font-display text-store-ink text-xl font-semibold">
-        {t("orders.title")}
+        {t('orders.title')}
       </h2>
       <div className="divide-store-border/70 border-store-border/70 mt-5 divide-y border-t">
         {ordersQuery.isLoading ? (
-          <p className="text-store-muted py-4 text-sm">{t("orders.loading")}</p>
+          <p className="text-store-muted py-4 text-sm">{t('orders.loading')}</p>
         ) : orders.length === 0 ? (
-          <p className="text-store-muted py-4 text-sm">{t("orders.empty")}</p>
+          <p className="text-store-muted py-4 text-sm">{t('orders.empty')}</p>
         ) : (
           orders.map((order) => (
             <CustomerOrderDetails key={order.id} order={order} />
@@ -379,12 +446,12 @@ export function CustomerOrders({
           type="button"
         >
           {ordersQuery.isFetchingNextPage
-            ? t("orders.loading")
-            : t("orders.loadMore")}
+            ? t('orders.loading')
+            : t('orders.loadMore')}
         </button>
       ) : null}
     </section>
-  );
+  )
 }
 
 function AddressBookEntryRow({
@@ -392,23 +459,25 @@ function AddressBookEntryRow({
   customer,
   onDelete,
   onEdit,
-  onMakeMain,
+  onMakeMain
 }: {
-  address: CustomerAddress;
-  customer: RegisteredCustomer;
-  onDelete: () => void;
-  onEdit: (values: AddressFormValues) => void;
-  onMakeMain: () => void;
+  address: CustomerAddress
+  customer: RegisteredCustomer
+  onDelete: () => void
+  onEdit: (values: AddressFormValues) => void
+  onMakeMain: () => void
 }) {
-  const t = useTranslations("CustomerArea");
-  const addressSummary = [
+  const t = useTranslations('CustomerArea')
+  const addressLines = [
+    address.company,
     address.streetLine1,
     address.streetLine2,
-    address.city,
-    address.countryCode,
-  ]
-    .filter(Boolean)
-    .join(", ");
+    formatPostalLine({
+      city: address.city,
+      countryCode: address.countryCode,
+      postalCode: address.postalCode
+    })
+  ].filter(Boolean)
 
   return (
     <div className="py-4">
@@ -418,34 +487,39 @@ function AddressBookEntryRow({
             {address.firstName} {address.lastName}
             {address.isMain ? (
               <span className="text-store-accent ml-2 text-xs font-medium">
-                {t("addresses.main")}
+                {t('addresses.main')}
               </span>
             ) : null}
           </p>
-          <p className="text-store-muted mt-1 text-sm">{addressSummary}</p>
+          <div className="text-store-muted mt-1 space-y-0.5 text-sm leading-5">
+            {addressLines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
         </div>
         <div className="flex gap-2">
           <button
-            className={smallTextButtonClass}
+            aria-label={t('addresses.edit')}
+            className={addressIconButtonClass}
             onClick={() =>
               onEdit({
                 email: customer.email,
                 firstName: address.firstName,
                 lastName: address.lastName,
-                salutation: address.salutation ?? "",
-                company: address.company ?? "",
+                salutation: address.salutation ?? '',
+                company: address.company ?? '',
                 streetLine1: address.streetLine1,
-                streetLine2: address.streetLine2 ?? "",
+                streetLine2: address.streetLine2 ?? '',
                 postalCode: address.postalCode,
                 city: address.city,
                 countryCode: address.countryCode,
-                phone: address.phone ?? "",
-                isMain: address.isMain,
+                phone: address.phone ?? '',
+                isMain: address.isMain
               })
             }
             type="button"
           >
-            {t("addresses.edit")}
+            <FaPencilAlt aria-hidden="true" className="size-3.5" />
           </button>
           {!address.isMain ? (
             <button
@@ -453,92 +527,130 @@ function AddressBookEntryRow({
               onClick={onMakeMain}
               type="button"
             >
-              {t("addresses.makeMain")}
+              {t('addresses.makeMain')}
             </button>
           ) : null}
           <button
-            className="decoration-store-border text-xs font-semibold text-red-700 underline underline-offset-4 transition hover:text-red-900 hover:decoration-red-900 focus-visible:ring-2 focus-visible:ring-red-700/25 focus-visible:outline-none"
+            aria-label={t('addresses.delete')}
+            className={`${addressIconButtonClass} hover:border-red-700/40 hover:text-red-700 focus-visible:ring-red-700/25`}
             onClick={onDelete}
             type="button"
           >
-            {t("addresses.delete")}
+            <FaRegTrashAlt aria-hidden="true" className="size-3.5" />
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function CustomerOrderDetails({ order }: { order: CustomerOrder }) {
-  const t = useTranslations("CustomerArea");
-  const format = useFormatter();
-  const trackingUrl = getSwissPostTrackingUrl(order.trackingNumber);
-  const [open, setOpen] = useState(false);
+  const t = useTranslations('CustomerArea')
+  const tPaymentStatus = useTranslations('OrderPaymentStatus')
+  const format = useFormatter()
+  const trackingUrl = getSwissPostTrackingUrl(order.trackingNumber)
+  const [open, setOpen] = useState(false)
   const detailQuery = api.customer.myOrderDetails.useQuery(
     { orderId: order.id },
-    { enabled: open },
-  );
+    { enabled: open }
+  )
+  const orderDate = formatDayMonthYear(order.placedAt)
+  const deliveryDate = order.dispatchedAt
+    ? formatDayMonthYear(order.dispatchedAt)
+    : null
 
   return (
-    <details
-      className="py-4"
-      onToggle={(event) => setOpen(event.currentTarget.open)}
-    >
-      <summary className="cursor-pointer list-none">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="font-semibold">{order.orderNumber}</p>
-            <p className="text-store-muted text-sm">
-              {format.dateTime(order.placedAt, {
-                dateStyle: "medium",
-                timeStyle: "short",
-              })}
+    <article className="py-7">
+      <div className="grid">
+        <div>
+          <h3 className="font-display text-store-ink text-2xl font-semibold tracking-tight">
+            {t('orders.orderTitle', {
+              orderNumber: order.orderNumber,
+              date: orderDate
+            })}
+          </h3>
+          <div className="my-5 flex flex-wrap items-center gap-x-10 gap-y-2 text-sm">
+            <p className="text-store-ink">
+              {t('orders.status')}{' '}
+              <span
+                className={
+                  order.paymentStatus === 'PAID'
+                    ? 'font-semibold text-green-700'
+                    : 'text-store-muted font-medium'
+                }
+              >
+                {tPaymentStatus(order.paymentStatus)}
+              </span>
+            </p>
+            <p className="text-store-ink">
+              {t('orders.total')}{' '}
+              <span className="text-store-muted">
+                {format.number(order.totalCents / 100, {
+                  style: 'currency',
+                  currency: order.currencyCode,
+                  currencyDisplay: 'code'
+                })}
+              </span>
             </p>
           </div>
-          <p className="font-semibold">
-            {format.number(order.totalCents / 100, {
-              style: "currency",
-              currency: order.currencyCode,
-            })}
-          </p>
         </div>
-      </summary>
-      {detailQuery.isLoading ? (
-        <p className="text-store-muted mt-4 text-sm">{t("orders.loading")}</p>
-      ) : detailQuery.data ? (
-        <CustomerOrderExpandedDetails
-          details={detailQuery.data}
-          trackingUrl={trackingUrl}
-        />
-      ) : null}
-    </details>
-  );
+
+        <div className="divide-store-border/70 border-store-border/70 divide-y border-y">
+          {order.lines.map((line) => (
+            <CustomerOrderLineRow
+              key={line.id}
+              deliveryDate={deliveryDate}
+              line={line}
+            />
+          ))}
+        </div>
+
+        {open ? (
+          detailQuery.isLoading ? (
+            <p className="text-store-muted text-sm">{t('orders.loading')}</p>
+          ) : detailQuery.data ? (
+            <CustomerOrderExpandedDetails
+              details={detailQuery.data}
+              trackingUrl={trackingUrl}
+            />
+          ) : null
+        ) : null}
+
+        <div className="flex justify-end">
+          <button
+            className="text-store-accent hover:text-store-ink focus-visible:ring-store-accent/25 my-2 text-sm font-medium transition focus-visible:ring-2 focus-visible:outline-none"
+            onClick={() => setOpen((current) => !current)}
+            type="button"
+          >
+            {open ? t('orders.hideDetails') : t('orders.viewDetails')}
+          </button>
+        </div>
+      </div>
+    </article>
+  )
 }
 
 function CustomerOrderExpandedDetails({
   details: order,
-  trackingUrl,
+  trackingUrl
 }: {
-  details: CustomerOrderDetailsType;
-  trackingUrl: string | null;
+  details: CustomerOrderDetailsType
+  trackingUrl: string | null
 }) {
-  const t = useTranslations("CustomerArea");
-  const format = useFormatter();
+  const t = useTranslations('CustomerArea')
+  const format = useFormatter()
 
   return (
-    <div className="text-store-muted mt-4 grid gap-4 text-sm">
-      <p>
-        {order.status} · {order.paymentStatus} · {order.fulfillmentStatus}
-      </p>
+    <div className="text-store-muted grid gap-4 text-sm">
       {order.dispatchedAt ? (
         <div className="border-store-border bg-store-paper border-l-2 px-4 py-3">
           <p className="text-store-ink font-semibold">
-            {t("orders.dispatchedWithSwissPost")}
+            {t('orders.dispatchedWithSwissPost')}
           </p>
           <p>
             {format.dateTime(order.dispatchedAt, {
-              dateStyle: "medium",
-              timeStyle: "short",
+              dateStyle: 'medium',
+              timeStyle: 'short'
             })}
           </p>
           {trackingUrl ? (
@@ -548,51 +660,66 @@ function CustomerOrderExpandedDetails({
               rel="noreferrer"
               target="_blank"
             >
-              {t("orders.trackShipment")}
+              {t('orders.trackShipment')}
             </a>
           ) : null}
         </div>
       ) : null}
-      {order.lines.map((line) => (
-        <CustomerOrderLineRow
-          key={line.id}
-          currencyCode={order.currencyCode}
-          line={line}
+      <dl className="divide-store-border/70 border-store-border/70 divide-b border-b">
+        <AddressSummaryRow
+          label={t('orders.shipping')}
+          lines={[
+            `${order.shippingFirstName} ${order.shippingLastName}`,
+            order.shippingStreetLine1,
+            order.shippingStreetLine2,
+            formatPostalLine({
+              city: order.shippingCity,
+              countryCode: order.shippingCountryCode,
+              postalCode: order.shippingPostalCode
+            })
+          ]}
         />
-      ))}
-      <p>
-        {t("orders.shipping")}: {order.shippingStreetLine1},{" "}
-        {order.shippingPostalCode} {order.shippingCity}
-      </p>
-      <p>
-        {t("orders.billing")}: {order.billingStreetLine1},{" "}
-        {order.billingPostalCode} {order.billingCity}
-      </p>
+      </dl>
     </div>
-  );
+  )
 }
 
 function CustomerOrderLineRow({
-  currencyCode,
-  line,
+  deliveryDate,
+  line
 }: {
-  currencyCode: string;
-  line: CustomerOrderLine;
+  deliveryDate: string | null
+  line: CustomerOrderListLine
 }) {
-  const format = useFormatter();
+  const t = useTranslations('CustomerArea')
+  const image = line.product.images[0]
 
   return (
-    <div className="border-store-border border-t pt-3">
-      <p className="text-store-ink font-medium">{line.productName}</p>
-      <p>
-        SKU {line.productSku} · {line.quantity} x{" "}
-        {format.number(line.unitPriceCents / 100, {
-          style: "currency",
-          currency: currencyCode,
-        })}
+    <div className="grid min-h-20 grid-cols-[4rem_1fr] items-center gap-4 py-5 md:grid-cols-[4rem_minmax(0,1fr)_minmax(12rem,0.9fr)] md:gap-6">
+      <div className="relative size-12 overflow-hidden bg-white">
+        {image ? (
+          <Image
+            alt={image.altText ?? line.productName}
+            className="object-contain"
+            fill
+            sizes="48px"
+            src={image.url}
+          />
+        ) : (
+          <div className="bg-store-border/60 h-full w-full" />
+        )}
+      </div>
+      <p className="text-store-ink min-w-0 text-base leading-6 font-medium">
+        <span className="mr-3 font-semibold">{line.quantity}&times;</span>
+        <span className="font-semibold">{line.productName}</span>
+      </p>
+      <p className="text-sm font-medium text-green-700 md:text-left">
+        {deliveryDate
+          ? t('orders.deliveredOn', { date: deliveryDate })
+          : t('orders.deliveryPending')}
       </p>
     </div>
-  );
+  )
 }
 
 function Info({ label, value }: { label: string; value: string }) {
@@ -603,5 +730,5 @@ function Info({ label, value }: { label: string; value: string }) {
       </p>
       <p className="text-store-ink mt-1 font-semibold">{value}</p>
     </div>
-  );
+  )
 }

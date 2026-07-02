@@ -182,9 +182,6 @@ export function StorefrontShell({
       <div className="mx-auto flex w-full max-w-[1920px]">
         <aside className="hidden shrink-0 lg:sticky lg:top-24 lg:flex lg:h-[calc(100vh-6rem)] lg:w-(--store-sidebar-width) lg:flex-col">
           <div className="flex-1 overflow-y-auto px-6 py-8">
-            <p className="text-store-muted mb-5 text-xs tracking-[0.18em] uppercase">
-              {t('categoriesTitle')}
-            </p>
             <CategoryNav currentSlugPath={currentSlugPath} variant="sidebar" />
           </div>
         </aside>

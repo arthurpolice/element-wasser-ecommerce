@@ -58,7 +58,6 @@ export function CheckoutConfirmationClient({
 }: CheckoutConfirmationClientProps) {
   const t = useTranslations('Storefront.checkoutConfirmation')
   const tPaymentStatus = useTranslations('OrderPaymentStatus')
-  const tFulfillmentStatus = useTranslations('FulfillmentStatus')
   const locale = useLocale()
   const format = useFormatter()
   const [retryPaymentMethod, setRetryPaymentMethod] =

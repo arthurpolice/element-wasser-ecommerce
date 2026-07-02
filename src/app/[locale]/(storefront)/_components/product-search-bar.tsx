@@ -154,7 +154,7 @@ export function ProductSearchBar({ initialQuery = '' }: ProductSearchBarProps) {
                     }`}
                     href={`/products/${suggestion.slug}`}
                     key={suggestion.id}
-                    onPointerDown={() => setOpen(false)}
+                    onClick={() => setOpen(false)}
                   >
                     <span className="border-store-border/70 bg-store-bg relative size-14 shrink-0 overflow-hidden rounded-xl border">
                       {suggestion.imageUrl ? (
@@ -196,7 +196,7 @@ export function ProductSearchBar({ initialQuery = '' }: ProductSearchBarProps) {
               <Link
                 className="border-store-border/70 text-store-accent hover:bg-store-bg/70 hover:text-store-ink focus-visible:bg-store-bg/70 focus-visible:ring-store-accent/25 block border-t px-5 py-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
                 href={resultsHref}
-                onPointerDown={() => setOpen(false)}
+                onClick={() => setOpen(false)}
               >
                 {t('searchViewAll')}
               </Link>

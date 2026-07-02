@@ -140,7 +140,28 @@ const customerAreaOrderSummarySelect = {
   dispatchedAt: true,
   currencyCode: true,
   totalCents: true,
-  placedAt: true
+  placedAt: true,
+  lines: {
+    select: {
+      id: true,
+      productName: true,
+      productSku: true,
+      quantity: true,
+      product: {
+        select: {
+          images: {
+            select: {
+              url: true,
+              altText: true
+            },
+            orderBy: { sortOrder: 'asc' as const },
+            take: 1
+          }
+        }
+      }
+    },
+    orderBy: { createdAt: 'asc' as const }
+  }
 } satisfies Prisma.OrderSelect
 
 const customerAreaOrderDetailSelect = {
@@ -192,7 +213,19 @@ const customerAreaOrderDetailSelect = {
       listPriceCents: true,
       discountPercent: true,
       unitPriceCents: true,
-      lineTotalCents: true
+      lineTotalCents: true,
+      product: {
+        select: {
+          images: {
+            select: {
+              url: true,
+              altText: true
+            },
+            orderBy: { sortOrder: 'asc' as const },
+            take: 1
+          }
+        }
+      }
     },
     orderBy: { createdAt: 'asc' as const }
   }
