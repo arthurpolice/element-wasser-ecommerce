@@ -184,6 +184,8 @@
     },
     "contact": {
       "title": "Customer information",
+      "edit": "Edit",
+      "editTitle": "Edit customer information",
       "emailReadOnly": "Email changes are handled through sign-in support, not the Customer Area.",
       "save": "Save",
       "saving": "Saving…",

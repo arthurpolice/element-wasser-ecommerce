@@ -67,6 +67,17 @@
   }
 }
 
+@keyframes customer-drawer-up {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes store-dropdown-enter {
   from {
     opacity: 0;

@@ -3,10 +3,11 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useFormatter, useTranslations } from 'next-intl'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { useForm, type UseFormReturn } from 'react-hook-form'
 import { useSearchParams } from 'next/navigation'
-import { FaPencilAlt, FaRegTrashAlt } from 'react-icons/fa'
+import { FaPencilAlt, FaRegTrashAlt, FaTimes } from 'react-icons/fa'
 
 import {
   inputClass,
@@ -16,7 +17,6 @@ import {
 } from '~/app/[locale]/customer-area/_components/customer-area-form-controls'
 import type {
   CustomerAddress,
-  CustomerArea,
   CustomerOrder,
   CustomerOrderDetails as CustomerOrderDetailsType,
   RegisteredCustomer
@@ -44,6 +44,9 @@ type CustomerOrderListLine = CustomerOrder['lines'][number]
 
 const addressIconButtonClass =
   'border-store-border text-store-muted hover:border-store-accent/40 hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex size-9 items-center justify-center rounded-full border transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-60'
+
+const overlayIconButtonClass =
+  'text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex size-9 items-center justify-center rounded-full transition hover:bg-white/70 focus-visible:ring-2 focus-visible:outline-none'
 
 function formatDayMonthYear(date: Date) {
   const day = String(date.getDate()).padStart(2, '0')
@@ -83,41 +86,103 @@ function AddressSummaryRow({
   )
 }
 
-export function CustomerAreaDetails({ customer }: CustomerArea) {
+function ReadOnlyField({
+  label,
+  value
+}: {
+  label: string
+  value: string | null
+}) {
   return (
-    <div className="grid gap-10">
-      <CustomerAreaSummary customer={customer} />
-      <CustomerPersonalInformation customer={customer} />
-      <CustomerAddresses customer={customer} />
-      <CustomerOrders customer={customer} />
+    <div>
+      <p className="text-store-muted text-xs font-semibold tracking-[0.14em] uppercase">
+        {label}
+      </p>
+      <p className="text-store-ink mt-1 text-sm font-semibold">
+        {value || '-'}
+      </p>
     </div>
   )
 }
 
-export function CustomerAreaSummary({
-  customer
+function CustomerAreaResponsiveEditor({
+  children,
+  closeLabel,
+  onClose,
+  open,
+  title
 }: {
-  customer: RegisteredCustomer
+  children: React.ReactNode
+  closeLabel: string
+  onClose: () => void
+  open: boolean
+  title: string
 }) {
-  const t = useTranslations('CustomerArea')
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
 
-  return (
-    <section className="border-store-border/70 border-b pb-8">
-      <p className="text-store-water text-xs font-semibold tracking-[0.18em] uppercase">
-        {t('registered.eyebrow')}
-      </p>
-      <div className="mt-4 grid gap-4 md:grid-cols-3">
-        <Info
-          label={t('registered.name')}
-          value={`${customer.firstName} ${customer.lastName}`}
-        />
-        <Info label={t('registered.email')} value={customer.email} />
-        <Info
-          label={t('registered.orders')}
-          value={String(customer.orderCount)}
-        />
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return
+    }
+
+    setPortalTarget(document.body)
+  }, [])
+
+  useEffect(() => {
+    if (!open || typeof document === 'undefined') {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose, open])
+
+  if (!open || !portalTarget) {
+    return null
+  }
+
+  return createPortal(
+    <div
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-end bg-black/35 p-0 backdrop-blur-sm lg:items-center lg:justify-center lg:p-6"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+      role="dialog"
+    >
+      <div className="bg-store-bg border-store-border h-[86dvh] w-full animate-[customer-drawer-up_0.34s_cubic-bezier(0.22,1,0.36,1)_both] overflow-y-auto rounded-t-lg border p-5 shadow-2xl lg:h-auto lg:max-h-[92dvh] lg:max-w-xl lg:animate-[dash-fade-up_0.22s_ease-out_both] lg:rounded-lg lg:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="font-display text-store-ink text-lg font-semibold">
+            {title}
+          </h3>
+          <button
+            aria-label={closeLabel}
+            className={overlayIconButtonClass}
+            onClick={onClose}
+            type="button"
+          >
+            <FaTimes aria-hidden="true" className="size-3.5" />
+          </button>
+        </div>
+        <div className="mt-5">{children}</div>
       </div>
-    </section>
+    </div>,
+    portalTarget
   )
 }
 
@@ -130,6 +195,7 @@ export function CustomerPersonalInformation({
   const params = useSearchParams()
   const callbackUrl = params.get('callbackUrl')
   const router = useRouter()
+  const [editOpen, setEditOpen] = useState(false)
   const refresh = () => router.refresh()
   const redirect = () => router.push(callbackUrl ?? '/')
 
@@ -151,62 +217,228 @@ export function CustomerPersonalInformation({
   })
 
   const updateContact = api.customer.updateContact.useMutation({
-    onSuccess: callbackUrl ? redirect : refresh
+    onSuccess: () => {
+      setEditOpen(false)
+      if (callbackUrl) {
+        redirect()
+        return
+      }
+
+      refresh()
+    }
   })
+
+  const salutation = customer.salutation
+    ? t(`onboarding.salutations.${customer.salutation}`)
+    : t('onboarding.fields.salutationNone')
+
+  function openContactEditor() {
+    contactForm.reset({
+      email: customer.email,
+      firstName: customer.firstName,
+      lastName: customer.lastName,
+      salutation: customer.salutation ?? ''
+    })
+    updateContact.reset()
+    setEditOpen(true)
+  }
 
   return (
     <section className="border-store-border/70 border-b pb-10">
-      <h2 className="font-display text-store-ink text-xl font-semibold">
-        {t('contact.title')}
-      </h2>
-      <form
-        className="mt-5 grid gap-4"
-        onSubmit={contactForm.handleSubmit((values) =>
-          updateContact.mutate({
-            firstName: values.firstName,
-            lastName: values.lastName,
-            salutation: values.salutation || undefined
-          })
-        )}
-      >
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Input
-            label={t('onboarding.fields.firstName')}
-            register={contactForm.register('firstName')}
-          />
-          <Input
-            label={t('onboarding.fields.lastName')}
-            register={contactForm.register('lastName')}
-          />
-        </div>
-        <div>
-          <p className="text-store-muted mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
-            {t('onboarding.fields.email')}
-          </p>
-          <p className="border-store-border text-store-muted border-b py-2 text-sm">
-            {customer.email}
-          </p>
-          <p className="text-store-muted mt-2 text-xs">
-            {t('contact.emailReadOnly')}
-          </p>
-        </div>
-        <select className={inputClass} {...contactForm.register('salutation')}>
-          <option value="">{t('onboarding.fields.salutationNone')}</option>
-          <option value="HERR">{t('onboarding.salutations.HERR')}</option>
-          <option value="FRAU">{t('onboarding.salutations.FRAU')}</option>
-        </select>
-        {updateContact.error ? (
-          <p className="text-sm text-red-700">
-            {updateContact.error.data?.code === 'CONFLICT'
-              ? t('onboarding.validation.emailConflict')
-              : t('contact.error')}
-          </p>
-        ) : null}
-        <button className={textButtonClass} type="submit">
-          {updateContact.isPending ? t('contact.saving') : t('contact.save')}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-store-ink text-xl font-semibold">
+          {t('contact.title')}
+        </h2>
+        <button
+          className={textButtonClass}
+          onClick={openContactEditor}
+          type="button"
+        >
+          {t('contact.edit')}
         </button>
-      </form>
+      </div>
+      <div className="mt-5 grid gap-5 sm:grid-cols-2">
+        <ReadOnlyField
+          label={t('onboarding.fields.firstName')}
+          value={customer.firstName}
+        />
+        <ReadOnlyField
+          label={t('onboarding.fields.lastName')}
+          value={customer.lastName}
+        />
+        <ReadOnlyField
+          label={t('onboarding.fields.email')}
+          value={customer.email}
+        />
+        <ReadOnlyField
+          label={t('onboarding.fields.salutation')}
+          value={salutation}
+        />
+      </div>
+      <p className="text-store-muted mt-5 text-xs">
+        {t('contact.emailReadOnly')}
+      </p>
+
+      <CustomerAreaResponsiveEditor
+        closeLabel={t('addresses.cancel')}
+        onClose={() => {
+          if (!updateContact.isPending) {
+            setEditOpen(false)
+          }
+        }}
+        open={editOpen}
+        title={t('contact.editTitle')}
+      >
+        <form
+          className="grid gap-4"
+          onSubmit={contactForm.handleSubmit((values) =>
+            updateContact.mutate({
+              firstName: values.firstName,
+              lastName: values.lastName,
+              salutation: values.salutation || undefined
+            })
+          )}
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label={t('onboarding.fields.firstName')}
+              register={contactForm.register('firstName')}
+            />
+            <Input
+              label={t('onboarding.fields.lastName')}
+              register={contactForm.register('lastName')}
+            />
+          </div>
+          <div>
+            <p className="text-store-muted mb-2 text-xs font-semibold tracking-[0.14em] uppercase">
+              {t('onboarding.fields.email')}
+            </p>
+            <p className="border-store-border text-store-muted border-b py-2 text-sm">
+              {customer.email}
+            </p>
+            <p className="text-store-muted mt-2 text-xs">
+              {t('contact.emailReadOnly')}
+            </p>
+          </div>
+          <select
+            className={inputClass}
+            {...contactForm.register('salutation')}
+          >
+            <option value="">{t('onboarding.fields.salutationNone')}</option>
+            <option value="HERR">{t('onboarding.salutations.HERR')}</option>
+            <option value="FRAU">{t('onboarding.salutations.FRAU')}</option>
+          </select>
+          {updateContact.error ? (
+            <p className="text-sm text-red-700">
+              {updateContact.error.data?.code === 'CONFLICT'
+                ? t('onboarding.validation.emailConflict')
+                : t('contact.error')}
+            </p>
+          ) : null}
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              className={textButtonClass}
+              disabled={updateContact.isPending}
+              type="submit"
+            >
+              {updateContact.isPending
+                ? t('contact.saving')
+                : t('contact.save')}
+            </button>
+            <button
+              className={smallTextButtonClass}
+              disabled={updateContact.isPending}
+              onClick={() => setEditOpen(false)}
+              type="button"
+            >
+              {t('addresses.cancel')}
+            </button>
+          </div>
+        </form>
+      </CustomerAreaResponsiveEditor>
     </section>
+  )
+}
+
+function CustomerAddressForm({
+  addressForm,
+  editingAddressId,
+  isPending,
+  onCancel,
+  onSubmit
+}: {
+  addressForm: UseFormReturn<AddressFormValues>
+  editingAddressId: string | null
+  isPending: boolean
+  onCancel: () => void
+  onSubmit: (values: AddressFormValues) => void
+}) {
+  const t = useTranslations('CustomerArea')
+
+  return (
+    <form className="grid gap-4" onSubmit={addressForm.handleSubmit(onSubmit)}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Input
+          label={t('onboarding.fields.firstName')}
+          register={addressForm.register('firstName')}
+        />
+        <Input
+          label={t('onboarding.fields.lastName')}
+          register={addressForm.register('lastName')}
+        />
+      </div>
+      <Input
+        label={t('addresses.company')}
+        register={addressForm.register('company')}
+      />
+      <Input
+        label={t('addresses.streetLine1')}
+        register={addressForm.register('streetLine1')}
+      />
+      <Input
+        label={t('addresses.streetLine2')}
+        register={addressForm.register('streetLine2')}
+      />
+      <div className="grid gap-4 sm:grid-cols-[0.7fr_1fr_0.5fr]">
+        <Input
+          label={t('addresses.postalCode')}
+          register={addressForm.register('postalCode')}
+        />
+        <Input
+          label={t('addresses.city')}
+          register={addressForm.register('city')}
+        />
+        <Input
+          label={t('addresses.countryCode')}
+          register={addressForm.register('countryCode')}
+        />
+      </div>
+      <Input
+        label={t('addresses.phone')}
+        register={addressForm.register('phone')}
+      />
+      <label className="text-store-ink flex items-center gap-2 text-sm">
+        <input
+          className="size-4"
+          type="checkbox"
+          {...addressForm.register('isMain')}
+        />
+        {t('addresses.setAsMain')}
+      </label>
+      <div className="flex flex-wrap items-center gap-4">
+        <button className={textButtonClass} disabled={isPending} type="submit">
+          {isPending ? t('addresses.saving') : t('addresses.save')}
+        </button>
+        <button
+          className={smallTextButtonClass}
+          disabled={isPending}
+          onClick={onCancel}
+          type="button"
+        >
+          {editingAddressId ? t('addresses.cancelEdit') : t('addresses.cancel')}
+        </button>
+      </div>
+    </form>
   )
 }
 
@@ -218,7 +450,7 @@ export function CustomerAddresses({
   const t = useTranslations('CustomerArea')
   const router = useRouter()
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
-  const [showAddressForm, setShowAddressForm] = useState(false)
+  const [addressEditorOpen, setAddressEditorOpen] = useState(false)
   const refresh = () => router.refresh()
 
   const defaultAddressValues: AddressFormValues = {
@@ -242,7 +474,7 @@ export function CustomerAddresses({
 
   const createAddress = api.customer.createAddress.useMutation({
     onSuccess: () => {
-      setShowAddressForm(false)
+      setAddressEditorOpen(false)
       addressForm.reset(defaultAddressValues)
       refresh()
     }
@@ -250,7 +482,7 @@ export function CustomerAddresses({
   const updateAddress = api.customer.updateAddress.useMutation({
     onSuccess: () => {
       setEditingAddressId(null)
-      setShowAddressForm(false)
+      setAddressEditorOpen(false)
       addressForm.reset(defaultAddressValues)
       refresh()
     }
@@ -261,6 +493,40 @@ export function CustomerAddresses({
   const deleteAddress = api.customer.deleteAddress.useMutation({
     onSuccess: refresh
   })
+  const isAddressSaving = createAddress.isPending || updateAddress.isPending
+
+  function closeAddressEditor() {
+    if (isAddressSaving) {
+      return
+    }
+
+    setEditingAddressId(null)
+    addressForm.reset(defaultAddressValues)
+    setAddressEditorOpen(false)
+  }
+
+  function submitAddress(values: AddressFormValues) {
+    const input = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      salutation: values.salutation || undefined,
+      company: values.company || undefined,
+      streetLine1: values.streetLine1,
+      streetLine2: values.streetLine2 || undefined,
+      postalCode: values.postalCode,
+      city: values.city,
+      countryCode: values.countryCode,
+      phone: values.phone || undefined,
+      isMain: values.isMain
+    }
+
+    if (editingAddressId) {
+      updateAddress.mutate({ id: editingAddressId, ...input })
+      return
+    }
+
+    createAddress.mutate(input)
+  }
 
   return (
     <section className="border-store-border/70 border-b pb-10">
@@ -268,19 +534,17 @@ export function CustomerAddresses({
         <h2 className="font-display text-store-ink text-xl font-semibold">
           {t('addresses.title')}
         </h2>
-        {!showAddressForm ? (
-          <button
-            className={textButtonClass}
-            onClick={() => {
-              setEditingAddressId(null)
-              addressForm.reset(defaultAddressValues)
-              setShowAddressForm(true)
-            }}
-            type="button"
-          >
-            {t('addresses.newAddress')}
-          </button>
-        ) : null}
+        <button
+          className={textButtonClass}
+          onClick={() => {
+            setEditingAddressId(null)
+            addressForm.reset(defaultAddressValues)
+            setAddressEditorOpen(true)
+          }}
+          type="button"
+        >
+          {t('addresses.newAddress')}
+        </button>
       </div>
       <div className="divide-store-border/70 mt-5 divide-y">
         {customer.addresses.length === 0 ? (
@@ -297,7 +561,7 @@ export function CustomerAddresses({
               onEdit={(values) => {
                 setEditingAddressId(address.id)
                 addressForm.reset(values)
-                setShowAddressForm(true)
+                setAddressEditorOpen(true)
               }}
               onMakeMain={() => setMainAddress.mutate({ id: address.id })}
             />
@@ -305,105 +569,22 @@ export function CustomerAddresses({
         )}
       </div>
 
-      {showAddressForm ? (
-        <form
-          className="border-store-border mt-6 grid gap-4 border-t pt-6"
-          onSubmit={addressForm.handleSubmit((values) => {
-            const input = {
-              firstName: values.firstName,
-              lastName: values.lastName,
-              salutation: values.salutation || undefined,
-              company: values.company || undefined,
-              streetLine1: values.streetLine1,
-              streetLine2: values.streetLine2 || undefined,
-              postalCode: values.postalCode,
-              city: values.city,
-              countryCode: values.countryCode,
-              phone: values.phone || undefined,
-              isMain: values.isMain
-            }
-
-            if (editingAddressId) {
-              updateAddress.mutate({ id: editingAddressId, ...input })
-              return
-            }
-
-            createAddress.mutate(input)
-          })}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-display text-base font-semibold">
-              {editingAddressId
-                ? t('addresses.editTitle')
-                : t('addresses.create')}
-            </h3>
-            <button
-              className={smallTextButtonClass}
-              onClick={() => {
-                setEditingAddressId(null)
-                addressForm.reset(defaultAddressValues)
-                setShowAddressForm(false)
-              }}
-              type="button"
-            >
-              {t('addresses.cancel')}
-            </button>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label={t('onboarding.fields.firstName')}
-              register={addressForm.register('firstName')}
-            />
-            <Input
-              label={t('onboarding.fields.lastName')}
-              register={addressForm.register('lastName')}
-            />
-          </div>
-          <Input
-            label={t('addresses.company')}
-            register={addressForm.register('company')}
-          />
-          <Input
-            label={t('addresses.streetLine1')}
-            register={addressForm.register('streetLine1')}
-          />
-          <Input
-            label={t('addresses.streetLine2')}
-            register={addressForm.register('streetLine2')}
-          />
-          <div className="grid gap-4 sm:grid-cols-[0.7fr_1fr_0.5fr]">
-            <Input
-              label={t('addresses.postalCode')}
-              register={addressForm.register('postalCode')}
-            />
-            <Input
-              label={t('addresses.city')}
-              register={addressForm.register('city')}
-            />
-            <Input
-              label={t('addresses.countryCode')}
-              register={addressForm.register('countryCode')}
-            />
-          </div>
-          <Input
-            label={t('addresses.phone')}
-            register={addressForm.register('phone')}
-          />
-          <label className="text-store-ink flex items-center gap-2 text-sm">
-            <input
-              className="size-4"
-              type="checkbox"
-              {...addressForm.register('isMain')}
-            />
-            {t('addresses.setAsMain')}
-          </label>
-          <button className={textButtonClass} type="submit">
-            {createAddress.isPending || updateAddress.isPending
-              ? t('addresses.saving')
-              : t('addresses.save')}
-          </button>
-        </form>
-      ) : null}
+      <CustomerAreaResponsiveEditor
+        closeLabel={t('addresses.cancel')}
+        onClose={closeAddressEditor}
+        open={addressEditorOpen}
+        title={
+          editingAddressId ? t('addresses.editTitle') : t('addresses.create')
+        }
+      >
+        <CustomerAddressForm
+          addressForm={addressForm}
+          editingAddressId={editingAddressId}
+          isPending={isAddressSaving}
+          onCancel={closeAddressEditor}
+          onSubmit={submitAddress}
+        />
+      </CustomerAreaResponsiveEditor>
     </section>
   )
 }
@@ -718,17 +899,6 @@ function CustomerOrderLineRow({
           ? t('orders.deliveredOn', { date: deliveryDate })
           : t('orders.deliveryPending')}
       </p>
-    </div>
-  )
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-store-muted text-xs font-semibold tracking-[0.14em] uppercase">
-        {label}
-      </p>
-      <p className="text-store-ink mt-1 font-semibold">{value}</p>
     </div>
   )
 }

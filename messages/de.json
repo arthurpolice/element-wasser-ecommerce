@@ -184,6 +184,8 @@
     },
     "contact": {
       "title": "Kundendaten",
+      "edit": "Bearbeiten",
+      "editTitle": "Kundendaten bearbeiten",
       "emailReadOnly": "E-Mail-Änderungen laufen über den Anmelde-Support, nicht über den Kundenbereich.",
       "save": "Kundendaten speichern",
       "saving": "Speichern…",
