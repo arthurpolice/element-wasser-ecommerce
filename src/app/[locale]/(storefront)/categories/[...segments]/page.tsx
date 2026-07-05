@@ -1,46 +1,46 @@
-import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { notFound } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 
-import { CategoryProductGrid } from "~/app/[locale]/(storefront)/_components/category-product-grid";
-import { StorefrontShell } from "~/app/[locale]/(storefront)/_components/storefront-shell";
-import { RevealOnScroll } from "~/app/[locale]/(storefront)/_components/reveal-on-scroll";
-import { api, HydrateClient } from "~/trpc/server";
+import { CategoryProductGrid } from '~/app/[locale]/(storefront)/_components/category-product-grid'
+import { StorefrontShell } from '~/app/[locale]/(storefront)/_components/storefront-shell'
+import { RevealOnScroll } from '~/app/[locale]/(storefront)/_components/reveal-on-scroll'
+import { api, HydrateClient } from '~/trpc/server'
 
 type CategoryPageProps = {
-  params: Promise<{ locale: string; segments: string[] }>;
-  searchParams: Promise<{ page?: string | string[] }>;
-};
+  params: Promise<{ locale: string; segments: string[] }>
+  searchParams: Promise<{ page?: string | string[] }>
+}
 
 export default async function CategoryPage({
   params,
-  searchParams,
+  searchParams
 }: CategoryPageProps) {
-  const { segments } = await params;
-  const resolvedSearchParams = await searchParams;
+  const { segments } = await params
+  const resolvedSearchParams = await searchParams
   const pageParam = Array.isArray(resolvedSearchParams.page)
     ? resolvedSearchParams.page[0]
-    : resolvedSearchParams.page;
-  const page = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
-  const pageSize = 12;
-  const slugPath = segments.join("/");
-  const t = await getTranslations("Storefront.categoryPage");
+    : resolvedSearchParams.page
+  const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
+  const pageSize = 12
+  const slugPath = segments.join('/')
+  const t = await getTranslations('Storefront.categoryPage')
 
-  const category = await api.catalog.resolveCategory({ slugPath });
+  const category = await api.catalog.resolveCategory({ slugPath })
   if (!category) {
-    notFound();
+    notFound()
   }
 
   const productPage = await api.catalog.listCategoryProducts({
     slugPath,
     page,
-    pageSize,
-  });
+    pageSize
+  })
 
   if (!productPage) {
-    notFound();
+    notFound()
   }
 
-  void api.catalog.navigationTree.prefetch();
+  void api.catalog.navigationTree.prefetch()
 
   return (
     <HydrateClient>
@@ -49,14 +49,11 @@ export default async function CategoryPage({
           <RevealOnScroll>
             <header className="space-y-3">
               <p className="text-store-muted text-xs tracking-[0.18em] uppercase">
-                {t("eyebrow")}
+                {t('eyebrow')}
               </p>
-              <h1 className="font-display text-store-ink text-4xl font-semibold tracking-tight">
+              <h1 className="font-display text-store-ink text-3xl font-semibold tracking-tight sm:text-4xl">
                 {category.name}
               </h1>
-              <p className="text-store-muted max-w-2xl text-sm leading-6">
-                {t("description")}
-              </p>
             </header>
           </RevealOnScroll>
 
@@ -70,5 +67,5 @@ export default async function CategoryPage({
         </div>
       </StorefrontShell>
     </HydrateClient>
-  );
+  )
 }

@@ -32,11 +32,9 @@ import { getSwissPostTrackingUrl } from '~/lib/order-tracking'
 type AddressFormValues = CreateCustomerFormValues & {
   company: string
   streetLine1: string
-  streetLine2: string
   postalCode: string
   city: string
   countryCode: string
-  phone: string
   isMain: boolean
 }
 
@@ -210,6 +208,7 @@ export function CustomerPersonalInformation({
     ),
     defaultValues: {
       email: customer.email,
+      phone: customer.phone ?? '',
       firstName: customer.firstName,
       lastName: customer.lastName,
       salutation: customer.salutation ?? ''
@@ -237,6 +236,7 @@ export function CustomerPersonalInformation({
       email: customer.email,
       firstName: customer.firstName,
       lastName: customer.lastName,
+      phone: customer.phone ?? '',
       salutation: customer.salutation ?? ''
     })
     updateContact.reset()
@@ -271,6 +271,10 @@ export function CustomerPersonalInformation({
           value={customer.email}
         />
         <ReadOnlyField
+          label={t('onboarding.fields.phone')}
+          value={customer.phone}
+        />
+        <ReadOnlyField
           label={t('onboarding.fields.salutation')}
           value={salutation}
         />
@@ -295,11 +299,12 @@ export function CustomerPersonalInformation({
             updateContact.mutate({
               firstName: values.firstName,
               lastName: values.lastName,
+              phone: values.phone || undefined,
               salutation: values.salutation || undefined
             })
           )}
         >
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <Input
               label={t('onboarding.fields.firstName')}
               register={contactForm.register('firstName')}
@@ -320,6 +325,10 @@ export function CustomerPersonalInformation({
               {t('contact.emailReadOnly')}
             </p>
           </div>
+          <Input
+            label={t('onboarding.fields.phone')}
+            register={contactForm.register('phone')}
+          />
           <select
             className={inputClass}
             {...contactForm.register('salutation')}
@@ -377,7 +386,7 @@ function CustomerAddressForm({
 
   return (
     <form className="grid gap-4" onSubmit={addressForm.handleSubmit(onSubmit)}>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <Input
           label={t('onboarding.fields.firstName')}
           register={addressForm.register('firstName')}
@@ -395,11 +404,7 @@ function CustomerAddressForm({
         label={t('addresses.streetLine1')}
         register={addressForm.register('streetLine1')}
       />
-      <Input
-        label={t('addresses.streetLine2')}
-        register={addressForm.register('streetLine2')}
-      />
-      <div className="grid gap-4 sm:grid-cols-[0.7fr_1fr_0.5fr]">
+      <div className="grid grid-cols-[0.58fr_1fr] gap-3 sm:gap-4">
         <Input
           label={t('addresses.postalCode')}
           register={addressForm.register('postalCode')}
@@ -408,14 +413,10 @@ function CustomerAddressForm({
           label={t('addresses.city')}
           register={addressForm.register('city')}
         />
-        <Input
-          label={t('addresses.countryCode')}
-          register={addressForm.register('countryCode')}
-        />
       </div>
       <Input
-        label={t('addresses.phone')}
-        register={addressForm.register('phone')}
+        label={t('addresses.countryCode')}
+        register={addressForm.register('countryCode')}
       />
       <label className="text-store-ink flex items-center gap-2 text-sm">
         <input
@@ -455,16 +456,15 @@ export function CustomerAddresses({
 
   const defaultAddressValues: AddressFormValues = {
     email: customer.email,
+    phone: customer.phone ?? '',
     firstName: customer.firstName,
     lastName: customer.lastName,
     salutation: customer.salutation ?? '',
     company: '',
     streetLine1: '',
-    streetLine2: '',
     postalCode: '',
     city: '',
     countryCode: 'CH',
-    phone: '',
     isMain: customer.addresses.length === 0
   }
 
@@ -512,11 +512,9 @@ export function CustomerAddresses({
       salutation: values.salutation || undefined,
       company: values.company || undefined,
       streetLine1: values.streetLine1,
-      streetLine2: values.streetLine2 || undefined,
       postalCode: values.postalCode,
       city: values.city,
       countryCode: values.countryCode,
-      phone: values.phone || undefined,
       isMain: values.isMain
     }
 
@@ -652,7 +650,6 @@ function AddressBookEntryRow({
   const addressLines = [
     address.company,
     address.streetLine1,
-    address.streetLine2,
     formatPostalLine({
       city: address.city,
       countryCode: address.countryCode,
@@ -685,16 +682,15 @@ function AddressBookEntryRow({
             onClick={() =>
               onEdit({
                 email: customer.email,
+                phone: customer.phone ?? '',
                 firstName: address.firstName,
                 lastName: address.lastName,
                 salutation: address.salutation ?? '',
                 company: address.company ?? '',
                 streetLine1: address.streetLine1,
-                streetLine2: address.streetLine2 ?? '',
                 postalCode: address.postalCode,
                 city: address.city,
                 countryCode: address.countryCode,
-                phone: address.phone ?? '',
                 isMain: address.isMain
               })
             }

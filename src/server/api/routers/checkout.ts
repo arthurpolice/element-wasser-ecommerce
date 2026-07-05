@@ -57,10 +57,12 @@ const addressInputSchema = z.object({
   lastName: z.string().trim().min(1),
   company: z.string().trim().optional(),
   streetLine1: z.string().trim().min(1),
-  streetLine2: z.string().trim().optional(),
   postalCode: z.string().trim().min(1),
   city: z.string().trim().min(1),
-  countryCode: z.string().trim().min(2).max(2),
+  countryCode: z.string().trim().min(2).max(2)
+})
+
+const shippingAddressInputSchema = addressInputSchema.extend({
   phone: z.string().trim().optional()
 })
 
@@ -74,7 +76,7 @@ const placeOrderInputSchema = previewInputSchema
     addressId: z.string().trim().min(1).optional(),
     locale: z.enum(['de', 'en']).default('de')
   })
-  .merge(addressInputSchema)
+  .merge(shippingAddressInputSchema)
 
 const placeGuestOrderInputSchema = previewInputSchema
   .extend({
@@ -86,7 +88,7 @@ const placeGuestOrderInputSchema = previewInputSchema
     paymentMethod: paymentMethodSchema,
     locale: z.enum(['de', 'en']).default('de')
   })
-  .merge(addressInputSchema)
+  .merge(shippingAddressInputSchema)
 
 const orderConfirmationInputSchema = z.object({
   orderNumber: z.string().trim().min(1),
@@ -118,11 +120,9 @@ const checkoutAddressSelect = {
   lastName: true,
   company: true,
   streetLine1: true,
-  streetLine2: true,
   postalCode: true,
   city: true,
-  countryCode: true,
-  phone: true
+  countryCode: true
 } satisfies Prisma.AddressSelect
 
 function normalizeCountryCode(countryCode: string) {
@@ -207,7 +207,6 @@ function toPlaceOrderInput(
     shippingLastName: input.lastName,
     shippingCompany: input.company,
     shippingStreetLine1: input.streetLine1,
-    shippingStreetLine2: input.streetLine2,
     shippingPostalCode: input.postalCode,
     shippingCity: input.city,
     shippingCountryCode: normalizeCountryCode(input.countryCode),
@@ -227,7 +226,6 @@ function toGuestOrderInput(
     shippingLastName: input.lastName,
     shippingCompany: input.company,
     shippingStreetLine1: input.streetLine1,
-    shippingStreetLine2: input.streetLine2,
     shippingPostalCode: input.postalCode,
     shippingCity: input.city,
     shippingCountryCode: normalizeCountryCode(input.countryCode),
@@ -255,6 +253,7 @@ export const checkoutRouter = createTRPCRouter({
         salutation: true,
         firstName: true,
         lastName: true,
+        phone: true,
         addresses: {
           select: checkoutAddressSelect,
           orderBy: [{ isMain: 'desc' }, { updatedAt: 'desc' }]
@@ -314,11 +313,9 @@ export const checkoutRouter = createTRPCRouter({
             lastName: input.lastName,
             company: input.company,
             streetLine1: input.streetLine1,
-            streetLine2: input.streetLine2,
             postalCode: input.postalCode,
             city: input.city,
             countryCode: normalizeCountryCode(input.countryCode),
-            phone: input.phone,
             customerId: customer.id,
             isMain
           },
@@ -534,6 +531,7 @@ export const checkoutRouter = createTRPCRouter({
         return await beginGuestCheckoutPayment(ctx.db, {
           guestCustomer: {
             email: input.email,
+            phone: input.phone,
             salutation: input.salutation,
             firstName: input.firstName,
             lastName: input.lastName

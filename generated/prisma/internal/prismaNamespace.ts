@@ -2300,6 +2300,7 @@ export const CustomerScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   email: 'email',
+  phone: 'phone',
   salutation: 'salutation',
   firstName: 'firstName',
   lastName: 'lastName',
@@ -2319,11 +2320,9 @@ export const AddressScalarFieldEnum = {
   lastName: 'lastName',
   company: 'company',
   streetLine1: 'streetLine1',
-  streetLine2: 'streetLine2',
   postalCode: 'postalCode',
   city: 'city',
   countryCode: 'countryCode',
-  phone: 'phone',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

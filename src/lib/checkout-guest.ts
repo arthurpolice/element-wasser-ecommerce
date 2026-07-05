@@ -5,7 +5,6 @@ export type GuestCheckoutAddress = {
   lastName: string
   company: string
   streetLine1: string
-  streetLine2: string
   postalCode: string
   city: string
   countryCode: string
@@ -28,7 +27,6 @@ export function createEmptyGuestCheckoutAddress(): GuestCheckoutAddress {
     lastName: '',
     company: '',
     streetLine1: '',
-    streetLine2: '',
     postalCode: '',
     city: '',
     countryCode: '',

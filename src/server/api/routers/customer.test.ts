@@ -141,6 +141,7 @@ describe('customer area', () => {
       email: 'water@example.com',
       firstName: 'River',
       lastName: 'Stone',
+      phone: undefined,
       salutation: 'FRAU',
       userId: 'user-1'
     })
@@ -148,6 +149,7 @@ describe('customer area', () => {
     expect(db.customer.create).toHaveBeenCalledWith({
       data: {
         email: 'water@example.com',
+        phone: undefined,
         firstName: 'River',
         lastName: 'Stone',
         salutation: 'FRAU',
@@ -156,6 +158,7 @@ describe('customer area', () => {
       select: {
         id: true,
         email: true,
+        phone: true,
         salutation: true,
         firstName: true,
         lastName: true,

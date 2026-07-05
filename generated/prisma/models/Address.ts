@@ -33,11 +33,9 @@ export type AddressMinAggregateOutputType = {
   lastName: string | null
   company: string | null
   streetLine1: string | null
-  streetLine2: string | null
   postalCode: string | null
   city: string | null
   countryCode: string | null
-  phone: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -51,11 +49,9 @@ export type AddressMaxAggregateOutputType = {
   lastName: string | null
   company: string | null
   streetLine1: string | null
-  streetLine2: string | null
   postalCode: string | null
   city: string | null
   countryCode: string | null
-  phone: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -69,11 +65,9 @@ export type AddressCountAggregateOutputType = {
   lastName: number
   company: number
   streetLine1: number
-  streetLine2: number
   postalCode: number
   city: number
   countryCode: number
-  phone: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -89,11 +83,9 @@ export type AddressMinAggregateInputType = {
   lastName?: true
   company?: true
   streetLine1?: true
-  streetLine2?: true
   postalCode?: true
   city?: true
   countryCode?: true
-  phone?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -107,11 +99,9 @@ export type AddressMaxAggregateInputType = {
   lastName?: true
   company?: true
   streetLine1?: true
-  streetLine2?: true
   postalCode?: true
   city?: true
   countryCode?: true
-  phone?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -125,11 +115,9 @@ export type AddressCountAggregateInputType = {
   lastName?: true
   company?: true
   streetLine1?: true
-  streetLine2?: true
   postalCode?: true
   city?: true
   countryCode?: true
-  phone?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -216,11 +204,9 @@ export type AddressGroupByOutputType = {
   lastName: string
   company: string | null
   streetLine1: string
-  streetLine2: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone: string | null
   createdAt: Date
   updatedAt: Date
   _count: AddressCountAggregateOutputType | null
@@ -255,11 +241,9 @@ export type AddressWhereInput = {
   lastName?: Prisma.StringFilter<"Address"> | string
   company?: Prisma.StringNullableFilter<"Address"> | string | null
   streetLine1?: Prisma.StringFilter<"Address"> | string
-  streetLine2?: Prisma.StringNullableFilter<"Address"> | string | null
   postalCode?: Prisma.StringFilter<"Address"> | string
   city?: Prisma.StringFilter<"Address"> | string
   countryCode?: Prisma.StringFilter<"Address"> | string
-  phone?: Prisma.StringNullableFilter<"Address"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Address"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Address"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -274,11 +258,9 @@ export type AddressOrderByWithRelationInput = {
   lastName?: Prisma.SortOrder
   company?: Prisma.SortOrderInput | Prisma.SortOrder
   streetLine1?: Prisma.SortOrder
-  streetLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   city?: Prisma.SortOrder
   countryCode?: Prisma.SortOrder
-  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   customer?: Prisma.CustomerOrderByWithRelationInput
@@ -296,11 +278,9 @@ export type AddressWhereUniqueInput = Prisma.AtLeast<{
   lastName?: Prisma.StringFilter<"Address"> | string
   company?: Prisma.StringNullableFilter<"Address"> | string | null
   streetLine1?: Prisma.StringFilter<"Address"> | string
-  streetLine2?: Prisma.StringNullableFilter<"Address"> | string | null
   postalCode?: Prisma.StringFilter<"Address"> | string
   city?: Prisma.StringFilter<"Address"> | string
   countryCode?: Prisma.StringFilter<"Address"> | string
-  phone?: Prisma.StringNullableFilter<"Address"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Address"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Address"> | Date | string
   customer?: Prisma.XOR<Prisma.CustomerScalarRelationFilter, Prisma.CustomerWhereInput>
@@ -315,11 +295,9 @@ export type AddressOrderByWithAggregationInput = {
   lastName?: Prisma.SortOrder
   company?: Prisma.SortOrderInput | Prisma.SortOrder
   streetLine1?: Prisma.SortOrder
-  streetLine2?: Prisma.SortOrderInput | Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   city?: Prisma.SortOrder
   countryCode?: Prisma.SortOrder
-  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.AddressCountOrderByAggregateInput
@@ -339,11 +317,9 @@ export type AddressScalarWhereWithAggregatesInput = {
   lastName?: Prisma.StringWithAggregatesFilter<"Address"> | string
   company?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   streetLine1?: Prisma.StringWithAggregatesFilter<"Address"> | string
-  streetLine2?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   postalCode?: Prisma.StringWithAggregatesFilter<"Address"> | string
   city?: Prisma.StringWithAggregatesFilter<"Address"> | string
   countryCode?: Prisma.StringWithAggregatesFilter<"Address"> | string
-  phone?: Prisma.StringNullableWithAggregatesFilter<"Address"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Address"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Address"> | Date | string
 }
@@ -356,11 +332,9 @@ export type AddressCreateInput = {
   lastName: string
   company?: string | null
   streetLine1: string
-  streetLine2?: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   customer: Prisma.CustomerCreateNestedOneWithoutAddressesInput
@@ -375,11 +349,9 @@ export type AddressUncheckedCreateInput = {
   lastName: string
   company?: string | null
   streetLine1: string
-  streetLine2?: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -392,11 +364,9 @@ export type AddressUpdateInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customer?: Prisma.CustomerUpdateOneRequiredWithoutAddressesNestedInput
@@ -411,11 +381,9 @@ export type AddressUncheckedUpdateInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -429,11 +397,9 @@ export type AddressCreateManyInput = {
   lastName: string
   company?: string | null
   streetLine1: string
-  streetLine2?: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -446,11 +412,9 @@ export type AddressUpdateManyMutationInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -464,11 +428,9 @@ export type AddressUncheckedUpdateManyInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -492,11 +454,9 @@ export type AddressCountOrderByAggregateInput = {
   lastName?: Prisma.SortOrder
   company?: Prisma.SortOrder
   streetLine1?: Prisma.SortOrder
-  streetLine2?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   city?: Prisma.SortOrder
   countryCode?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -510,11 +470,9 @@ export type AddressMaxOrderByAggregateInput = {
   lastName?: Prisma.SortOrder
   company?: Prisma.SortOrder
   streetLine1?: Prisma.SortOrder
-  streetLine2?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   city?: Prisma.SortOrder
   countryCode?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -528,11 +486,9 @@ export type AddressMinOrderByAggregateInput = {
   lastName?: Prisma.SortOrder
   company?: Prisma.SortOrder
   streetLine1?: Prisma.SortOrder
-  streetLine2?: Prisma.SortOrder
   postalCode?: Prisma.SortOrder
   city?: Prisma.SortOrder
   countryCode?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -587,11 +543,9 @@ export type AddressCreateWithoutCustomerInput = {
   lastName: string
   company?: string | null
   streetLine1: string
-  streetLine2?: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -604,11 +558,9 @@ export type AddressUncheckedCreateWithoutCustomerInput = {
   lastName: string
   company?: string | null
   streetLine1: string
-  streetLine2?: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -651,11 +603,9 @@ export type AddressScalarWhereInput = {
   lastName?: Prisma.StringFilter<"Address"> | string
   company?: Prisma.StringNullableFilter<"Address"> | string | null
   streetLine1?: Prisma.StringFilter<"Address"> | string
-  streetLine2?: Prisma.StringNullableFilter<"Address"> | string | null
   postalCode?: Prisma.StringFilter<"Address"> | string
   city?: Prisma.StringFilter<"Address"> | string
   countryCode?: Prisma.StringFilter<"Address"> | string
-  phone?: Prisma.StringNullableFilter<"Address"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Address"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Address"> | Date | string
 }
@@ -668,11 +618,9 @@ export type AddressCreateManyCustomerInput = {
   lastName: string
   company?: string | null
   streetLine1: string
-  streetLine2?: string | null
   postalCode: string
   city: string
   countryCode: string
-  phone?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -685,11 +633,9 @@ export type AddressUpdateWithoutCustomerInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -702,11 +648,9 @@ export type AddressUncheckedUpdateWithoutCustomerInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -719,11 +663,9 @@ export type AddressUncheckedUpdateManyWithoutCustomerInput = {
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
   company?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   streetLine1?: Prisma.StringFieldUpdateOperationsInput | string
-  streetLine2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   postalCode?: Prisma.StringFieldUpdateOperationsInput | string
   city?: Prisma.StringFieldUpdateOperationsInput | string
   countryCode?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -739,11 +681,9 @@ export type AddressSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   lastName?: boolean
   company?: boolean
   streetLine1?: boolean
-  streetLine2?: boolean
   postalCode?: boolean
   city?: boolean
   countryCode?: boolean
-  phone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -758,11 +698,9 @@ export type AddressSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   lastName?: boolean
   company?: boolean
   streetLine1?: boolean
-  streetLine2?: boolean
   postalCode?: boolean
   city?: boolean
   countryCode?: boolean
-  phone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -777,11 +715,9 @@ export type AddressSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   lastName?: boolean
   company?: boolean
   streetLine1?: boolean
-  streetLine2?: boolean
   postalCode?: boolean
   city?: boolean
   countryCode?: boolean
-  phone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
@@ -796,16 +732,14 @@ export type AddressSelectScalar = {
   lastName?: boolean
   company?: boolean
   streetLine1?: boolean
-  streetLine2?: boolean
   postalCode?: boolean
   city?: boolean
   countryCode?: boolean
-  phone?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type AddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "isMain" | "salutation" | "firstName" | "lastName" | "company" | "streetLine1" | "streetLine2" | "postalCode" | "city" | "countryCode" | "phone" | "createdAt" | "updatedAt", ExtArgs["result"]["address"]>
+export type AddressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "customerId" | "isMain" | "salutation" | "firstName" | "lastName" | "company" | "streetLine1" | "postalCode" | "city" | "countryCode" | "createdAt" | "updatedAt", ExtArgs["result"]["address"]>
 export type AddressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
 }
@@ -830,11 +764,9 @@ export type $AddressPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     lastName: string
     company: string | null
     streetLine1: string
-    streetLine2: string | null
     postalCode: string
     city: string
     countryCode: string
-    phone: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["address"]>
@@ -1269,11 +1201,9 @@ export interface AddressFieldRefs {
   readonly lastName: Prisma.FieldRef<"Address", 'String'>
   readonly company: Prisma.FieldRef<"Address", 'String'>
   readonly streetLine1: Prisma.FieldRef<"Address", 'String'>
-  readonly streetLine2: Prisma.FieldRef<"Address", 'String'>
   readonly postalCode: Prisma.FieldRef<"Address", 'String'>
   readonly city: Prisma.FieldRef<"Address", 'String'>
   readonly countryCode: Prisma.FieldRef<"Address", 'String'>
-  readonly phone: Prisma.FieldRef<"Address", 'String'>
   readonly createdAt: Prisma.FieldRef<"Address", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Address", 'DateTime'>
 }

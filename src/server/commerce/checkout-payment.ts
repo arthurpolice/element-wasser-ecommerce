@@ -40,6 +40,7 @@ type CheckoutPaymentResult = {
 
 type GuestCustomerInput = {
   email: string
+  phone?: string
   salutation?: PlaceOrderInput['shippingSalutation']
   firstName: string
   lastName: string

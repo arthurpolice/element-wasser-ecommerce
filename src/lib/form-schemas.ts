@@ -1,21 +1,22 @@
-import { z } from "zod";
-import type { JSONContent } from "@tiptap/react";
+import { z } from 'zod'
+import type { JSONContent } from '@tiptap/react'
 
-import { parseMoneyToCents, parseNonNegativeInt } from "~/lib/form-parsers";
+import { parseMoneyToCents, parseNonNegativeInt } from '~/lib/form-parsers'
 
-const salutationValues = ["", "HERR", "FRAU"] as const;
+const salutationValues = ['', 'HERR', 'FRAU'] as const
 
-export type SalutationFieldValue = (typeof salutationValues)[number];
+export type SalutationFieldValue = (typeof salutationValues)[number]
 
-export type ProductDescriptionJson = JSONContent;
-export const productDescriptionJsonSchema =
-  z.custom<ProductDescriptionJson>().nullable();
+export type ProductDescriptionJson = JSONContent
+export const productDescriptionJsonSchema = z
+  .custom<ProductDescriptionJson>()
+  .nullable()
 
 export const createCustomerFormSchema = (messages: {
-  emailRequired: string;
-  emailInvalid: string;
-  firstNameRequired: string;
-  lastNameRequired: string;
+  emailRequired: string
+  emailInvalid: string
+  firstNameRequired: string
+  lastNameRequired: string
 }) =>
   z.object({
     email: z
@@ -25,22 +26,23 @@ export const createCustomerFormSchema = (messages: {
       .email(messages.emailInvalid),
     firstName: z.string().trim().min(1, messages.firstNameRequired),
     lastName: z.string().trim().min(1, messages.lastNameRequired),
-    salutation: z.enum(salutationValues),
-  });
+    phone: z.string().trim(),
+    salutation: z.enum(salutationValues)
+  })
 
 export type CreateCustomerFormValues = z.infer<
   ReturnType<typeof createCustomerFormSchema>
->;
+>
 
 export const createProductFormSchema = (messages: {
-  nameRequired: string;
-  manufacturerRequired: string;
-  priceRequired: string;
-  costRequired: string;
-  stockRequired: string;
-  dispatchMinRequired: string;
-  dispatchMaxRequired: string;
-  dispatchRangeInvalid: string;
+  nameRequired: string
+  manufacturerRequired: string
+  priceRequired: string
+  costRequired: string
+  stockRequired: string
+  dispatchMinRequired: string
+  dispatchMaxRequired: string
+  dispatchRangeInvalid: string
 }) =>
   z
     .object({
@@ -51,38 +53,38 @@ export const createProductFormSchema = (messages: {
         .string()
         .refine(
           (value) => parseMoneyToCents(value) != null,
-          messages.priceRequired,
+          messages.priceRequired
         ),
       cost: z
         .string()
         .refine(
           (value) => parseMoneyToCents(value) != null,
-          messages.costRequired,
+          messages.costRequired
         ),
       stockOnHand: z
         .string()
         .refine(
           (value) => parseNonNegativeInt(value) != null,
-          messages.stockRequired,
+          messages.stockRequired
         ),
       dispatchMinDays: z
         .string()
         .refine(
           (value) => parseNonNegativeInt(value) != null,
-          messages.dispatchMinRequired,
+          messages.dispatchMinRequired
         ),
       dispatchMaxDays: z
         .string()
         .refine(
           (value) => parseNonNegativeInt(value) != null,
-          messages.dispatchMaxRequired,
+          messages.dispatchMaxRequired
         ),
       active: z.boolean(),
-      featured: z.boolean(),
+      featured: z.boolean()
     })
     .superRefine((data, ctx) => {
-      const dispatchMinDays = parseNonNegativeInt(data.dispatchMinDays);
-      const dispatchMaxDays = parseNonNegativeInt(data.dispatchMaxDays);
+      const dispatchMinDays = parseNonNegativeInt(data.dispatchMinDays)
+      const dispatchMaxDays = parseNonNegativeInt(data.dispatchMaxDays)
 
       if (
         dispatchMinDays != null &&
@@ -92,21 +94,21 @@ export const createProductFormSchema = (messages: {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: messages.dispatchRangeInvalid,
-          path: ["dispatchMaxDays"],
-        });
+          path: ['dispatchMaxDays']
+        })
       }
-    });
+    })
 
 export type CreateProductFormValues = z.infer<
   ReturnType<typeof createProductFormSchema>
->;
+>
 
 export function mapCreateProductFormToInput(values: CreateProductFormValues) {
-  const priceCents = parseMoneyToCents(values.price);
-  const costCents = parseMoneyToCents(values.cost);
-  const stockOnHand = parseNonNegativeInt(values.stockOnHand);
-  const dispatchMinDays = parseNonNegativeInt(values.dispatchMinDays);
-  const dispatchMaxDays = parseNonNegativeInt(values.dispatchMaxDays);
+  const priceCents = parseMoneyToCents(values.price)
+  const costCents = parseMoneyToCents(values.cost)
+  const stockOnHand = parseNonNegativeInt(values.stockOnHand)
+  const dispatchMinDays = parseNonNegativeInt(values.dispatchMinDays)
+  const dispatchMaxDays = parseNonNegativeInt(values.dispatchMaxDays)
 
   if (
     priceCents == null ||
@@ -115,7 +117,7 @@ export function mapCreateProductFormToInput(values: CreateProductFormValues) {
     dispatchMinDays == null ||
     dispatchMaxDays == null
   ) {
-    return null;
+    return null
   }
 
   return {
@@ -128,25 +130,25 @@ export function mapCreateProductFormToInput(values: CreateProductFormValues) {
     dispatchMinDays,
     dispatchMaxDays,
     active: values.active,
-    featured: values.featured,
-  };
+    featured: values.featured
+  }
 }
 
 export const createOrderFormSchema = (
   messages: {
-    customerRequired: string;
-    productRequired: string;
-    quantityRequired: string;
-    insufficientStock: (available: number) => string;
-    shippingCentsRequired: string;
-    shippingFirstNameRequired: string;
-    shippingLastNameRequired: string;
-    shippingStreetRequired: string;
-    shippingPostalCodeRequired: string;
-    shippingCityRequired: string;
-    shippingCountryCodeRequired: string;
+    customerRequired: string
+    productRequired: string
+    quantityRequired: string
+    insufficientStock: (available: number) => string
+    shippingCentsRequired: string
+    shippingFirstNameRequired: string
+    shippingLastNameRequired: string
+    shippingStreetRequired: string
+    shippingPostalCodeRequired: string
+    shippingCityRequired: string
+    shippingCountryCodeRequired: string
   },
-  options?: { availableStock?: number },
+  options?: { availableStock?: number }
 ) =>
   z
     .object({
@@ -182,7 +184,7 @@ export const createOrderFormSchema = (
         .string()
         .trim()
         .regex(/^[A-Za-z]{2}$/, messages.shippingCountryCodeRequired),
-      shippingPhone: z.string(),
+      shippingPhone: z.string()
     })
     .superRefine((data, ctx) => {
       if (
@@ -192,14 +194,14 @@ export const createOrderFormSchema = (
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: messages.insufficientStock(options.availableStock),
-          path: ["quantity"],
-        });
+          path: ['quantity']
+        })
       }
-    });
+    })
 
 export type CreateOrderFormValues = z.infer<
   ReturnType<typeof createOrderFormSchema>
->;
+>
 
 export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
   return {
@@ -209,7 +211,7 @@ export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
     quantity: values.quantity,
     shippingCents: values.shippingCents,
     shippingSalutation:
-      values.shippingSalutation === "" ? undefined : values.shippingSalutation,
+      values.shippingSalutation === '' ? undefined : values.shippingSalutation,
     shippingFirstName: values.shippingFirstName,
     shippingLastName: values.shippingLastName,
     shippingCompany: values.shippingCompany.trim() || undefined,
@@ -218,21 +220,21 @@ export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
     shippingPostalCode: values.shippingPostalCode,
     shippingCity: values.shippingCity,
     shippingCountryCode: values.shippingCountryCode.toUpperCase(),
-    shippingPhone: values.shippingPhone.trim() || undefined,
-  };
+    shippingPhone: values.shippingPhone.trim() || undefined
+  }
 }
 
 export const signInFormSchema = z.object({
   email: z.string().trim().email(),
-  password: z.string().min(1),
-});
+  password: z.string().min(1)
+})
 
 export const signUpFormSchema = z.object({
   name: z.string().trim().min(1),
   email: z.string().trim().email(),
-  password: z.string().min(8),
-});
+  password: z.string().min(8)
+})
 
 export const createPostFormSchema = z.object({
-  name: z.string().trim().min(1),
-});
+  name: z.string().trim().min(1)
+})

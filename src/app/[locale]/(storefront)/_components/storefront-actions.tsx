@@ -3,11 +3,13 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   FaRegTrashAlt,
   FaRegUserCircle,
   FaShoppingBag,
+  FaTimes,
   FaSignOutAlt
 } from 'react-icons/fa'
 
@@ -24,6 +26,7 @@ export type StorefrontDropdown = 'user' | 'cart' | 'added'
 type TopNavActionsProps = {
   addedCartItem: StorefrontAddedCartItem | null
   closingDropdown: StorefrontDropdown | null
+  mode: 'desktop' | 'mobile'
   openDropdown: StorefrontDropdown | null
   renderedDropdown: StorefrontDropdown | null
   sessionUserName: string
@@ -43,6 +46,7 @@ const menuLinkClass =
 export function TopNavActions({
   addedCartItem,
   closingDropdown,
+  mode,
   openDropdown,
   renderedDropdown,
   sessionUserName,
@@ -100,20 +104,58 @@ export function TopNavActions({
         ) : null}
       </button>
 
-      {renderedDropdown === 'user' && signedIn ? (
+      {mode === 'desktop' && renderedDropdown === 'user' && signedIn ? (
         <UserDropdown
           animationClass={dropdownAnimationClass}
           name={sessionUserName}
         />
       ) : null}
-      {renderedDropdown === 'cart' ? (
+      {mode === 'mobile' && renderedDropdown === 'user' && signedIn ? (
+        <StorefrontMobileActionDrawer
+          closeLabel={t('closePanel')}
+          isClosing={closingDropdown === 'user'}
+          onClose={() => setOpenDropdown(null)}
+          title={t('userMenu')}
+        >
+          <UserMenuContent
+            name={sessionUserName}
+            onNavigate={() => setOpenDropdown(null)}
+          />
+        </StorefrontMobileActionDrawer>
+      ) : null}
+      {mode === 'desktop' && renderedDropdown === 'cart' ? (
         <CartDropdown animationClass={dropdownAnimationClass} />
       ) : null}
-      {renderedDropdown === 'added' && addedCartItem ? (
+      {mode === 'mobile' && renderedDropdown === 'cart' ? (
+        <StorefrontMobileActionDrawer
+          closeLabel={t('closePanel')}
+          isClosing={closingDropdown === 'cart'}
+          onClose={() => setOpenDropdown(null)}
+          title={t('cartSummary')}
+        >
+          <CartContent
+            onNavigate={() => setOpenDropdown(null)}
+            showTitle={false}
+          />
+        </StorefrontMobileActionDrawer>
+      ) : null}
+      {mode === 'desktop' && renderedDropdown === 'added' && addedCartItem ? (
         <AddedCartItemDropdown
           animationClass={dropdownAnimationClass}
           item={addedCartItem}
         />
+      ) : null}
+      {mode === 'mobile' && renderedDropdown === 'added' && addedCartItem ? (
+        <>
+          <StorefrontMobileActionDrawer
+            closeLabel={t('closePanel')}
+            isClosing={closingDropdown === 'added'}
+            onClose={() => setOpenDropdown(null)}
+            title={t('addedToCart')}
+          >
+            <AddedCartItemContent item={addedCartItem} />
+          </StorefrontMobileActionDrawer>
+        </>
       ) : null}
     </div>
   )
@@ -126,27 +168,50 @@ function UserDropdown({
   animationClass: string
   name: string
 }) {
+  return (
+    <div className={`${dropdownClass} ${animationClass} hidden lg:block`}>
+      <UserMenuContent name={name} />
+    </div>
+  )
+}
+
+function UserMenuContent({
+  name,
+  onNavigate
+}: {
+  name: string
+  onNavigate?: () => void
+}) {
   const router = useRouter()
   const t = useTranslations('Storefront.topNav')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   return (
-    <div className={`${dropdownClass} ${animationClass}`}>
+    <>
       <p className="font-display text-store-ink text-lg font-semibold">
         {t('hello', { name })}
       </p>
       <div className="mt-5 grid gap-1">
-        <Link className={menuLinkClass} href="/customer-area/orders">
+        <Link
+          className={menuLinkClass}
+          href="/customer-area/orders"
+          onClick={onNavigate}
+        >
           {t('orders')}
         </Link>
         <Link
           className={menuLinkClass}
           href="/customer-area/personal-information"
+          onClick={onNavigate}
         >
           {t('personalInformation')}
         </Link>
-        <Link className={menuLinkClass} href="/customer-area/addresses">
+        <Link
+          className={menuLinkClass}
+          href="/customer-area/addresses"
+          onClick={onNavigate}
+        >
           {t('addresses')}
         </Link>
       </div>
@@ -187,19 +252,35 @@ function UserDropdown({
           {submitting ? 'Signing out...' : t('signOut')}
         </button>
       </form>
-    </div>
+    </>
   )
 }
 
 function CartDropdown({ animationClass }: { animationClass: string }) {
+  return (
+    <div className={`${dropdownClass} ${animationClass} hidden lg:block`}>
+      <CartContent />
+    </div>
+  )
+}
+
+function CartContent({
+  onNavigate,
+  showTitle = true
+}: {
+  onNavigate?: () => void
+  showTitle?: boolean
+}) {
   const t = useTranslations('Storefront.topNav')
   const items = useStorefrontCart((state) => state.items)
 
   return (
-    <div className={`${dropdownClass} ${animationClass}`}>
-      <h2 className="font-display text-store-ink text-lg font-semibold">
-        {t('cartSummary')}
-      </h2>
+    <>
+      {showTitle ? (
+        <h2 className="font-display text-store-ink text-lg font-semibold">
+          {t('cartSummary')}
+        </h2>
+      ) : null}
       {items.length > 0 ? (
         <>
           <div className="border-store-border/70 divide-store-border/70 mt-4 divide-y border-t">
@@ -210,6 +291,7 @@ function CartDropdown({ animationClass }: { animationClass: string }) {
           <Link
             className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink focus-visible:ring-store-accent/25 mt-5 inline-flex h-10 w-full items-center justify-center border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
             href="/checkout"
+            onClick={onNavigate}
           >
             {t('checkout')}
           </Link>
@@ -219,7 +301,102 @@ function CartDropdown({ animationClass }: { animationClass: string }) {
           {t('cartEmpty')}
         </p>
       )}
-    </div>
+    </>
+  )
+}
+
+function StorefrontMobileActionDrawer({
+  children,
+  closeLabel,
+  isClosing,
+  onClose,
+  title
+}: {
+  children: React.ReactNode
+  closeLabel: string
+  isClosing: boolean
+  onClose: () => void
+  title: string
+}) {
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
+  const [mobileViewport, setMobileViewport] = useState(false)
+
+  useEffect(() => {
+    setPortalTarget(document.body)
+
+    const mediaQuery = window.matchMedia('(max-width: 1023px)')
+    const updateMobileViewport = () => setMobileViewport(mediaQuery.matches)
+
+    updateMobileViewport()
+    mediaQuery.addEventListener('change', updateMobileViewport)
+
+    return () => {
+      mediaQuery.removeEventListener('change', updateMobileViewport)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!portalTarget || !mobileViewport) {
+      return
+    }
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [mobileViewport, portalTarget])
+
+  if (!portalTarget || !mobileViewport) {
+    return null
+  }
+
+  return createPortal(
+    <div
+      aria-modal="true"
+      className={`fixed inset-0 z-40 flex items-end bg-black/35 backdrop-blur-sm lg:hidden ${
+        isClosing
+          ? 'storefront-mobile-drawer-backdrop-exit pointer-events-none'
+          : 'storefront-mobile-drawer-backdrop-enter'
+      }`}
+      data-storefront-actions-root
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose()
+        }
+      }}
+      role="dialog"
+    >
+      <div
+        className={`bg-store-bg border-store-border h-[86dvh] w-full overflow-y-auto rounded-t-lg border p-5 shadow-2xl ${
+          isClosing
+            ? 'storefront-mobile-drawer-exit'
+            : 'storefront-mobile-drawer-enter'
+        }`}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="font-display text-store-accent text-xs font-semibold tracking-[0.24em] uppercase">
+              Element Wasser
+            </p>
+            <h2 className="font-display text-store-ink mt-1 text-lg font-semibold">
+              {title}
+            </h2>
+          </div>
+          <button
+            aria-label={closeLabel}
+            className={iconButtonClass}
+            onClick={onClose}
+            type="button"
+          >
+            <FaTimes aria-hidden="true" className="size-5" />
+          </button>
+        </div>
+        <div className="mt-5">{children}</div>
+      </div>
+    </div>,
+    portalTarget
   )
 }
 
@@ -299,6 +476,16 @@ function AddedCartItemDropdown({
       <p className="text-store-accent text-xs font-semibold tracking-[0.18em] uppercase">
         {t('addedToCart')}
       </p>
+      <AddedCartItemContent item={item} />
+    </div>
+  )
+}
+
+function AddedCartItemContent({ item }: { item: StorefrontAddedCartItem }) {
+  const t = useTranslations('Storefront.topNav')
+
+  return (
+    <>
       <div className="mt-4 flex gap-4">
         <div className="border-store-border/70 bg-store-bg relative size-16 shrink-0 overflow-hidden border">
           {item.imageUrl ? (
@@ -325,6 +512,6 @@ function AddedCartItemDropdown({
           </p>
         </div>
       </div>
-    </div>
+    </>
   )
 }

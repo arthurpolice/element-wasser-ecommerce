@@ -125,6 +125,7 @@
       "description": "Capture contact details for a new customer.",
       "fields": {
         "email": "Email",
+        "phone": "Phone",
         "firstName": "First name",
         "lastName": "Last name",
         "salutation": "Salutation",
@@ -156,6 +157,7 @@
       "description": "Add the minimal customer information required to use the Customer Area.",
       "fields": {
         "email": "Email",
+        "phone": "Phone",
         "firstName": "First name",
         "lastName": "Last name",
         "salutation": "Salutation",
@@ -204,7 +206,7 @@
       "delete": "Delete",
       "create": "Add Address Book Entry",
       "company": "Company",
-      "streetLine1": "Street line 1",
+      "streetLine1": "Street & Number",
       "streetLine2": "Street line 2",
       "postalCode": "Postal code",
       "city": "City",
@@ -420,6 +422,7 @@
       "searchViewAll": "View all results",
       "searchUnavailable": "Out of stock",
       "userMenu": "Customer menu",
+      "closePanel": "Close panel",
       "signIn": "Sign in",
       "cart": "Cart",
       "hello": "Hello {name}",
@@ -451,8 +454,7 @@
       "empty": "Products will appear here once categories and active products are configured."
     },
     "categoryPage": {
-      "eyebrow": "Category",
-      "description": "Browse active products in this category and its subcategories."
+      "eyebrow": "Category"
     },
     "categoryGrid": {
       "summary": "{count, plural, =0 {No products} one {# product} other {# products}}",
@@ -553,7 +555,7 @@
         "firstName": "First name",
         "lastName": "Last name",
         "company": "Company",
-        "streetLine1": "Street line 1",
+        "streetLine1": "Street & Number",
         "streetLine2": "Street line 2",
         "postalCode": "Postal code",
         "city": "City",
@@ -728,7 +730,7 @@
         "shippingFirstName": "First name",
         "shippingLastName": "Last name",
         "shippingCompany": "Company",
-        "shippingStreetLine1": "Street line 1",
+        "shippingStreetLine1": "Street & Number",
         "shippingStreetLine2": "Street line 2",
         "shippingPostalCode": "Postal code",
         "shippingCity": "City",

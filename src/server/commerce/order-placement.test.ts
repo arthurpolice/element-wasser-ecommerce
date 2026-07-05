@@ -92,11 +92,10 @@ function createMockDb(): MockDb {
         lastName: 'Stone',
         company: 'Element',
         streetLine1: 'Snapshotstrasse 7',
-        streetLine2: 'Atelier',
         postalCode: '8000',
         city: 'Zurich',
         countryCode: 'ch',
-        phone: '+410000000'
+        customer: { phone: '+410000000' }
       }))
     },
     orderNumberSequence: {
@@ -149,7 +148,7 @@ describe('placeOrder', () => {
       shippingFirstName: 'River',
       shippingLastName: 'Stone',
       shippingStreetLine1: 'Snapshotstrasse 7',
-      shippingStreetLine2: 'Atelier',
+      shippingStreetLine2: undefined,
       shippingPostalCode: '8000',
       shippingCity: 'Zurich',
       shippingCountryCode: 'CH',

@@ -1,100 +1,100 @@
-"use client";
+'use client'
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
-import { useFormatter, useTranslations } from "next-intl";
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import {
   DashboardButton,
   dashDialogClass,
-  dashInputClass,
-} from "~/app/[locale]/dashboard/_components/dashboard-ui";
+  dashInputClass
+} from '~/app/[locale]/dashboard/_components/dashboard-ui'
 import {
   createOrderFormSchema,
   mapCreateOrderFormToInput,
-  type CreateOrderFormValues,
-} from "~/lib/form-schemas";
+  type CreateOrderFormValues
+} from '~/lib/form-schemas'
 import {
   calculateAvailableStock,
-  calculateUnitPriceCents,
-} from "~/lib/order-quote";
-import { api, type RouterOutputs } from "~/trpc/react";
+  calculateUnitPriceCents
+} from '~/lib/order-quote'
+import { api, type RouterOutputs } from '~/trpc/react'
 
 type CustomerSearchResult =
-  RouterOutputs["order"]["listCustomersForCreate"][number];
+  RouterOutputs['order']['listCustomersForCreate'][number]
 type ProductSearchResult =
-  RouterOutputs["order"]["listProductsForCreate"][number];
+  RouterOutputs['order']['listProductsForCreate'][number]
 
 const defaultValues: CreateOrderFormValues = {
-  customerId: "",
-  productId: "",
-  addressId: "",
+  customerId: '',
+  productId: '',
+  addressId: '',
   quantity: 1,
   shippingCents: 0,
-  shippingSalutation: "",
-  shippingFirstName: "",
-  shippingLastName: "",
-  shippingCompany: "",
-  shippingStreetLine1: "",
-  shippingStreetLine2: "",
-  shippingPostalCode: "",
-  shippingCity: "",
-  shippingCountryCode: "CH",
-  shippingPhone: "",
-};
+  shippingSalutation: '',
+  shippingFirstName: '',
+  shippingLastName: '',
+  shippingCompany: '',
+  shippingStreetLine1: '',
+  shippingStreetLine2: '',
+  shippingPostalCode: '',
+  shippingCity: '',
+  shippingCountryCode: 'CH',
+  shippingPhone: ''
+}
 
 export function CreateOrderDialog() {
-  const t = useTranslations("Orders");
-  const tForm = useTranslations("Orders.create");
-  const format = useFormatter();
-  const [open, setOpen] = useState(false);
-  const [customerSearch, setCustomerSearch] = useState("");
-  const [productSearch, setProductSearch] = useState("");
+  const t = useTranslations('Orders')
+  const tForm = useTranslations('Orders.create')
+  const format = useFormatter()
+  const [open, setOpen] = useState(false)
+  const [customerSearch, setCustomerSearch] = useState('')
+  const [productSearch, setProductSearch] = useState('')
   const [selectedCustomer, setSelectedCustomer] =
-    useState<CustomerSearchResult | null>(null);
+    useState<CustomerSearchResult | null>(null)
   const [selectedProduct, setSelectedProduct] =
-    useState<ProductSearchResult | null>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const utils = api.useUtils();
+    useState<ProductSearchResult | null>(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const utils = api.useUtils()
 
   function close() {
-    setOpen(false);
+    setOpen(false)
   }
 
   const customersQuery = api.order.listCustomersForCreate.useQuery(
     { q: customerSearch, limit: 20 },
-    { enabled: open && customerSearch.trim().length >= 2 },
-  );
+    { enabled: open && customerSearch.trim().length >= 2 }
+  )
   const productsQuery = api.order.listProductsForCreate.useQuery(
     { q: productSearch, limit: 20 },
-    { enabled: open && productSearch.trim().length >= 2 },
-  );
+    { enabled: open && productSearch.trim().length >= 2 }
+  )
 
   const schema = useMemo(
     () =>
       createOrderFormSchema({
-        customerRequired: tForm("validation.customerRequired"),
-        productRequired: tForm("validation.productRequired"),
-        quantityRequired: tForm("validation.quantityRequired"),
+        customerRequired: tForm('validation.customerRequired'),
+        productRequired: tForm('validation.productRequired'),
+        quantityRequired: tForm('validation.quantityRequired'),
         insufficientStock: (available) =>
-          tForm("validation.insufficientStock", { available }),
-        shippingCentsRequired: tForm("validation.shippingCentsRequired"),
+          tForm('validation.insufficientStock', { available }),
+        shippingCentsRequired: tForm('validation.shippingCentsRequired'),
         shippingFirstNameRequired: tForm(
-          "validation.shippingFirstNameRequired",
+          'validation.shippingFirstNameRequired'
         ),
-        shippingLastNameRequired: tForm("validation.shippingLastNameRequired"),
-        shippingStreetRequired: tForm("validation.shippingStreetRequired"),
+        shippingLastNameRequired: tForm('validation.shippingLastNameRequired'),
+        shippingStreetRequired: tForm('validation.shippingStreetRequired'),
         shippingPostalCodeRequired: tForm(
-          "validation.shippingPostalCodeRequired",
+          'validation.shippingPostalCodeRequired'
         ),
-        shippingCityRequired: tForm("validation.shippingCityRequired"),
+        shippingCityRequired: tForm('validation.shippingCityRequired'),
         shippingCountryCodeRequired: tForm(
-          "validation.shippingCountryCodeRequired",
-        ),
+          'validation.shippingCountryCodeRequired'
+        )
       }),
-    [tForm],
-  );
+    [tForm]
+  )
 
   const {
     register,
@@ -103,150 +103,150 @@ export function CreateOrderDialog() {
     setValue,
     watch,
     setError,
-    formState: { errors },
+    formState: { errors }
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues,
-  });
+    defaultValues
+  })
 
-  const addressId = watch("addressId");
-  const quantity = watch("quantity");
-  const shippingCents = watch("shippingCents");
+  const addressId = watch('addressId')
+  const quantity = watch('quantity')
+  const shippingCents = watch('shippingCents')
 
   const availableStock = selectedProduct
     ? calculateAvailableStock(selectedProduct)
-    : undefined;
+    : undefined
 
   const createOrder = api.order.create.useMutation({
     onSuccess: async () => {
-      await utils.order.list.invalidate();
-      reset(defaultValues);
-      setSelectedCustomer(null);
-      setSelectedProduct(null);
-      setCustomerSearch("");
-      setProductSearch("");
-      close();
-    },
-  });
+      await utils.order.list.invalidate()
+      reset(defaultValues)
+      setSelectedCustomer(null)
+      setSelectedProduct(null)
+      setCustomerSearch('')
+      setProductSearch('')
+      close()
+    }
+  })
 
   const preview = useMemo(() => {
     if (!selectedProduct || !Number.isFinite(quantity) || quantity < 1) {
-      return null;
+      return null
     }
 
     const unitPriceCents = calculateUnitPriceCents(
       selectedProduct.priceCents,
-      selectedProduct.discountPercent,
-    );
-    const lineTotalCents = unitPriceCents * quantity;
-    const subtotalCents = selectedProduct.priceCents * quantity;
-    const discountCents = subtotalCents - lineTotalCents;
-    const totalCents = lineTotalCents + (shippingCents ?? 0);
+      selectedProduct.discountPercent
+    )
+    const lineTotalCents = unitPriceCents * quantity
+    const subtotalCents = selectedProduct.priceCents * quantity
+    const discountCents = subtotalCents - lineTotalCents
+    const totalCents = lineTotalCents + (shippingCents ?? 0)
 
     return {
       subtotalCents,
       discountCents,
       lineTotalCents,
-      totalCents,
-    };
-  }, [quantity, selectedProduct, shippingCents]);
+      totalCents
+    }
+  }, [quantity, selectedProduct, shippingCents])
 
   useEffect(() => {
-    const dialog = dialogRef.current;
+    const dialog = dialogRef.current
     if (!dialog) {
-      return;
+      return
     }
 
     if (open && !dialog.open) {
-      dialog.showModal();
-      return;
+      dialog.showModal()
+      return
     }
 
     if (!open && dialog.open) {
-      dialog.close();
+      dialog.close()
     }
-  }, [open]);
+  }, [open])
 
   useEffect(() => {
     if (!selectedCustomer) {
-      return;
+      return
     }
 
-    setValue("shippingSalutation", selectedCustomer.salutation ?? "");
-    setValue("shippingFirstName", selectedCustomer.firstName);
-    setValue("shippingLastName", selectedCustomer.lastName);
-    const mainAddress = selectedCustomer.addresses[0];
-    setValue("addressId", mainAddress?.id ?? "");
-  }, [selectedCustomer, setValue]);
+    setValue('shippingSalutation', selectedCustomer.salutation ?? '')
+    setValue('shippingFirstName', selectedCustomer.firstName)
+    setValue('shippingLastName', selectedCustomer.lastName)
+    const mainAddress = selectedCustomer.addresses[0]
+    setValue('addressId', mainAddress?.id ?? '')
+  }, [selectedCustomer, setValue])
 
   useEffect(() => {
     const selectedAddress = selectedCustomer?.addresses.find(
-      (address) => address.id === addressId,
-    );
+      (address) => address.id === addressId
+    )
 
     if (!selectedAddress) {
-      return;
+      return
     }
 
-    setValue("shippingSalutation", selectedAddress.salutation ?? "");
-    setValue("shippingFirstName", selectedAddress.firstName);
-    setValue("shippingLastName", selectedAddress.lastName);
-    setValue("shippingCompany", selectedAddress.company ?? "");
-    setValue("shippingStreetLine1", selectedAddress.streetLine1);
-    setValue("shippingStreetLine2", selectedAddress.streetLine2 ?? "");
-    setValue("shippingPostalCode", selectedAddress.postalCode);
-    setValue("shippingCity", selectedAddress.city);
-    setValue("shippingCountryCode", selectedAddress.countryCode.toUpperCase());
-    setValue("shippingPhone", selectedAddress.phone ?? "");
-  }, [addressId, selectedCustomer, setValue]);
+    setValue('shippingSalutation', selectedAddress.salutation ?? '')
+    setValue('shippingFirstName', selectedAddress.firstName)
+    setValue('shippingLastName', selectedAddress.lastName)
+    setValue('shippingCompany', selectedAddress.company ?? '')
+    setValue('shippingStreetLine1', selectedAddress.streetLine1)
+    setValue('shippingStreetLine2', '')
+    setValue('shippingPostalCode', selectedAddress.postalCode)
+    setValue('shippingCity', selectedAddress.city)
+    setValue('shippingCountryCode', selectedAddress.countryCode.toUpperCase())
+    setValue('shippingPhone', selectedCustomer?.phone ?? '')
+  }, [addressId, selectedCustomer, setValue])
 
   function handleClose() {
     if (createOrder.isPending) {
-      return;
+      return
     }
 
-    reset(defaultValues);
-    setSelectedCustomer(null);
-    setSelectedProduct(null);
-    setCustomerSearch("");
-    setProductSearch("");
-    createOrder.reset();
-    close();
+    reset(defaultValues)
+    setSelectedCustomer(null)
+    setSelectedProduct(null)
+    setCustomerSearch('')
+    setProductSearch('')
+    createOrder.reset()
+    close()
   }
 
   function formatMoney(cents: number) {
     return format.number(cents / 100, {
-      style: "currency",
-      currency: "CHF",
-    });
+      style: 'currency',
+      currency: 'CHF'
+    })
   }
 
   const onSubmit = handleSubmit((data) => {
     if (availableStock != null && data.quantity > availableStock) {
-      setError("quantity", {
-        type: "manual",
-        message: tForm("validation.insufficientStock", {
-          available: availableStock,
-        }),
-      });
-      return;
+      setError('quantity', {
+        type: 'manual',
+        message: tForm('validation.insufficientStock', {
+          available: availableStock
+        })
+      })
+      return
     }
 
-    createOrder.mutate(mapCreateOrderFormToInput(data));
-  });
+    createOrder.mutate(mapCreateOrderFormToInput(data))
+  })
 
   return (
     <>
       <DashboardButton onClick={() => setOpen(true)}>
-        {t("createButton")}
+        {t('createButton')}
       </DashboardButton>
 
       <dialog
         ref={dialogRef}
         className={`${dashDialogClass} max-w-2xl`}
         onCancel={(event) => {
-          event.preventDefault();
-          handleClose();
+          event.preventDefault()
+          handleClose()
         }}
         onClose={handleClose}
       >
@@ -254,14 +254,14 @@ export function CreateOrderDialog() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <h2 className="font-display text-lg font-semibold">
-                {tForm("title")}
+                {tForm('title')}
               </h2>
               <p className="text-dash-muted mt-1 text-sm">
-                {tForm("description")}
+                {tForm('description')}
               </p>
             </div>
             <button
-              aria-label={tForm("cancel")}
+              aria-label={tForm('cancel')}
               className="text-dash-muted hover:text-dash-ink focus-visible:ring-dash-accent/30 rounded-lg px-2 py-1 transition hover:bg-[#f6f9fc] focus-visible:ring-2 focus-visible:outline-none"
               onClick={handleClose}
               type="button"
@@ -273,19 +273,19 @@ export function CreateOrderDialog() {
           <div className="mt-6 grid gap-6">
             <section className="grid gap-4">
               <h3 className="text-dash-ink text-sm font-semibold">
-                {tForm("sections.order")}
+                {tForm('sections.order')}
               </h3>
 
               <div className="grid gap-1 text-sm">
-                <span>{tForm("fields.customer")}</span>
+                <span>{tForm('fields.customer')}</span>
                 <input
                   className={dashInputClass}
                   onChange={(event) => setCustomerSearch(event.target.value)}
-                  placeholder={tForm("fields.customerPlaceholder")}
+                  placeholder={tForm('fields.customerPlaceholder')}
                   type="search"
                   value={customerSearch}
                 />
-                <input type="hidden" {...register("customerId")} />
+                <input type="hidden" {...register('customerId')} />
                 {selectedCustomer ? (
                   <p className="text-dash-muted text-xs">
                     {selectedCustomer.lastName}, {selectedCustomer.firstName} (
@@ -299,10 +299,10 @@ export function CreateOrderDialog() {
                         className="hover:bg-dash-surface-muted w-full px-3 py-2 text-left"
                         key={customer.id}
                         onClick={() => {
-                          setSelectedCustomer(customer);
-                          setValue("customerId", customer.id, {
-                            shouldValidate: true,
-                          });
+                          setSelectedCustomer(customer)
+                          setValue('customerId', customer.id, {
+                            shouldValidate: true
+                          })
                         }}
                         type="button"
                       >
@@ -321,15 +321,15 @@ export function CreateOrderDialog() {
 
               {selectedCustomer?.addresses.length ? (
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.addressBookEntry")}</span>
-                  <select className={dashInputClass} {...register("addressId")}>
-                    <option value="">{tForm("fields.manualAddress")}</option>
+                  <span>{tForm('fields.addressBookEntry')}</span>
+                  <select className={dashInputClass} {...register('addressId')}>
+                    <option value="">{tForm('fields.manualAddress')}</option>
                     {selectedCustomer.addresses.map((address) => (
                       <option key={address.id} value={address.id}>
                         {address.isMain
-                          ? `${tForm("fields.mainAddress")} · `
-                          : ""}
-                        {address.streetLine1}, {address.postalCode}{" "}
+                          ? `${tForm('fields.mainAddress')} · `
+                          : ''}
+                        {address.streetLine1}, {address.postalCode}{' '}
                         {address.city}
                       </option>
                     ))}
@@ -338,15 +338,15 @@ export function CreateOrderDialog() {
               ) : null}
 
               <div className="grid gap-1 text-sm">
-                <span>{tForm("fields.product")}</span>
+                <span>{tForm('fields.product')}</span>
                 <input
                   className={dashInputClass}
                   onChange={(event) => setProductSearch(event.target.value)}
-                  placeholder={tForm("fields.productPlaceholder")}
+                  placeholder={tForm('fields.productPlaceholder')}
                   type="search"
                   value={productSearch}
                 />
-                <input type="hidden" {...register("productId")} />
+                <input type="hidden" {...register('productId')} />
                 {selectedProduct ? (
                   <p className="text-dash-muted text-xs">
                     {selectedProduct.name} ({selectedProduct.sku})
@@ -359,10 +359,10 @@ export function CreateOrderDialog() {
                         className="hover:bg-dash-surface-muted w-full px-3 py-2 text-left"
                         key={product.id}
                         onClick={() => {
-                          setSelectedProduct(product);
-                          setValue("productId", product.id, {
-                            shouldValidate: true,
-                          });
+                          setSelectedProduct(product)
+                          setValue('productId', product.id, {
+                            shouldValidate: true
+                          })
                         }}
                         type="button"
                       >
@@ -380,12 +380,12 @@ export function CreateOrderDialog() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.quantity")}</span>
+                  <span>{tForm('fields.quantity')}</span>
                   <input
                     className={dashInputClass}
                     min={1}
                     type="number"
-                    {...register("quantity", { valueAsNumber: true })}
+                    {...register('quantity', { valueAsNumber: true })}
                   />
                   {errors.quantity ? (
                     <span className="text-dash-danger text-xs">
@@ -393,22 +393,22 @@ export function CreateOrderDialog() {
                     </span>
                   ) : selectedProduct ? (
                     <span className="text-dash-muted text-xs">
-                      {tForm("hints.availableStock", {
+                      {tForm('hints.availableStock', {
                         count:
                           selectedProduct.stockOnHand -
-                          selectedProduct.stockReserved,
+                          selectedProduct.stockReserved
                       })}
                     </span>
                   ) : null}
                 </label>
 
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.shippingCents")}</span>
+                  <span>{tForm('fields.shippingCents')}</span>
                   <input
                     className={dashInputClass}
                     min={0}
                     type="number"
-                    {...register("shippingCents", { valueAsNumber: true })}
+                    {...register('shippingCents', { valueAsNumber: true })}
                   />
                   {errors.shippingCents ? (
                     <span className="text-dash-danger text-xs">
@@ -416,7 +416,7 @@ export function CreateOrderDialog() {
                     </span>
                   ) : (
                     <span className="text-dash-muted text-xs">
-                      {tForm("hints.shippingCents")}
+                      {tForm('hints.shippingCents')}
                     </span>
                   )}
                 </label>
@@ -425,29 +425,29 @@ export function CreateOrderDialog() {
 
             <section className="grid gap-4">
               <h3 className="text-dash-ink text-sm font-semibold">
-                {tForm("sections.shipping")}
+                {tForm('sections.shipping')}
               </h3>
 
               <label className="grid gap-1 text-sm">
-                <span>{tForm("fields.shippingSalutation")}</span>
+                <span>{tForm('fields.shippingSalutation')}</span>
                 <select
                   className={dashInputClass}
-                  {...register("shippingSalutation")}
+                  {...register('shippingSalutation')}
                 >
-                  <option value="">{tForm("fields.salutationNone")}</option>
-                  <option value="HERR">{tForm("salutations.HERR")}</option>
-                  <option value="FRAU">{tForm("salutations.FRAU")}</option>
+                  <option value="">{tForm('fields.salutationNone')}</option>
+                  <option value="HERR">{tForm('salutations.HERR')}</option>
+                  <option value="FRAU">{tForm('salutations.FRAU')}</option>
                 </select>
               </label>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.shippingFirstName")}</span>
+                  <span>{tForm('fields.shippingFirstName')}</span>
                   <input
                     autoComplete="shipping given-name"
                     className={dashInputClass}
                     type="text"
-                    {...register("shippingFirstName")}
+                    {...register('shippingFirstName')}
                   />
                   {errors.shippingFirstName ? (
                     <span className="text-dash-danger text-xs">
@@ -457,12 +457,12 @@ export function CreateOrderDialog() {
                 </label>
 
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.shippingLastName")}</span>
+                  <span>{tForm('fields.shippingLastName')}</span>
                   <input
                     autoComplete="shipping family-name"
                     className={dashInputClass}
                     type="text"
-                    {...register("shippingLastName")}
+                    {...register('shippingLastName')}
                   />
                   {errors.shippingLastName ? (
                     <span className="text-dash-danger text-xs">
@@ -473,22 +473,22 @@ export function CreateOrderDialog() {
               </div>
 
               <label className="grid gap-1 text-sm">
-                <span>{tForm("fields.shippingCompany")}</span>
+                <span>{tForm('fields.shippingCompany')}</span>
                 <input
                   autoComplete="shipping organization"
                   className={dashInputClass}
                   type="text"
-                  {...register("shippingCompany")}
+                  {...register('shippingCompany')}
                 />
               </label>
 
               <label className="grid gap-1 text-sm">
-                <span>{tForm("fields.shippingStreetLine1")}</span>
+                <span>{tForm('fields.shippingStreetLine1')}</span>
                 <input
                   autoComplete="shipping address-line1"
                   className={dashInputClass}
                   type="text"
-                  {...register("shippingStreetLine1")}
+                  {...register('shippingStreetLine1')}
                 />
                 {errors.shippingStreetLine1 ? (
                   <span className="text-dash-danger text-xs">
@@ -497,24 +497,14 @@ export function CreateOrderDialog() {
                 ) : null}
               </label>
 
-              <label className="grid gap-1 text-sm">
-                <span>{tForm("fields.shippingStreetLine2")}</span>
-                <input
-                  autoComplete="shipping address-line2"
-                  className={dashInputClass}
-                  type="text"
-                  {...register("shippingStreetLine2")}
-                />
-              </label>
-
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-[0.58fr_1fr] gap-3 sm:gap-4">
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.shippingPostalCode")}</span>
+                  <span>{tForm('fields.shippingPostalCode')}</span>
                   <input
                     autoComplete="shipping postal-code"
                     className={dashInputClass}
                     type="text"
-                    {...register("shippingPostalCode")}
+                    {...register('shippingPostalCode')}
                   />
                   {errors.shippingPostalCode ? (
                     <span className="text-dash-danger text-xs">
@@ -523,13 +513,13 @@ export function CreateOrderDialog() {
                   ) : null}
                 </label>
 
-                <label className="grid gap-1 text-sm sm:col-span-2">
-                  <span>{tForm("fields.shippingCity")}</span>
+                <label className="grid gap-1 text-sm">
+                  <span>{tForm('fields.shippingCity')}</span>
                   <input
                     autoComplete="shipping address-level2"
                     className={dashInputClass}
                     type="text"
-                    {...register("shippingCity")}
+                    {...register('shippingCity')}
                   />
                   {errors.shippingCity ? (
                     <span className="text-dash-danger text-xs">
@@ -541,21 +531,21 @@ export function CreateOrderDialog() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.shippingCountryCode")}</span>
+                  <span>{tForm('fields.shippingCountryCode')}</span>
                   <input
                     autoComplete="shipping country"
                     className={`${dashInputClass} uppercase`}
                     maxLength={2}
                     type="text"
-                    {...register("shippingCountryCode", {
+                    {...register('shippingCountryCode', {
                       onChange: (
-                        event: React.ChangeEvent<HTMLInputElement>,
+                        event: React.ChangeEvent<HTMLInputElement>
                       ) => {
                         setValue(
-                          "shippingCountryCode",
-                          event.target.value.toUpperCase(),
-                        );
-                      },
+                          'shippingCountryCode',
+                          event.target.value.toUpperCase()
+                        )
+                      }
                     })}
                   />
                   {errors.shippingCountryCode ? (
@@ -566,12 +556,12 @@ export function CreateOrderDialog() {
                 </label>
 
                 <label className="grid gap-1 text-sm">
-                  <span>{tForm("fields.shippingPhone")}</span>
+                  <span>{tForm('fields.shippingPhone')}</span>
                   <input
                     autoComplete="shipping tel"
                     className={dashInputClass}
                     type="tel"
-                    {...register("shippingPhone")}
+                    {...register('shippingPhone')}
                   />
                 </label>
               </div>
@@ -580,29 +570,29 @@ export function CreateOrderDialog() {
             {preview ? (
               <div className="border-dash-border rounded-lg border bg-[#f6f9fc] p-4 text-sm">
                 <h3 className="text-dash-ink font-semibold">
-                  {tForm("preview.title")}
+                  {tForm('preview.title')}
                 </h3>
                 <dl className="mt-3 grid gap-2">
                   <div className="flex justify-between gap-4">
                     <dt className="text-dash-muted">
-                      {tForm("preview.subtotal")}
+                      {tForm('preview.subtotal')}
                     </dt>
                     <dd>{formatMoney(preview.subtotalCents)}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-dash-muted">
-                      {tForm("preview.discount")}
+                      {tForm('preview.discount')}
                     </dt>
                     <dd>-{formatMoney(preview.discountCents)}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
                     <dt className="text-dash-muted">
-                      {tForm("preview.shipping")}
+                      {tForm('preview.shipping')}
                     </dt>
                     <dd>{formatMoney(shippingCents ?? 0)}</dd>
                   </div>
                   <div className="border-dash-border text-dash-ink flex justify-between gap-4 border-t pt-2 font-semibold">
-                    <dt>{tForm("preview.total")}</dt>
+                    <dt>{tForm('preview.total')}</dt>
                     <dd>{formatMoney(preview.totalCents)}</dd>
                   </div>
                 </dl>
@@ -612,17 +602,17 @@ export function CreateOrderDialog() {
 
           {createOrder.error ? (
             <p className="text-dash-danger mt-4 text-sm">
-              {createOrder.error.message === "Customer not found."
-                ? tForm("validation.customerNotFound")
-                : createOrder.error.message === "Product not found."
-                  ? tForm("validation.productNotFound")
+              {createOrder.error.message === 'Customer not found.'
+                ? tForm('validation.customerNotFound')
+                : createOrder.error.message === 'Product not found.'
+                  ? tForm('validation.productNotFound')
                   : createOrder.error.message ===
-                      "Insufficient stock available."
-                    ? tForm("validation.insufficientStockServer")
+                      'Insufficient stock available.'
+                    ? tForm('validation.insufficientStockServer')
                     : createOrder.error.message ===
-                        "Order number conflict. Please try again."
-                      ? tForm("validation.orderNumberConflict")
-                      : tForm("validation.generic")}
+                        'Order number conflict. Please try again.'
+                      ? tForm('validation.orderNumberConflict')
+                      : tForm('validation.generic')}
             </p>
           ) : null}
 
@@ -632,14 +622,14 @@ export function CreateOrderDialog() {
               onClick={handleClose}
               variant="secondary"
             >
-              {tForm("cancel")}
+              {tForm('cancel')}
             </DashboardButton>
             <DashboardButton disabled={createOrder.isPending} type="submit">
-              {createOrder.isPending ? tForm("submitting") : tForm("submit")}
+              {createOrder.isPending ? tForm('submitting') : tForm('submit')}
             </DashboardButton>
           </div>
         </form>
       </dialog>
     </>
-  );
+  )
 }

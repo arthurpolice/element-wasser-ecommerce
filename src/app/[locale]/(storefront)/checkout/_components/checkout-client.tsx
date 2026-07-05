@@ -249,11 +249,9 @@ export function CheckoutClient() {
       lastName: newAddress.lastName,
       company: newAddress.company || undefined,
       streetLine1: newAddress.streetLine1,
-      streetLine2: newAddress.streetLine2 || undefined,
       postalCode: newAddress.postalCode,
       city: newAddress.city,
-      countryCode: newAddress.countryCode,
-      phone: newAddress.phone || undefined
+      countryCode: newAddress.countryCode
     })
   }
 
@@ -272,12 +270,14 @@ export function CheckoutClient() {
               {t('description')}
             </p>
           </div>
-          {!isPending && !sessionExists && <Link
-            className="text-store-muted decoration-store-border hover:text-store-accent hover:decoration-store-accent text-sm font-semibold underline underline-offset-4 transition lg:text-right"
-            href="/sign-in"
-          >
-            {t('signInHint')}
-          </Link>}
+          {!isPending && !sessionExists && (
+            <Link
+              className="text-store-muted decoration-store-border hover:text-store-accent hover:decoration-store-accent text-sm font-semibold underline underline-offset-4 transition lg:text-right"
+              href="/sign-in"
+            >
+              {t('signInHint')}
+            </Link>
+          )}
         </div>
       </div>
 
@@ -372,11 +372,10 @@ export function CheckoutClient() {
                         lastName: selectedAddress.lastName,
                         company: selectedAddress.company ?? undefined,
                         streetLine1: selectedAddress.streetLine1,
-                        streetLine2: selectedAddress.streetLine2 ?? undefined,
                         postalCode: selectedAddress.postalCode,
                         city: selectedAddress.city,
                         countryCode: selectedAddress.countryCode,
-                        phone: selectedAddress.phone ?? undefined
+                        phone: registeredCustomer.phone ?? undefined
                       })
                       return
                     }
@@ -397,7 +396,6 @@ export function CheckoutClient() {
                         lastName: address.lastName,
                         company: address.company || undefined,
                         streetLine1: address.streetLine1,
-                        streetLine2: address.streetLine2 || undefined,
                         postalCode: address.postalCode,
                         city: address.city,
                         countryCode: address.countryCode,
@@ -554,54 +552,56 @@ function RegisteredAddressStep({
         <p>{customer.email}</p>
       </div>
 
-        <div className="grid gap-3">
-          {customer.addresses.map((address) => (
-            <label
-              className={`border-store-border bg-store-surface focus-within:ring-store-accent/25 flex cursor-pointer gap-4 border p-4 transition focus-within:ring-2 ${
-                selectedAddressId === address.id
-                  ? 'border-store-accent'
-                  : 'hover:border-store-accent/45'
-              }`}
-              key={address.id}
-            >
-              <input
-                checked={selectedAddressId === address.id}
-                className="accent-store-accent mt-1 size-4"
-                name="checkout-address-book-entry"
-                onChange={() => setSelectedAddressId(address.id)}
-                type="radio"
-                value={address.id}
-              />
-              <span className="min-w-0 text-sm leading-6">
-                <span className="text-store-ink block font-semibold">
-                  {address.firstName} {address.lastName}
-                  {address.isMain ? (
-                    <span className="text-store-accent ml-2 text-xs font-semibold">
-                      {t('addressBook.main')}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="text-store-muted block break-words">
-                  {formatAddressBookEntry(address)}
-                </span>
+      <div className="grid gap-3">
+        {customer.addresses.map((address) => (
+          <label
+            className={`border-store-border bg-store-surface focus-within:ring-store-accent/25 flex cursor-pointer gap-4 border p-4 transition focus-within:ring-2 ${
+              selectedAddressId === address.id
+                ? 'border-store-accent'
+                : 'hover:border-store-accent/45'
+            }`}
+            key={address.id}
+          >
+            <input
+              checked={selectedAddressId === address.id}
+              className="accent-store-accent mt-1 size-4"
+              name="checkout-address-book-entry"
+              onChange={() => setSelectedAddressId(address.id)}
+              type="radio"
+              value={address.id}
+            />
+            <span className="min-w-0 text-sm leading-6">
+              <span className="text-store-ink block font-semibold">
+                {address.firstName} {address.lastName}
+                {address.isMain ? (
+                  <span className="text-store-accent ml-2 text-xs font-semibold">
+                    {t('addressBook.main')}
+                  </span>
+                ) : null}
               </span>
-            </label>
-          ))}
-        </div>
+              <span className="text-store-muted block break-words">
+                {formatAddressBookEntry(address)}
+              </span>
+            </span>
+          </label>
+        ))}
+      </div>
 
       {selectedAddress ? (
         <p className="sr-only">{formatAddressBookEntry(selectedAddress)}</p>
       ) : null}
 
-      {(customer.addresses.length > 0) && <button
-        className="text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 justify-self-start text-sm font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
-        onClick={() => setShowNewAddressForm(!showNewAddressForm)}
-        type="button"
-      >
-        {showNewAddressForm
-          ? t('addressBook.cancelNew')
-          : t('addressBook.addNew')}
-      </button>}
+      {customer.addresses.length > 0 && (
+        <button
+          className="text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 justify-self-start text-sm font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
+          onClick={() => setShowNewAddressForm(!showNewAddressForm)}
+          type="button"
+        >
+          {showNewAddressForm
+            ? t('addressBook.cancelNew')
+            : t('addressBook.addNew')}
+        </button>
+      )}
 
       {showNewAddressForm || customer.addresses.length === 0 ? (
         <AddressBookEntryForm
@@ -633,12 +633,12 @@ function AddressBookEntryForm({
 
   return (
     <form className="grid gap-5" onSubmit={(event) => event.preventDefault()}>
-      <div className="grid gap-5 sm:grid-cols-[0.42fr_1fr_1fr]">
-        <SelectField
-          label={t('fields.salutation')}
-          onChange={(value) => onFieldChange('salutation', value)}
-          value={address.salutation}
-        />
+      <SelectField
+        label={t('fields.salutation')}
+        onChange={(value) => onFieldChange('salutation', value)}
+        value={address.salutation}
+      />
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
         <Field
           autoComplete="given-name"
           label={t('fields.firstName')}
@@ -667,13 +667,7 @@ function AddressBookEntryForm({
         required
         value={address.streetLine1}
       />
-      <Field
-        autoComplete="address-line2"
-        label={t('fields.streetLine2')}
-        onChange={(value) => onFieldChange('streetLine2', value)}
-        value={address.streetLine2}
-      />
-      <div className="grid gap-5 sm:grid-cols-[0.55fr_1fr_0.36fr]">
+      <div className="grid grid-cols-[0.58fr_1fr] gap-3 sm:gap-5">
         <Field
           autoComplete="postal-code"
           label={t('fields.postalCode')}
@@ -688,22 +682,15 @@ function AddressBookEntryForm({
           required
           value={address.city}
         />
-        <Field
-          autoComplete="country"
-          inputMode="text"
-          label={t('fields.countryCode')}
-          maxLength={2}
-          onChange={(value) => onFieldChange('countryCode', value)}
-          required
-          value={address.countryCode}
-        />
       </div>
       <Field
-        autoComplete="tel"
-        label={t('fields.phone')}
-        onChange={(value) => onFieldChange('phone', value)}
-        type="tel"
-        value={address.phone}
+        autoComplete="country"
+        inputMode="text"
+        label={t('fields.countryCode')}
+        maxLength={2}
+        onChange={(value) => onFieldChange('countryCode', value)}
+        required
+        value={address.countryCode}
       />
       <button
         className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink disabled:border-store-border disabled:text-store-muted/45 focus-visible:ring-store-accent/25 justify-self-start border px-5 py-2.5 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed"
@@ -722,7 +709,6 @@ function formatAddressBookEntry(address: RegisteredCheckoutAddress) {
     [address.firstName, address.lastName].filter(Boolean).join(' '),
     address.company,
     address.streetLine1,
-    address.streetLine2,
     `${address.postalCode} ${address.city}`.trim(),
     address.countryCode
   ]
@@ -759,12 +745,12 @@ function AddressForm({
         value={address.email}
       />
 
-      <div className="grid gap-5 sm:grid-cols-[0.42fr_1fr_1fr]">
-        <SelectField
-          label={t('fields.salutation')}
-          onChange={(value) => onFieldChange('salutation', value)}
-          value={address.salutation}
-        />
+      <SelectField
+        label={t('fields.salutation')}
+        onChange={(value) => onFieldChange('salutation', value)}
+        value={address.salutation}
+      />
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
         <Field
           autoComplete="given-name"
           label={t('fields.firstName')}
@@ -794,13 +780,7 @@ function AddressForm({
         required
         value={address.streetLine1}
       />
-      <Field
-        autoComplete="address-line2"
-        label={t('fields.streetLine2')}
-        onChange={(value) => onFieldChange('streetLine2', value)}
-        value={address.streetLine2}
-      />
-      <div className="grid gap-5 sm:grid-cols-[0.55fr_1fr_0.36fr]">
+      <div className="grid grid-cols-[0.58fr_1fr] gap-3 sm:gap-5">
         <Field
           autoComplete="postal-code"
           label={t('fields.postalCode')}
@@ -815,16 +795,16 @@ function AddressForm({
           required
           value={address.city}
         />
-        <Field
-          autoComplete="country"
-          inputMode="text"
-          label={t('fields.countryCode')}
-          maxLength={2}
-          onChange={(value) => onFieldChange('countryCode', value)}
-          required
-          value={address.countryCode}
-        />
       </div>
+      <Field
+        autoComplete="country"
+        inputMode="text"
+        label={t('fields.countryCode')}
+        maxLength={2}
+        onChange={(value) => onFieldChange('countryCode', value)}
+        required
+        value={address.countryCode}
+      />
       <Field
         autoComplete="tel"
         label={t('fields.phone')}

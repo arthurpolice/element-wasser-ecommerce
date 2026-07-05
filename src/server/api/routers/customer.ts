@@ -21,6 +21,7 @@ const listInputSchema = z.object({
 
 const createInputSchema = z.object({
   email: z.string().trim().email(),
+  phone: z.string().trim().optional(),
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
   salutation: z.nativeEnum(Salutation).optional()
@@ -31,6 +32,7 @@ const completeOnboardingInputSchema = createInputSchema
 const updateContactInputSchema = z.object({
   firstName: z.string().trim().min(1),
   lastName: z.string().trim().min(1),
+  phone: z.string().trim().optional(),
   salutation: z.nativeEnum(Salutation).optional()
 })
 
@@ -40,11 +42,9 @@ const addressInputSchema = z.object({
   lastName: z.string().trim().min(1),
   company: z.string().trim().optional(),
   streetLine1: z.string().trim().min(1),
-  streetLine2: z.string().trim().optional(),
   postalCode: z.string().trim().min(1),
   city: z.string().trim().min(1),
   countryCode: z.string().trim().min(2).max(2),
-  phone: z.string().trim().optional(),
   isMain: z.boolean().default(false)
 })
 
@@ -261,6 +261,7 @@ export const customerRouter = createTRPCRouter({
       select: {
         id: true,
         email: true,
+        phone: true,
         salutation: true,
         firstName: true,
         lastName: true,
@@ -273,11 +274,9 @@ export const customerRouter = createTRPCRouter({
             lastName: true,
             company: true,
             streetLine1: true,
-            streetLine2: true,
             postalCode: true,
             city: true,
-            countryCode: true,
-            phone: true
+            countryCode: true
           },
           orderBy: [{ isMain: 'desc' }, { updatedAt: 'desc' }]
         },
@@ -301,6 +300,7 @@ export const customerRouter = createTRPCRouter({
       customer: {
         id: customer.id,
         email: customer.email,
+        phone: customer.phone,
         salutation: customer.salutation,
         firstName: customer.firstName,
         lastName: customer.lastName,
@@ -358,6 +358,7 @@ export const customerRouter = createTRPCRouter({
         return await ctx.db.customer.create({
           data: {
             email: input.email,
+            phone: input.phone,
             firstName: input.firstName,
             lastName: input.lastName,
             salutation: input.salutation,
@@ -366,6 +367,7 @@ export const customerRouter = createTRPCRouter({
           select: {
             id: true,
             email: true,
+            phone: true,
             salutation: true,
             firstName: true,
             lastName: true,
@@ -406,11 +408,13 @@ export const customerRouter = createTRPCRouter({
             data: {
               firstName: input.firstName,
               lastName: input.lastName,
+              phone: input.phone,
               salutation: input.salutation
             },
             select: {
               id: true,
               email: true,
+              phone: true,
               salutation: true,
               firstName: true,
               lastName: true
@@ -452,11 +456,9 @@ export const customerRouter = createTRPCRouter({
             lastName: input.lastName,
             company: input.company,
             streetLine1: input.streetLine1,
-            streetLine2: input.streetLine2,
             postalCode: input.postalCode,
             city: input.city,
             countryCode: normalizeCountryCode(input.countryCode),
-            phone: input.phone,
             isMain: input.isMain,
             customerId: customer.id
           }
@@ -500,11 +502,9 @@ export const customerRouter = createTRPCRouter({
             lastName: input.lastName,
             company: input.company,
             streetLine1: input.streetLine1,
-            streetLine2: input.streetLine2,
             postalCode: input.postalCode,
             city: input.city,
             countryCode: normalizeCountryCode(input.countryCode),
-            phone: input.phone,
             isMain: input.isMain
           }
         })
@@ -633,6 +633,7 @@ export const customerRouter = createTRPCRouter({
         const customer = await ctx.db.customer.create({
           data: {
             email: input.email,
+            phone: input.phone,
             firstName: input.firstName,
             lastName: input.lastName,
             salutation: input.salutation

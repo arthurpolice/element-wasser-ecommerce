@@ -108,7 +108,9 @@ type OrderPlacementDeps = {
 }
 
 type ProductSnapshot = Prisma.ProductGetPayload<object>
-type AddressSnapshot = Prisma.AddressGetPayload<object>
+type AddressSnapshot = Prisma.AddressGetPayload<{
+  include: { customer: { select: { phone: true } } }
+}>
 
 type ShippingSnapshot = {
   salutation: AddressSnapshot['salutation'] | undefined
@@ -164,11 +166,11 @@ function snapshotAddressBookEntry(address: AddressSnapshot): ShippingSnapshot {
     lastName: address.lastName,
     company: address.company,
     streetLine1: address.streetLine1,
-    streetLine2: address.streetLine2,
+    streetLine2: undefined,
     postalCode: address.postalCode,
     city: address.city,
     countryCode: address.countryCode,
-    phone: address.phone
+    phone: address.customer.phone
   }
 }
 
@@ -197,7 +199,8 @@ async function resolveShippingSnapshot(
   }
 
   const address = await tx.address.findFirst({
-    where: { id: input.addressId, customerId }
+    where: { id: input.addressId, customerId },
+    include: { customer: { select: { phone: true } } }
   })
 
   if (!address) {

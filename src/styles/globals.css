@@ -67,6 +67,17 @@
   }
 }
 
+@keyframes store-menu-up {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+}
+
 @keyframes customer-drawer-up {
   from {
     opacity: 0;
@@ -75,6 +86,35 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes customer-drawer-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+}
+
+@keyframes store-mobile-drawer-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes store-mobile-drawer-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
@@ -226,6 +266,15 @@ input[type='number']::-webkit-outer-spin-button {
   animation-delay: 0.24s;
 }
 
+.storefront-mobile-menu-enter {
+  animation: store-menu-down 0.22s ease-out both;
+}
+
+.storefront-mobile-menu-exit {
+  animation: store-menu-up 0.15s ease-in both;
+  pointer-events: none;
+}
+
 .storefront-dropdown-enter {
   animation: store-dropdown-enter 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: top right;
@@ -235,6 +284,22 @@ input[type='number']::-webkit-outer-spin-button {
   animation: store-dropdown-exit 0.15s ease-in both;
   pointer-events: none;
   transform-origin: top right;
+}
+
+.storefront-mobile-drawer-backdrop-enter {
+  animation: store-mobile-drawer-backdrop-in 0.18s ease-out both;
+}
+
+.storefront-mobile-drawer-backdrop-exit {
+  animation: store-mobile-drawer-backdrop-out 0.15s ease-in both;
+}
+
+.storefront-mobile-drawer-enter {
+  animation: customer-drawer-up 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.storefront-mobile-drawer-exit {
+  animation: customer-drawer-down 0.15s ease-in both;
 }
 
 .storefront-grain {
@@ -313,9 +378,14 @@ input[type='number']::-webkit-outer-spin-button {
   .storefront-enter-delay-1,
   .storefront-enter-delay-2,
   .storefront-enter-delay-3,
-  .animate-\[store-menu-down_0\.22s_ease-out_both\],
+  .storefront-mobile-menu-enter,
+  .storefront-mobile-menu-exit,
   .storefront-dropdown-enter,
   .storefront-dropdown-exit,
+  .storefront-mobile-drawer-backdrop-enter,
+  .storefront-mobile-drawer-backdrop-exit,
+  .storefront-mobile-drawer-enter,
+  .storefront-mobile-drawer-exit,
   .dashboard-enter,
   .dashboard-enter-delay-1,
   .dashboard-enter-delay-2,

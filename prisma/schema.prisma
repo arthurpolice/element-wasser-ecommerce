@@ -157,6 +157,7 @@ model Customer {
   userId     String?     @unique
   user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
   email      String
+  phone      String?
   salutation Salutation?
   firstName  String
   lastName   String
@@ -179,11 +180,9 @@ model Address {
   lastName    String
   company     String?
   streetLine1 String
-  streetLine2 String?
   postalCode  String
   city        String
   countryCode String
-  phone       String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

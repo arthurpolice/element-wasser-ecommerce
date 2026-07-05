@@ -274,6 +274,7 @@ export const orderRouter = createTRPCRouter({
           email: true,
           firstName: true,
           lastName: true,
+          phone: true,
           salutation: true,
           addresses: {
             where: { isMain: true },
@@ -285,11 +286,9 @@ export const orderRouter = createTRPCRouter({
               lastName: true,
               company: true,
               streetLine1: true,
-              streetLine2: true,
               postalCode: true,
               city: true,
-              countryCode: true,
-              phone: true
+              countryCode: true
             },
             take: 1
           }

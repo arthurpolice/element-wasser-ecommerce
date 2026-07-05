@@ -125,6 +125,7 @@
       "description": "Erfassen Sie die Kontaktdaten für einen neuen Kunden.",
       "fields": {
         "email": "E-Mail",
+        "phone": "Telefon",
         "firstName": "Vorname",
         "lastName": "Nachname",
         "salutation": "Anrede",
@@ -156,6 +157,7 @@
       "description": "Ergänzen Sie die minimalen Kundendaten, die für den Kundenbereich erforderlich sind.",
       "fields": {
         "email": "E-Mail",
+        "phone": "Telefon",
         "firstName": "Vorname",
         "lastName": "Nachname",
         "salutation": "Anrede",
@@ -204,7 +206,7 @@
       "delete": "Löschen",
       "create": "Adressbucheintrag hinzufügen",
       "company": "Firma",
-      "streetLine1": "Adresszeile 1",
+      "streetLine1": "Strasse & Nummer",
       "streetLine2": "Adresszeile 2",
       "postalCode": "Postleitzahl",
       "city": "Ort",
@@ -420,6 +422,7 @@
       "searchViewAll": "Alle Ergebnisse anzeigen",
       "searchUnavailable": "Ausverkauft",
       "userMenu": "Kundenmenü",
+      "closePanel": "Panel schliessen",
       "signIn": "Anmelden",
       "cart": "Warenkorb",
       "hello": "Hallo {name}",
@@ -451,8 +454,7 @@
       "empty": "Produkte erscheinen hier, sobald Kategorien und aktive Produkte konfiguriert sind."
     },
     "categoryPage": {
-      "eyebrow": "Kategorie",
-      "description": "Durchsuchen Sie aktive Produkte in dieser Kategorie und ihren Unterkategorien."
+      "eyebrow": "Kategorie"
     },
     "categoryGrid": {
       "summary": "{count, plural, =0 {Keine Produkte} one {# Produkt} other {# Produkte}}",
@@ -553,7 +555,7 @@
         "firstName": "Vorname",
         "lastName": "Nachname",
         "company": "Firma",
-        "streetLine1": "Strasse Zeile 1",
+        "streetLine1": "Strasse & Nummer",
         "streetLine2": "Strasse Zeile 2",
         "postalCode": "PLZ",
         "city": "Ort",
@@ -728,7 +730,7 @@
         "shippingFirstName": "Vorname",
         "shippingLastName": "Nachname",
         "shippingCompany": "Firma",
-        "shippingStreetLine1": "Strasse Zeile 1",
+        "shippingStreetLine1": "Strasse & Nummer",
         "shippingStreetLine2": "Strasse Zeile 2",
         "shippingPostalCode": "PLZ",
         "shippingCity": "Ort",
