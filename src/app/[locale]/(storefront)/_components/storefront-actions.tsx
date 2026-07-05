@@ -3,16 +3,15 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import {
   FaRegTrashAlt,
   FaRegUserCircle,
   FaShoppingBag,
-  FaTimes,
   FaSignOutAlt
 } from 'react-icons/fa'
 
+import { StorefrontDrawerDialog } from '~/app/[locale]/(storefront)/_components/storefront-drawer-dialog'
 import {
   useStorefrontCart,
   type StorefrontAddedCartItem,
@@ -318,85 +317,22 @@ function StorefrontMobileActionDrawer({
   onClose: () => void
   title: string
 }) {
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
-  const [mobileViewport, setMobileViewport] = useState(false)
-
-  useEffect(() => {
-    setPortalTarget(document.body)
-
-    const mediaQuery = window.matchMedia('(max-width: 1023px)')
-    const updateMobileViewport = () => setMobileViewport(mediaQuery.matches)
-
-    updateMobileViewport()
-    mediaQuery.addEventListener('change', updateMobileViewport)
-
-    return () => {
-      mediaQuery.removeEventListener('change', updateMobileViewport)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!portalTarget || !mobileViewport) {
-      return
-    }
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [mobileViewport, portalTarget])
-
-  if (!portalTarget || !mobileViewport) {
-    return null
-  }
-
-  return createPortal(
-    <div
-      aria-modal="true"
-      className={`fixed inset-0 z-40 flex items-end bg-black/35 backdrop-blur-sm lg:hidden ${
-        isClosing
-          ? 'storefront-mobile-drawer-backdrop-exit pointer-events-none'
-          : 'storefront-mobile-drawer-backdrop-enter'
-      }`}
-      data-storefront-actions-root
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose()
-        }
-      }}
-      role="dialog"
+  return (
+    <StorefrontDrawerDialog
+      closeButtonClassName={iconButtonClass}
+      closeIconClassName="size-5"
+      closeLabel={closeLabel}
+      eyebrow="Element Wasser"
+      isClosing={isClosing}
+      mobileOnly
+      onClose={onClose}
+      open
+      rootDataStorefrontActions
+      title={title}
+      zIndexClassName="z-40"
     >
-      <div
-        className={`bg-store-bg border-store-border h-[86dvh] w-full overflow-y-auto rounded-t-lg border p-5 shadow-2xl ${
-          isClosing
-            ? 'storefront-mobile-drawer-exit'
-            : 'storefront-mobile-drawer-enter'
-        }`}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="font-display text-store-accent text-xs font-semibold tracking-[0.24em] uppercase">
-              Element Wasser
-            </p>
-            <h2 className="font-display text-store-ink mt-1 text-lg font-semibold">
-              {title}
-            </h2>
-          </div>
-          <button
-            aria-label={closeLabel}
-            className={iconButtonClass}
-            onClick={onClose}
-            type="button"
-          >
-            <FaTimes aria-hidden="true" className="size-5" />
-          </button>
-        </div>
-        <div className="mt-5">{children}</div>
-      </div>
-    </div>,
-    portalTarget
+      {children}
+    </StorefrontDrawerDialog>
   )
 }
 

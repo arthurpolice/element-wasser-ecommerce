@@ -26,6 +26,7 @@ type StorefrontShellProps = {
 }
 
 const dropdownCloseDurationMs = 150
+const addedCartToastDurationMs = 3000
 const menuCloseDurationMs = 150
 
 export function StorefrontShell({
@@ -88,6 +89,21 @@ export function StorefrontShell({
       window.clearTimeout(timeout)
     }
   }, [closingDropdown])
+
+  useEffect(() => {
+    if (openDropdown !== 'added') {
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      setClosingDropdown('added')
+      setOpenDropdown(null)
+    }, addedCartToastDurationMs)
+
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [openDropdown])
 
   useEffect(() => {
     if (!menuClosing) {

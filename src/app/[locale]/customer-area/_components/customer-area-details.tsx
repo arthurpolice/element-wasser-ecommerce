@@ -3,11 +3,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import Image from 'next/image'
 import { useFormatter, useTranslations } from 'next-intl'
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import { useForm, type UseFormReturn } from 'react-hook-form'
 import { useSearchParams } from 'next/navigation'
-import { FaPencilAlt, FaRegTrashAlt, FaTimes } from 'react-icons/fa'
+import { FaPencilAlt, FaRegTrashAlt } from 'react-icons/fa'
 
 import {
   inputClass,
@@ -28,6 +27,7 @@ import {
 } from '~/lib/form-schemas'
 import { api } from '~/trpc/react'
 import { getSwissPostTrackingUrl } from '~/lib/order-tracking'
+import { StorefrontDrawerDialog } from '~/app/[locale]/(storefront)/_components/storefront-drawer-dialog'
 
 type AddressFormValues = CreateCustomerFormValues & {
   company: string
@@ -42,9 +42,6 @@ type CustomerOrderListLine = CustomerOrder['lines'][number]
 
 const addressIconButtonClass =
   'border-store-border text-store-muted hover:border-store-accent/40 hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex size-9 items-center justify-center rounded-full border transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-60'
-
-const overlayIconButtonClass =
-  'text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex size-9 items-center justify-center rounded-full transition hover:bg-white/70 focus-visible:ring-2 focus-visible:outline-none'
 
 function formatDayMonthYear(date: Date) {
   const day = String(date.getDate()).padStart(2, '0')
@@ -116,71 +113,17 @@ function CustomerAreaResponsiveEditor({
   open: boolean
   title: string
 }) {
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null)
-
-  useEffect(() => {
-    if (typeof document === 'undefined') {
-      return
-    }
-
-    setPortalTarget(document.body)
-  }, [])
-
-  useEffect(() => {
-    if (!open || typeof document === 'undefined') {
-      return
-    }
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [onClose, open])
-
-  if (!open || !portalTarget) {
-    return null
-  }
-
-  return createPortal(
-    <div
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-end bg-black/35 p-0 backdrop-blur-sm lg:items-center lg:justify-center lg:p-6"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose()
-        }
-      }}
-      role="dialog"
+  return (
+    <StorefrontDrawerDialog
+      closeLabel={closeLabel}
+      onClose={onClose}
+      open={open}
+      title={title}
+      titleTag="h3"
+      variant="responsive-modal"
     >
-      <div className="bg-store-bg border-store-border h-[86dvh] w-full animate-[customer-drawer-up_0.34s_cubic-bezier(0.22,1,0.36,1)_both] overflow-y-auto rounded-t-lg border p-5 shadow-2xl lg:h-auto lg:max-h-[92dvh] lg:max-w-xl lg:animate-[dash-fade-up_0.22s_ease-out_both] lg:rounded-lg lg:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <h3 className="font-display text-store-ink text-lg font-semibold">
-            {title}
-          </h3>
-          <button
-            aria-label={closeLabel}
-            className={overlayIconButtonClass}
-            onClick={onClose}
-            type="button"
-          >
-            <FaTimes aria-hidden="true" className="size-3.5" />
-          </button>
-        </div>
-        <div className="mt-5">{children}</div>
-      </div>
-    </div>,
-    portalTarget
+      {children}
+    </StorefrontDrawerDialog>
   )
 }
 
