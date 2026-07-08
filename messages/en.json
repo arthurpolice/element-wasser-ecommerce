@@ -253,6 +253,7 @@
         "active": "Status",
         "price": "Price",
         "cost": "Cost",
+        "shippingWeight": "Shipping weight",
         "discount": "Discount",
         "stockOnHand": "Stock on hand",
         "stockReserved": "Stock reserved",
@@ -261,6 +262,8 @@
         "actions": "Actions"
       },
       "discountValue": "{percent}%",
+      "weightGrams": "{grams} g",
+      "noWeight": "Ignored",
       "noDiscount": "—",
       "dispatchRange": "{min}–{max} days"
     },
@@ -280,6 +283,7 @@
         "descriptionPlaceholder": "Use headings, lists, links, bold, and italic text.",
         "price": "Price (CHF)",
         "cost": "Cost (CHF)",
+        "shippingWeightGrams": "Shipping weight (g, optional)",
         "stockOnHand": "Stock on hand",
         "dispatchMinDays": "Dispatch min (days)",
         "dispatchMaxDays": "Dispatch max (days)",
@@ -294,6 +298,7 @@
         "manufacturerRequired": "Manufacturer is required.",
         "priceRequired": "Enter a valid price.",
         "costRequired": "Enter a valid cost.",
+        "shippingWeightRequired": "Enter a positive shipping weight in grams, or leave it blank.",
         "stockRequired": "Enter a valid stock quantity.",
         "dispatchMinRequired": "Enter a valid minimum dispatch estimate.",
         "dispatchMaxRequired": "Enter a valid maximum dispatch estimate.",
@@ -333,6 +338,7 @@
         "descriptionPlaceholder": "Use headings, lists, links, bold, and italic text.",
         "price": "Price (CHF)",
         "cost": "Cost (CHF)",
+        "shippingWeightGrams": "Shipping weight (g, optional)",
         "stockOnHand": "Stock on hand",
         "dispatchMinDays": "Dispatch min (days)",
         "dispatchMaxDays": "Dispatch max (days)",
@@ -344,6 +350,7 @@
         "manufacturerRequired": "Manufacturer is required.",
         "priceRequired": "Enter a valid price.",
         "costRequired": "Enter a valid cost.",
+        "shippingWeightRequired": "Enter a positive shipping weight in grams, or leave it blank.",
         "stockRequired": "Enter a valid stock quantity.",
         "dispatchMinRequired": "Enter a valid minimum dispatch estimate.",
         "dispatchMaxRequired": "Enter a valid maximum dispatch estimate.",
@@ -583,7 +590,8 @@
       "problems": {
         "MISSING_PRODUCT": "This product is no longer in the catalog.",
         "INACTIVE_PRODUCT": "This product is not currently orderable.",
-        "INSUFFICIENT_STOCK": "The requested quantity is not available. {availableStock, plural, one {# unit is in stock.} other {# units are in stock.}}"
+        "INSUFFICIENT_STOCK": "The requested quantity is not available. {availableStock, plural, one {# unit is in stock.} other {# units are in stock.}}",
+        "OVER_WEIGHT_LIMIT": "This order is over 30 kg and cannot be shipped as one order."
       },
       "subtotal": "Subtotal",
       "discount": "Discount",
@@ -724,7 +732,7 @@
         "product": "Product",
         "productPlaceholder": "Select a product",
         "quantity": "Quantity",
-        "shippingCents": "Shipping (cents)",
+        "shippingWeight": "Shipping weight",
         "shippingSalutation": "Salutation",
         "salutationNone": "No salutation",
         "shippingFirstName": "First name",
@@ -743,13 +751,14 @@
       },
       "hints": {
         "availableStock": "{count, plural, one {# unit available} other {# units available}}",
-        "shippingCents": "Flat shipping charge stored on the order in CHF cents."
+        "shippingWeight": "{grams} g total shipping weight"
       },
       "preview": {
         "title": "Totals preview",
         "subtotal": "Subtotal",
         "discount": "Product discount",
         "shipping": "Shipping",
+        "overWeightLimit": "Over 30 kg",
         "total": "Total"
       },
       "cancel": "Cancel",
@@ -761,7 +770,7 @@
         "quantityRequired": "Enter a valid quantity.",
         "insufficientStock": "Only {available} units are available.",
         "insufficientStockServer": "Not enough stock is available for this product.",
-        "shippingCentsRequired": "Enter a valid shipping amount in cents.",
+        "overWeightLimit": "This order is over 30 kg and cannot be shipped as one order.",
         "shippingFirstNameRequired": "Shipping first name is required.",
         "shippingLastNameRequired": "Shipping last name is required.",
         "shippingStreetRequired": "Shipping street is required.",

@@ -31,6 +31,7 @@ export type OrderLineAvgAggregateOutputType = {
   listPriceCents: number | null
   discountPercent: number | null
   unitPriceCents: number | null
+  unitShippingWeightGrams: number | null
   unitCostCents: number | null
   lineTotalCents: number | null
 }
@@ -40,6 +41,7 @@ export type OrderLineSumAggregateOutputType = {
   listPriceCents: number | null
   discountPercent: number | null
   unitPriceCents: number | null
+  unitShippingWeightGrams: number | null
   unitCostCents: number | null
   lineTotalCents: number | null
 }
@@ -54,6 +56,7 @@ export type OrderLineMinAggregateOutputType = {
   listPriceCents: number | null
   discountPercent: number | null
   unitPriceCents: number | null
+  unitShippingWeightGrams: number | null
   unitCostCents: number | null
   lineTotalCents: number | null
   createdAt: Date | null
@@ -70,6 +73,7 @@ export type OrderLineMaxAggregateOutputType = {
   listPriceCents: number | null
   discountPercent: number | null
   unitPriceCents: number | null
+  unitShippingWeightGrams: number | null
   unitCostCents: number | null
   lineTotalCents: number | null
   createdAt: Date | null
@@ -86,6 +90,7 @@ export type OrderLineCountAggregateOutputType = {
   listPriceCents: number
   discountPercent: number
   unitPriceCents: number
+  unitShippingWeightGrams: number
   unitCostCents: number
   lineTotalCents: number
   createdAt: number
@@ -99,6 +104,7 @@ export type OrderLineAvgAggregateInputType = {
   listPriceCents?: true
   discountPercent?: true
   unitPriceCents?: true
+  unitShippingWeightGrams?: true
   unitCostCents?: true
   lineTotalCents?: true
 }
@@ -108,6 +114,7 @@ export type OrderLineSumAggregateInputType = {
   listPriceCents?: true
   discountPercent?: true
   unitPriceCents?: true
+  unitShippingWeightGrams?: true
   unitCostCents?: true
   lineTotalCents?: true
 }
@@ -122,6 +129,7 @@ export type OrderLineMinAggregateInputType = {
   listPriceCents?: true
   discountPercent?: true
   unitPriceCents?: true
+  unitShippingWeightGrams?: true
   unitCostCents?: true
   lineTotalCents?: true
   createdAt?: true
@@ -138,6 +146,7 @@ export type OrderLineMaxAggregateInputType = {
   listPriceCents?: true
   discountPercent?: true
   unitPriceCents?: true
+  unitShippingWeightGrams?: true
   unitCostCents?: true
   lineTotalCents?: true
   createdAt?: true
@@ -154,6 +163,7 @@ export type OrderLineCountAggregateInputType = {
   listPriceCents?: true
   discountPercent?: true
   unitPriceCents?: true
+  unitShippingWeightGrams?: true
   unitCostCents?: true
   lineTotalCents?: true
   createdAt?: true
@@ -257,6 +267,7 @@ export type OrderLineGroupByOutputType = {
   listPriceCents: number
   discountPercent: number | null
   unitPriceCents: number
+  unitShippingWeightGrams: number
   unitCostCents: number
   lineTotalCents: number
   createdAt: Date
@@ -296,6 +307,7 @@ export type OrderLineWhereInput = {
   listPriceCents?: Prisma.IntFilter<"OrderLine"> | number
   discountPercent?: Prisma.IntNullableFilter<"OrderLine"> | number | null
   unitPriceCents?: Prisma.IntFilter<"OrderLine"> | number
+  unitShippingWeightGrams?: Prisma.IntFilter<"OrderLine"> | number
   unitCostCents?: Prisma.IntFilter<"OrderLine"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderLine"> | number
   createdAt?: Prisma.DateTimeFilter<"OrderLine"> | Date | string
@@ -316,6 +328,7 @@ export type OrderLineOrderByWithRelationInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrderInput | Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -339,6 +352,7 @@ export type OrderLineWhereUniqueInput = Prisma.AtLeast<{
   listPriceCents?: Prisma.IntFilter<"OrderLine"> | number
   discountPercent?: Prisma.IntNullableFilter<"OrderLine"> | number | null
   unitPriceCents?: Prisma.IntFilter<"OrderLine"> | number
+  unitShippingWeightGrams?: Prisma.IntFilter<"OrderLine"> | number
   unitCostCents?: Prisma.IntFilter<"OrderLine"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderLine"> | number
   createdAt?: Prisma.DateTimeFilter<"OrderLine"> | Date | string
@@ -359,6 +373,7 @@ export type OrderLineOrderByWithAggregationInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrderInput | Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -383,6 +398,7 @@ export type OrderLineScalarWhereWithAggregatesInput = {
   listPriceCents?: Prisma.IntWithAggregatesFilter<"OrderLine"> | number
   discountPercent?: Prisma.IntNullableWithAggregatesFilter<"OrderLine"> | number | null
   unitPriceCents?: Prisma.IntWithAggregatesFilter<"OrderLine"> | number
+  unitShippingWeightGrams?: Prisma.IntWithAggregatesFilter<"OrderLine"> | number
   unitCostCents?: Prisma.IntWithAggregatesFilter<"OrderLine"> | number
   lineTotalCents?: Prisma.IntWithAggregatesFilter<"OrderLine"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"OrderLine"> | Date | string
@@ -397,6 +413,7 @@ export type OrderLineCreateInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -417,6 +434,7 @@ export type OrderLineUncheckedCreateInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -433,6 +451,7 @@ export type OrderLineUpdateInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -453,6 +472,7 @@ export type OrderLineUncheckedUpdateInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -471,6 +491,7 @@ export type OrderLineCreateManyInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -485,6 +506,7 @@ export type OrderLineUpdateManyMutationInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -501,6 +523,7 @@ export type OrderLineUncheckedUpdateManyInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -527,6 +550,7 @@ export type OrderLineCountOrderByAggregateInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -538,6 +562,7 @@ export type OrderLineAvgOrderByAggregateInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
 }
@@ -552,6 +577,7 @@ export type OrderLineMaxOrderByAggregateInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -568,6 +594,7 @@ export type OrderLineMinOrderByAggregateInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -579,6 +606,7 @@ export type OrderLineSumOrderByAggregateInput = {
   listPriceCents?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   unitPriceCents?: Prisma.SortOrder
+  unitShippingWeightGrams?: Prisma.SortOrder
   unitCostCents?: Prisma.SortOrder
   lineTotalCents?: Prisma.SortOrder
 }
@@ -708,6 +736,7 @@ export type OrderLineCreateWithoutProductInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -726,6 +755,7 @@ export type OrderLineUncheckedCreateWithoutProductInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -773,6 +803,7 @@ export type OrderLineScalarWhereInput = {
   listPriceCents?: Prisma.IntFilter<"OrderLine"> | number
   discountPercent?: Prisma.IntNullableFilter<"OrderLine"> | number | null
   unitPriceCents?: Prisma.IntFilter<"OrderLine"> | number
+  unitShippingWeightGrams?: Prisma.IntFilter<"OrderLine"> | number
   unitCostCents?: Prisma.IntFilter<"OrderLine"> | number
   lineTotalCents?: Prisma.IntFilter<"OrderLine"> | number
   createdAt?: Prisma.DateTimeFilter<"OrderLine"> | Date | string
@@ -787,6 +818,7 @@ export type OrderLineCreateWithoutOrderInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -805,6 +837,7 @@ export type OrderLineUncheckedCreateWithoutOrderInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -847,6 +880,7 @@ export type OrderLineCreateWithoutReviewInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -866,6 +900,7 @@ export type OrderLineUncheckedCreateWithoutReviewInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -897,6 +932,7 @@ export type OrderLineUpdateWithoutReviewInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -916,6 +952,7 @@ export type OrderLineUncheckedUpdateWithoutReviewInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -931,6 +968,7 @@ export type OrderLineCreateWithoutReviewInviteInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -950,6 +988,7 @@ export type OrderLineUncheckedCreateWithoutReviewInviteInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -981,6 +1020,7 @@ export type OrderLineUpdateWithoutReviewInviteInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1000,6 +1040,7 @@ export type OrderLineUncheckedUpdateWithoutReviewInviteInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1016,6 +1057,7 @@ export type OrderLineCreateManyProductInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -1030,6 +1072,7 @@ export type OrderLineUpdateWithoutProductInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1048,6 +1091,7 @@ export type OrderLineUncheckedUpdateWithoutProductInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1065,6 +1109,7 @@ export type OrderLineUncheckedUpdateManyWithoutProductInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1080,6 +1125,7 @@ export type OrderLineCreateManyOrderInput = {
   listPriceCents: number
   discountPercent?: number | null
   unitPriceCents: number
+  unitShippingWeightGrams?: number
   unitCostCents: number
   lineTotalCents: number
   createdAt?: Date | string
@@ -1094,6 +1140,7 @@ export type OrderLineUpdateWithoutOrderInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1112,6 +1159,7 @@ export type OrderLineUncheckedUpdateWithoutOrderInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1129,6 +1177,7 @@ export type OrderLineUncheckedUpdateManyWithoutOrderInput = {
   listPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   unitPriceCents?: Prisma.IntFieldUpdateOperationsInput | number
+  unitShippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   unitCostCents?: Prisma.IntFieldUpdateOperationsInput | number
   lineTotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1147,6 +1196,7 @@ export type OrderLineSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   listPriceCents?: boolean
   discountPercent?: boolean
   unitPriceCents?: boolean
+  unitShippingWeightGrams?: boolean
   unitCostCents?: boolean
   lineTotalCents?: boolean
   createdAt?: boolean
@@ -1167,6 +1217,7 @@ export type OrderLineSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   listPriceCents?: boolean
   discountPercent?: boolean
   unitPriceCents?: boolean
+  unitShippingWeightGrams?: boolean
   unitCostCents?: boolean
   lineTotalCents?: boolean
   createdAt?: boolean
@@ -1185,6 +1236,7 @@ export type OrderLineSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   listPriceCents?: boolean
   discountPercent?: boolean
   unitPriceCents?: boolean
+  unitShippingWeightGrams?: boolean
   unitCostCents?: boolean
   lineTotalCents?: boolean
   createdAt?: boolean
@@ -1203,13 +1255,14 @@ export type OrderLineSelectScalar = {
   listPriceCents?: boolean
   discountPercent?: boolean
   unitPriceCents?: boolean
+  unitShippingWeightGrams?: boolean
   unitCostCents?: boolean
   lineTotalCents?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderLineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "productId" | "productName" | "productSku" | "quantity" | "listPriceCents" | "discountPercent" | "unitPriceCents" | "unitCostCents" | "lineTotalCents" | "createdAt" | "updatedAt", ExtArgs["result"]["orderLine"]>
+export type OrderLineOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "productId" | "productName" | "productSku" | "quantity" | "listPriceCents" | "discountPercent" | "unitPriceCents" | "unitShippingWeightGrams" | "unitCostCents" | "lineTotalCents" | "createdAt" | "updatedAt", ExtArgs["result"]["orderLine"]>
 export type OrderLineInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -1243,6 +1296,7 @@ export type $OrderLinePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     listPriceCents: number
     discountPercent: number | null
     unitPriceCents: number
+    unitShippingWeightGrams: number
     unitCostCents: number
     lineTotalCents: number
     createdAt: Date
@@ -1683,6 +1737,7 @@ export interface OrderLineFieldRefs {
   readonly listPriceCents: Prisma.FieldRef<"OrderLine", 'Int'>
   readonly discountPercent: Prisma.FieldRef<"OrderLine", 'Int'>
   readonly unitPriceCents: Prisma.FieldRef<"OrderLine", 'Int'>
+  readonly unitShippingWeightGrams: Prisma.FieldRef<"OrderLine", 'Int'>
   readonly unitCostCents: Prisma.FieldRef<"OrderLine", 'Int'>
   readonly lineTotalCents: Prisma.FieldRef<"OrderLine", 'Int'>
   readonly createdAt: Prisma.FieldRef<"OrderLine", 'DateTime'>

@@ -38,6 +38,7 @@ const filter = {
   active: true,
   priceCents: 12000,
   discountPercent: 10,
+  shippingWeightGrams: 1000,
   stockOnHand: 8,
   stockReserved: 1,
   images: [{ url: 'https://cdn.example.com/filter.jpg', altText: 'Filter' }]
@@ -50,6 +51,7 @@ const refill = {
   active: true,
   priceCents: 2500,
   discountPercent: null,
+  shippingWeightGrams: 500,
   stockOnHand: 10,
   stockReserved: 0,
   images: []
@@ -381,7 +383,7 @@ describe('checkout router', () => {
     db = createMockDb()
   })
 
-  it('previews a multi-line cart with server-authoritative totals and flat shipping', async () => {
+  it('previews a multi-line cart with server-authoritative totals and weight-based shipping', async () => {
     const caller = createPublicCaller(db)
 
     const result = await caller.preview({
@@ -402,8 +404,9 @@ describe('checkout router', () => {
       currencyCode: 'CHF',
       subtotalCents: 31500,
       discountCents: 2400,
-      shippingCents: 900,
-      totalCents: 30000,
+      shippingWeightGrams: 3500,
+      shippingCents: 1200,
+      totalCents: 30300,
       canPlaceOrder: true,
       items: [
         expect.objectContaining({
@@ -448,6 +451,25 @@ describe('checkout router', () => {
       })
     ])
     expect(result.totalCents).toBe(11700)
+  })
+
+  it('marks otherwise orderable carts over the carrier weight limit as not placeable', async () => {
+    db.product.findMany = vi.fn(async () => [
+      {
+        ...filter,
+        shippingWeightGrams: 15050
+      }
+    ])
+    const caller = createPublicCaller(db)
+
+    const result = await caller.preview({
+      lines: [{ productId: filter.id, quantity: 2 }]
+    })
+
+    expect(result.canPlaceOrder).toBe(false)
+    expect(result.problemCode).toBe('OVER_WEIGHT_LIMIT')
+    expect(result.shippingWeightGrams).toBe(30100)
+    expect(result.shippingCents).toBe(0)
   })
 
   it('normalizes duplicate product IDs while preserving first-seen cart order', async () => {
@@ -697,6 +719,7 @@ describe('checkout router', () => {
         priceCents: filter.priceCents,
         costCents: 6000,
         discountPercent: filter.discountPercent,
+        shippingWeightGrams: filter.shippingWeightGrams,
         stockOnHand: filter.stockOnHand,
         stockReserved: filter.stockReserved,
         images: filter.images
@@ -1079,6 +1102,7 @@ describe('checkout router', () => {
         priceCents: filter.priceCents,
         costCents: 6000,
         discountPercent: filter.discountPercent,
+        shippingWeightGrams: filter.shippingWeightGrams,
         stockOnHand: filter.stockOnHand,
         stockReserved: filter.stockReserved,
         images: filter.images
@@ -1092,6 +1116,7 @@ describe('checkout router', () => {
         priceCents: refill.priceCents,
         costCents: 900,
         discountPercent: refill.discountPercent,
+        shippingWeightGrams: refill.shippingWeightGrams,
         stockOnHand: refill.stockOnHand,
         stockReserved: refill.stockReserved,
         images: refill.images

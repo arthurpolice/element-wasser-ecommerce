@@ -31,12 +31,12 @@ import {
 } from '~/lib/order-quote'
 import { reconcileStripePayment } from '~/server/commerce/payment-outcome'
 
-export const checkoutShippingCents = 900
 const checkoutCurrencyCode = 'CHF'
 type CheckoutPreviewProblemCode =
   | 'MISSING_PRODUCT'
   | 'INACTIVE_PRODUCT'
   | 'INSUFFICIENT_STOCK'
+type CheckoutPreviewOrderProblemCode = 'OVER_WEIGHT_LIMIT'
 
 const previewInputSchema = z.object({
   lines: z
@@ -156,6 +156,7 @@ function toCheckoutPlacementTrpcError(error: OrderPlacementError): TRPCError {
     case 'EMPTY_CART':
     case 'PRODUCT_INACTIVE':
     case 'INSUFFICIENT_STOCK':
+    case 'OVER_WEIGHT_LIMIT':
       return new TRPCError({
         code: 'BAD_REQUEST',
         message: error.message
@@ -200,7 +201,6 @@ function toPlaceOrderInput(
     customerId,
     lines: input.lines,
     paymentMethod: input.paymentMethod,
-    shippingCents: checkoutShippingCents,
     addressId: input.addressId,
     shippingSalutation: input.salutation,
     shippingFirstName: input.firstName,
@@ -220,7 +220,6 @@ function toGuestOrderInput(
   return {
     lines: input.lines,
     paymentMethod: input.paymentMethod,
-    shippingCents: checkoutShippingCents,
     shippingSalutation: input.salutation,
     shippingFirstName: input.firstName,
     shippingLastName: input.lastName,
@@ -236,8 +235,12 @@ function toGuestOrderInput(
 const checkoutPreviewProblemCodes = {
   MISSING_PRODUCT: 'MISSING_PRODUCT',
   INACTIVE_PRODUCT: 'INACTIVE_PRODUCT',
-  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK'
-} satisfies Record<OrderQuoteProblemCode, CheckoutPreviewProblemCode>
+  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
+  OVER_WEIGHT_LIMIT: 'OVER_WEIGHT_LIMIT'
+} satisfies Record<
+  OrderQuoteProblemCode,
+  CheckoutPreviewProblemCode | CheckoutPreviewOrderProblemCode
+>
 
 export const checkoutRouter = createTRPCRouter({
   bootstrap: publicProcedure.query(async ({ ctx }) => {
@@ -566,6 +569,8 @@ export const checkoutRouter = createTRPCRouter({
           subtotalCents: 0,
           discountCents: 0,
           shippingCents: 0,
+          shippingWeightGrams: 0,
+          problemCode: null,
           totalCents: 0,
           currencyCode: checkoutCurrencyCode,
           canPlaceOrder: false
@@ -579,11 +584,10 @@ export const checkoutRouter = createTRPCRouter({
         include: checkoutProductInclude
       })
 
-      const quote = quoteOrderLines(
-        products,
-        normalizedLines,
-        checkoutShippingCents
-      )
+      const quote = quoteOrderLines(products, normalizedLines)
+      const orderProblemCode =
+        quote.problems.find((problem) => problem.code === 'OVER_WEIGHT_LIMIT')
+          ?.code ?? null
       const items = quote.lines.map((line) => {
         const product = line.product
         const problemCode = line.problemCode
@@ -636,6 +640,10 @@ export const checkoutRouter = createTRPCRouter({
         subtotalCents: quote.subtotalCents,
         discountCents: quote.discountCents,
         shippingCents: quote.shippingCents,
+        shippingWeightGrams: quote.shippingWeightGrams,
+        problemCode: orderProblemCode
+          ? checkoutPreviewProblemCodes[orderProblemCode]
+          : null,
         totalCents: quote.totalCents,
         currencyCode: checkoutCurrencyCode,
         canPlaceOrder: quote.canPlaceOrder

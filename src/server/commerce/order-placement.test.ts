@@ -19,6 +19,7 @@ type MockProduct = {
   priceCents: number
   costCents: number
   discountPercent: number | null
+  shippingWeightGrams: number
   stockOnHand: number
   stockReserved: number
 }
@@ -75,6 +76,7 @@ function createMockDb(): MockDb {
             priceCents: 2000,
             costCents: 900,
             discountPercent: null as number | null,
+            shippingWeightGrams: 1000,
             stockOnHand: 10,
             stockReserved: 0
           }
@@ -119,7 +121,6 @@ const baseInput = {
   customerId: 'customer-1',
   productId: 'product-1',
   quantity: 1,
-  shippingCents: 900,
   shippingFirstName: 'Manual',
   shippingLastName: 'Address',
   shippingStreetLine1: 'Manualstrasse 1',
@@ -186,6 +187,7 @@ describe('placeOrder', () => {
         priceCents: 2000,
         costCents: 900,
         discountPercent: 25,
+        shippingWeightGrams: 1000,
         stockOnHand: 10,
         stockReserved: 0
       }
@@ -205,6 +207,8 @@ describe('placeOrder', () => {
       subtotalCents: 4000,
       discountCents: 1000,
       totalCents: 3900,
+      shippingCents: 900,
+      shippingWeightGrams: 2000,
       lines: {
         create: [
           {
@@ -214,6 +218,7 @@ describe('placeOrder', () => {
             listPriceCents: 2000,
             discountPercent: 25,
             unitPriceCents: 1500,
+            unitShippingWeightGrams: 1000,
             unitCostCents: 900,
             lineTotalCents: 3000
           }
@@ -247,6 +252,7 @@ describe('placeOrder', () => {
         priceCents: 2000,
         costCents: 900,
         discountPercent: null,
+        shippingWeightGrams: 1000,
         stockOnHand: 1,
         stockReserved: 1
       }
@@ -281,6 +287,7 @@ describe('placeOrder', () => {
         priceCents: 2000,
         costCents: 900,
         discountPercent: 25,
+        shippingWeightGrams: 1000,
         stockOnHand: 10,
         stockReserved: 0
       },
@@ -292,6 +299,7 @@ describe('placeOrder', () => {
         priceCents: 500,
         costCents: 200,
         discountPercent: null,
+        shippingWeightGrams: 2500,
         stockOnHand: 6,
         stockReserved: 1
       }
@@ -316,7 +324,9 @@ describe('placeOrder', () => {
     expect(orderCreateArgs.data).toMatchObject({
       subtotalCents: 5500,
       discountCents: 1000,
-      totalCents: 5400,
+      shippingCents: 1200,
+      shippingWeightGrams: 9500,
+      totalCents: 5700,
       lines: {
         create: [
           expect.objectContaining({
@@ -338,7 +348,7 @@ describe('placeOrder', () => {
           type: 'CHARGE',
           provider: 'STRIPE',
           paymentMethod: 'CARD',
-          amountCents: 5400,
+          amountCents: 5700,
           currencyCode: 'CHF'
         }
       }
@@ -365,6 +375,7 @@ describe('placeOrder', () => {
         priceCents: 2000,
         costCents: 900,
         discountPercent: null,
+        shippingWeightGrams: 1000,
         stockOnHand: 10,
         stockReserved: 0
       },
@@ -376,6 +387,7 @@ describe('placeOrder', () => {
         priceCents: 500,
         costCents: 200,
         discountPercent: null,
+        shippingWeightGrams: 1000,
         stockOnHand: 6,
         stockReserved: 1
       }

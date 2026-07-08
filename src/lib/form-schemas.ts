@@ -39,6 +39,7 @@ export const createProductFormSchema = (messages: {
   manufacturerRequired: string
   priceRequired: string
   costRequired: string
+  shippingWeightRequired: string
   stockRequired: string
   dispatchMinRequired: string
   dispatchMaxRequired: string
@@ -61,6 +62,14 @@ export const createProductFormSchema = (messages: {
           (value) => parseMoneyToCents(value) != null,
           messages.costRequired
         ),
+      shippingWeightGrams: z.string().refine((value) => {
+        if (value.trim() === '') {
+          return true
+        }
+
+        const parsed = parseNonNegativeInt(value)
+        return parsed != null && parsed > 0
+      }, messages.shippingWeightRequired),
       stockOnHand: z
         .string()
         .refine(
@@ -106,6 +115,10 @@ export type CreateProductFormValues = z.infer<
 export function mapCreateProductFormToInput(values: CreateProductFormValues) {
   const priceCents = parseMoneyToCents(values.price)
   const costCents = parseMoneyToCents(values.cost)
+  const shippingWeightGrams =
+    values.shippingWeightGrams.trim() === ''
+      ? null
+      : parseNonNegativeInt(values.shippingWeightGrams)
   const stockOnHand = parseNonNegativeInt(values.stockOnHand)
   const dispatchMinDays = parseNonNegativeInt(values.dispatchMinDays)
   const dispatchMaxDays = parseNonNegativeInt(values.dispatchMaxDays)
@@ -113,6 +126,7 @@ export function mapCreateProductFormToInput(values: CreateProductFormValues) {
   if (
     priceCents == null ||
     costCents == null ||
+    (shippingWeightGrams != null && shippingWeightGrams < 1) ||
     stockOnHand == null ||
     dispatchMinDays == null ||
     dispatchMaxDays == null
@@ -126,6 +140,7 @@ export function mapCreateProductFormToInput(values: CreateProductFormValues) {
     description: values.description,
     priceCents,
     costCents,
+    shippingWeightGrams,
     stockOnHand,
     dispatchMinDays,
     dispatchMaxDays,
@@ -140,7 +155,6 @@ export const createOrderFormSchema = (
     productRequired: string
     quantityRequired: string
     insufficientStock: (available: number) => string
-    shippingCentsRequired: string
     shippingFirstNameRequired: string
     shippingLastNameRequired: string
     shippingStreetRequired: string
@@ -156,10 +170,6 @@ export const createOrderFormSchema = (
       productId: z.string().min(1, messages.productRequired),
       addressId: z.string(),
       quantity: z.coerce.number().int().min(1, messages.quantityRequired),
-      shippingCents: z.coerce
-        .number()
-        .int()
-        .min(0, messages.shippingCentsRequired),
       shippingSalutation: z.enum(salutationValues),
       shippingFirstName: z
         .string()
@@ -209,7 +219,6 @@ export function mapCreateOrderFormToInput(values: CreateOrderFormValues) {
     productId: values.productId,
     addressId: values.addressId || undefined,
     quantity: values.quantity,
-    shippingCents: values.shippingCents,
     shippingSalutation:
       values.shippingSalutation === '' ? undefined : values.shippingSalutation,
     shippingFirstName: values.shippingFirstName,

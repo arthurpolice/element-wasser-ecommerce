@@ -8,6 +8,7 @@ export type OrderQuoteProduct = {
   active: boolean
   priceCents: number
   discountPercent: number | null
+  shippingWeightGrams: number | null
   stockOnHand: number
   stockReserved: number
 }
@@ -16,6 +17,7 @@ export type OrderQuoteProblemCode =
   | 'MISSING_PRODUCT'
   | 'INACTIVE_PRODUCT'
   | 'INSUFFICIENT_STOCK'
+  | 'OVER_WEIGHT_LIMIT'
 
 export type OrderQuoteLine<Product extends OrderQuoteProduct> = {
   productId: string
@@ -27,6 +29,7 @@ export type OrderQuoteLine<Product extends OrderQuoteProduct> = {
   lineSubtotalCents: number
   lineDiscountCents: number
   lineTotalCents: number
+  lineShippingWeightGrams: number
   availableStock: number
   canPlaceLine: boolean
   problemCode: OrderQuoteProblemCode | null
@@ -37,6 +40,7 @@ export type OrderQuote<Product extends OrderQuoteProduct> = {
   subtotalCents: number
   discountCents: number
   lineTotalCents: number
+  shippingWeightGrams: number
   shippingCents: number
   totalCents: number
   canPlaceOrder: boolean
@@ -46,6 +50,12 @@ export type OrderQuote<Product extends OrderQuoteProduct> = {
     code: OrderQuoteProblemCode
   }>
 }
+
+const SHIPPING_RATE_TIERS = [
+  { maxWeightGrams: 2000, shippingCents: 900 },
+  { maxWeightGrams: 10000, shippingCents: 1200 },
+  { maxWeightGrams: 30000, shippingCents: 2300 }
+] as const
 
 export function calculateUnitPriceCents(
   listPriceCents: number,
@@ -63,6 +73,16 @@ export function calculateAvailableStock(product: {
   stockReserved: number
 }): number {
   return product.stockOnHand - product.stockReserved
+}
+
+export function calculateShippingCentsForWeight(
+  shippingWeightGrams: number
+): number | null {
+  return (
+    SHIPPING_RATE_TIERS.find(
+      (tier) => shippingWeightGrams <= tier.maxWeightGrams
+    )?.shippingCents ?? null
+  )
 }
 
 export function normalizeOrderQuoteLines(
@@ -97,8 +117,7 @@ export function normalizeOrderQuoteLines(
 
 export function quoteOrderLines<Product extends OrderQuoteProduct>(
   products: Product[],
-  lines: OrderQuoteLineInput[],
-  shippingCents: number
+  lines: OrderQuoteLineInput[]
 ): OrderQuote<Product> {
   const productsById = new Map(products.map((product) => [product.id, product]))
   const quotedLines = lines.map((line) => {
@@ -119,6 +138,9 @@ export function quoteOrderLines<Product extends OrderQuoteProduct>(
       ? product.priceCents * line.quantity
       : 0
     const lineTotalCents = canPlaceLine ? unitPriceCents * line.quantity : 0
+    const lineShippingWeightGrams = canPlaceLine
+      ? (product.shippingWeightGrams ?? 0) * line.quantity
+      : 0
 
     return {
       productId: product.id,
@@ -130,6 +152,7 @@ export function quoteOrderLines<Product extends OrderQuoteProduct>(
       lineSubtotalCents,
       lineDiscountCents: lineSubtotalCents - lineTotalCents,
       lineTotalCents,
+      lineShippingWeightGrams,
       availableStock,
       canPlaceLine,
       problemCode
@@ -147,20 +170,29 @@ export function quoteOrderLines<Product extends OrderQuoteProduct>(
     (sum, line) => sum + line.lineTotalCents,
     0
   )
+  const shippingWeightGrams = quotedLines.reduce(
+    (sum, line) => sum + line.lineShippingWeightGrams,
+    0
+  )
   const canPlaceOrder =
     quotedLines.length > 0 && quotedLines.every((line) => line.canPlaceLine)
   const hasOrderableLines = quotedLines.some((line) => line.canPlaceLine)
-  const appliedShippingCents = hasOrderableLines ? shippingCents : 0
-
-  return {
-    lines: quotedLines,
-    subtotalCents,
-    discountCents,
-    lineTotalCents,
-    shippingCents: appliedShippingCents,
-    totalCents: lineTotalCents + appliedShippingCents,
-    canPlaceOrder,
-    problems: quotedLines.flatMap((line) =>
+  const calculatedShippingCents = hasOrderableLines
+    ? calculateShippingCentsForWeight(shippingWeightGrams)
+    : 0
+  const overweightProblem =
+    canPlaceOrder && calculatedShippingCents == null
+      ? [
+          {
+            productId: '',
+            quantity: 0,
+            code: 'OVER_WEIGHT_LIMIT' as const
+          }
+        ]
+      : []
+  const appliedShippingCents = calculatedShippingCents ?? 0
+  const problems = [
+    ...quotedLines.flatMap((line) =>
       line.problemCode
         ? [
             {
@@ -170,7 +202,20 @@ export function quoteOrderLines<Product extends OrderQuoteProduct>(
             }
           ]
         : []
-    )
+    ),
+    ...overweightProblem
+  ]
+
+  return {
+    lines: quotedLines,
+    subtotalCents,
+    discountCents,
+    lineTotalCents,
+    shippingWeightGrams,
+    shippingCents: appliedShippingCents,
+    totalCents: lineTotalCents + appliedShippingCents,
+    canPlaceOrder: canPlaceOrder && overweightProblem.length === 0,
+    problems
   }
 }
 
@@ -207,6 +252,7 @@ function buildMissingProductLine(
     lineSubtotalCents: 0,
     lineDiscountCents: 0,
     lineTotalCents: 0,
+    lineShippingWeightGrams: 0,
     availableStock: 0,
     canPlaceLine: false,
     problemCode

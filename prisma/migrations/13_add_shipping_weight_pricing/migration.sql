@@ -1,0 +1,5 @@
+ALTER TABLE "Product" ADD COLUMN "shippingWeightGrams" INTEGER;
+
+ALTER TABLE "Order" ADD COLUMN "shippingWeightGrams" INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE "OrderLine" ADD COLUMN "unitShippingWeightGrams" INTEGER NOT NULL DEFAULT 0;

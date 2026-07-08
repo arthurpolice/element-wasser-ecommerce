@@ -33,6 +33,7 @@ export type ProductMaintenanceInput = {
   description?: Prisma.InputJsonValue | null
   priceCents: number
   costCents: number
+  shippingWeightGrams: number | null
   stockOnHand: number
   dispatchMinDays: number
   dispatchMaxDays: number
@@ -210,6 +211,7 @@ export async function createProduct(
         description: input.description ?? Prisma.JsonNull,
         priceCents: input.priceCents,
         costCents: input.costCents,
+        shippingWeightGrams: input.shippingWeightGrams,
         stockOnHand: input.stockOnHand,
         dispatchMinDays: input.dispatchMinDays,
         dispatchMaxDays: input.dispatchMaxDays,
@@ -272,6 +274,7 @@ export async function updateProduct(
           : {}),
         priceCents: input.priceCents,
         costCents: input.costCents,
+        shippingWeightGrams: input.shippingWeightGrams,
         stockOnHand: input.stockOnHand,
         dispatchMinDays: input.dispatchMinDays,
         dispatchMaxDays: input.dispatchMaxDays,

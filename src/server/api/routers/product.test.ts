@@ -61,6 +61,7 @@ const baseCreateInput = {
   manufacturerName: 'Element Wasser',
   priceCents: 500,
   costCents: 200,
+  shippingWeightGrams: 750,
   dispatchMinDays: 1,
   dispatchMaxDays: 3
 }

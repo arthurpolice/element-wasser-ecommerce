@@ -29,6 +29,7 @@ export type AggregateProduct = {
 export type ProductAvgAggregateOutputType = {
   priceCents: number | null
   costCents: number | null
+  shippingWeightGrams: number | null
   discountPercent: number | null
   stockOnHand: number | null
   stockReserved: number | null
@@ -41,6 +42,7 @@ export type ProductAvgAggregateOutputType = {
 export type ProductSumAggregateOutputType = {
   priceCents: number | null
   costCents: number | null
+  shippingWeightGrams: number | null
   discountPercent: number | null
   stockOnHand: number | null
   stockReserved: number | null
@@ -60,6 +62,7 @@ export type ProductMinAggregateOutputType = {
   featured: boolean | null
   priceCents: number | null
   costCents: number | null
+  shippingWeightGrams: number | null
   discountPercent: number | null
   stockOnHand: number | null
   stockReserved: number | null
@@ -81,6 +84,7 @@ export type ProductMaxAggregateOutputType = {
   featured: boolean | null
   priceCents: number | null
   costCents: number | null
+  shippingWeightGrams: number | null
   discountPercent: number | null
   stockOnHand: number | null
   stockReserved: number | null
@@ -103,6 +107,7 @@ export type ProductCountAggregateOutputType = {
   description: number
   priceCents: number
   costCents: number
+  shippingWeightGrams: number
   discountPercent: number
   stockOnHand: number
   stockReserved: number
@@ -119,6 +124,7 @@ export type ProductCountAggregateOutputType = {
 export type ProductAvgAggregateInputType = {
   priceCents?: true
   costCents?: true
+  shippingWeightGrams?: true
   discountPercent?: true
   stockOnHand?: true
   stockReserved?: true
@@ -131,6 +137,7 @@ export type ProductAvgAggregateInputType = {
 export type ProductSumAggregateInputType = {
   priceCents?: true
   costCents?: true
+  shippingWeightGrams?: true
   discountPercent?: true
   stockOnHand?: true
   stockReserved?: true
@@ -150,6 +157,7 @@ export type ProductMinAggregateInputType = {
   featured?: true
   priceCents?: true
   costCents?: true
+  shippingWeightGrams?: true
   discountPercent?: true
   stockOnHand?: true
   stockReserved?: true
@@ -171,6 +179,7 @@ export type ProductMaxAggregateInputType = {
   featured?: true
   priceCents?: true
   costCents?: true
+  shippingWeightGrams?: true
   discountPercent?: true
   stockOnHand?: true
   stockReserved?: true
@@ -193,6 +202,7 @@ export type ProductCountAggregateInputType = {
   description?: true
   priceCents?: true
   costCents?: true
+  shippingWeightGrams?: true
   discountPercent?: true
   stockOnHand?: true
   stockReserved?: true
@@ -302,6 +312,7 @@ export type ProductGroupByOutputType = {
   description: runtime.JsonValue | null
   priceCents: number
   costCents: number
+  shippingWeightGrams: number | null
   discountPercent: number | null
   stockOnHand: number
   stockReserved: number
@@ -347,6 +358,7 @@ export type ProductWhereInput = {
   description?: Prisma.JsonNullableFilter<"Product">
   priceCents?: Prisma.IntFilter<"Product"> | number
   costCents?: Prisma.IntFilter<"Product"> | number
+  shippingWeightGrams?: Prisma.IntNullableFilter<"Product"> | number | null
   discountPercent?: Prisma.IntNullableFilter<"Product"> | number | null
   stockOnHand?: Prisma.IntFilter<"Product"> | number
   stockReserved?: Prisma.IntFilter<"Product"> | number
@@ -376,6 +388,7 @@ export type ProductOrderByWithRelationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrderInput | Prisma.SortOrder
   discountPercent?: Prisma.SortOrderInput | Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -408,6 +421,7 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   description?: Prisma.JsonNullableFilter<"Product">
   priceCents?: Prisma.IntFilter<"Product"> | number
   costCents?: Prisma.IntFilter<"Product"> | number
+  shippingWeightGrams?: Prisma.IntNullableFilter<"Product"> | number | null
   discountPercent?: Prisma.IntNullableFilter<"Product"> | number | null
   stockOnHand?: Prisma.IntFilter<"Product"> | number
   stockReserved?: Prisma.IntFilter<"Product"> | number
@@ -437,6 +451,7 @@ export type ProductOrderByWithAggregationInput = {
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrderInput | Prisma.SortOrder
   discountPercent?: Prisma.SortOrderInput | Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -467,6 +482,7 @@ export type ProductScalarWhereWithAggregatesInput = {
   description?: Prisma.JsonNullableWithAggregatesFilter<"Product">
   priceCents?: Prisma.IntWithAggregatesFilter<"Product"> | number
   costCents?: Prisma.IntWithAggregatesFilter<"Product"> | number
+  shippingWeightGrams?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   discountPercent?: Prisma.IntNullableWithAggregatesFilter<"Product"> | number | null
   stockOnHand?: Prisma.IntWithAggregatesFilter<"Product"> | number
   stockReserved?: Prisma.IntWithAggregatesFilter<"Product"> | number
@@ -488,6 +504,7 @@ export type ProductCreateInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -517,6 +534,7 @@ export type ProductUncheckedCreateInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -544,6 +562,7 @@ export type ProductUpdateInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -573,6 +592,7 @@ export type ProductUncheckedUpdateInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -601,6 +621,7 @@ export type ProductCreateManyInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -622,6 +643,7 @@ export type ProductUpdateManyMutationInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -644,6 +666,7 @@ export type ProductUncheckedUpdateManyInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -676,6 +699,7 @@ export type ProductCountOrderByAggregateInput = {
   description?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -690,6 +714,7 @@ export type ProductCountOrderByAggregateInput = {
 export type ProductAvgOrderByAggregateInput = {
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -709,6 +734,7 @@ export type ProductMaxOrderByAggregateInput = {
   featured?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -730,6 +756,7 @@ export type ProductMinOrderByAggregateInput = {
   featured?: Prisma.SortOrder
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -744,6 +771,7 @@ export type ProductMinOrderByAggregateInput = {
 export type ProductSumOrderByAggregateInput = {
   priceCents?: Prisma.SortOrder
   costCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountPercent?: Prisma.SortOrder
   stockOnHand?: Prisma.SortOrder
   stockReserved?: Prisma.SortOrder
@@ -904,6 +932,7 @@ export type ProductCreateWithoutManufacturerInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -931,6 +960,7 @@ export type ProductUncheckedCreateWithoutManufacturerInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -988,6 +1018,7 @@ export type ProductScalarWhereInput = {
   description?: Prisma.JsonNullableFilter<"Product">
   priceCents?: Prisma.IntFilter<"Product"> | number
   costCents?: Prisma.IntFilter<"Product"> | number
+  shippingWeightGrams?: Prisma.IntNullableFilter<"Product"> | number | null
   discountPercent?: Prisma.IntNullableFilter<"Product"> | number | null
   stockOnHand?: Prisma.IntFilter<"Product"> | number
   stockReserved?: Prisma.IntFilter<"Product"> | number
@@ -1009,6 +1040,7 @@ export type ProductCreateWithoutSearchDocumentInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1037,6 +1069,7 @@ export type ProductUncheckedCreateWithoutSearchDocumentInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1079,6 +1112,7 @@ export type ProductUpdateWithoutSearchDocumentInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1107,6 +1141,7 @@ export type ProductUncheckedUpdateWithoutSearchDocumentInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1133,6 +1168,7 @@ export type ProductCreateWithoutPendingSearchReindexInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1161,6 +1197,7 @@ export type ProductUncheckedCreateWithoutPendingSearchReindexInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1203,6 +1240,7 @@ export type ProductUpdateWithoutPendingSearchReindexInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1231,6 +1269,7 @@ export type ProductUncheckedUpdateWithoutPendingSearchReindexInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1257,6 +1296,7 @@ export type ProductCreateWithoutImagesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1285,6 +1325,7 @@ export type ProductUncheckedCreateWithoutImagesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1327,6 +1368,7 @@ export type ProductUpdateWithoutImagesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1355,6 +1397,7 @@ export type ProductUncheckedUpdateWithoutImagesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1381,6 +1424,7 @@ export type ProductCreateWithoutCategoriesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1409,6 +1453,7 @@ export type ProductUncheckedCreateWithoutCategoriesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1451,6 +1496,7 @@ export type ProductUpdateWithoutCategoriesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1479,6 +1525,7 @@ export type ProductUncheckedUpdateWithoutCategoriesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1505,6 +1552,7 @@ export type ProductCreateWithoutOrderLinesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1533,6 +1581,7 @@ export type ProductUncheckedCreateWithoutOrderLinesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1575,6 +1624,7 @@ export type ProductUpdateWithoutOrderLinesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1603,6 +1653,7 @@ export type ProductUncheckedUpdateWithoutOrderLinesInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1629,6 +1680,7 @@ export type ProductCreateWithoutReviewsInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1657,6 +1709,7 @@ export type ProductUncheckedCreateWithoutReviewsInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1699,6 +1752,7 @@ export type ProductUpdateWithoutReviewsInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1727,6 +1781,7 @@ export type ProductUncheckedUpdateWithoutReviewsInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1753,6 +1808,7 @@ export type ProductCreateManyManufacturerInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents: number
   costCents: number
+  shippingWeightGrams?: number | null
   discountPercent?: number | null
   stockOnHand?: number
   stockReserved?: number
@@ -1774,6 +1830,7 @@ export type ProductUpdateWithoutManufacturerInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1801,6 +1858,7 @@ export type ProductUncheckedUpdateWithoutManufacturerInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1828,6 +1886,7 @@ export type ProductUncheckedUpdateManyWithoutManufacturerInput = {
   description?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   priceCents?: Prisma.IntFieldUpdateOperationsInput | number
   costCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   discountPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stockOnHand?: Prisma.IntFieldUpdateOperationsInput | number
   stockReserved?: Prisma.IntFieldUpdateOperationsInput | number
@@ -1908,6 +1967,7 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   description?: boolean
   priceCents?: boolean
   costCents?: boolean
+  shippingWeightGrams?: boolean
   discountPercent?: boolean
   stockOnHand?: boolean
   stockReserved?: boolean
@@ -1938,6 +1998,7 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   description?: boolean
   priceCents?: boolean
   costCents?: boolean
+  shippingWeightGrams?: boolean
   discountPercent?: boolean
   stockOnHand?: boolean
   stockReserved?: boolean
@@ -1961,6 +2022,7 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   description?: boolean
   priceCents?: boolean
   costCents?: boolean
+  shippingWeightGrams?: boolean
   discountPercent?: boolean
   stockOnHand?: boolean
   stockReserved?: boolean
@@ -1984,6 +2046,7 @@ export type ProductSelectScalar = {
   description?: boolean
   priceCents?: boolean
   costCents?: boolean
+  shippingWeightGrams?: boolean
   discountPercent?: boolean
   stockOnHand?: boolean
   stockReserved?: boolean
@@ -1995,7 +2058,7 @@ export type ProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "manufacturerId" | "name" | "slug" | "sku" | "active" | "featured" | "description" | "priceCents" | "costCents" | "discountPercent" | "stockOnHand" | "stockReserved" | "approvedReviewCount" | "approvedReviewRatingSum" | "dispatchMinDays" | "dispatchMaxDays" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "manufacturerId" | "name" | "slug" | "sku" | "active" | "featured" | "description" | "priceCents" | "costCents" | "shippingWeightGrams" | "discountPercent" | "stockOnHand" | "stockReserved" | "approvedReviewCount" | "approvedReviewRatingSum" | "dispatchMinDays" | "dispatchMaxDays" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   manufacturer?: boolean | Prisma.ManufacturerDefaultArgs<ExtArgs>
   images?: boolean | Prisma.Product$imagesArgs<ExtArgs>
@@ -2035,6 +2098,7 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     description: runtime.JsonValue | null
     priceCents: number
     costCents: number
+    shippingWeightGrams: number | null
     discountPercent: number | null
     stockOnHand: number
     stockReserved: number
@@ -2484,6 +2548,7 @@ export interface ProductFieldRefs {
   readonly description: Prisma.FieldRef<"Product", 'Json'>
   readonly priceCents: Prisma.FieldRef<"Product", 'Int'>
   readonly costCents: Prisma.FieldRef<"Product", 'Int'>
+  readonly shippingWeightGrams: Prisma.FieldRef<"Product", 'Int'>
   readonly discountPercent: Prisma.FieldRef<"Product", 'Int'>
   readonly stockOnHand: Prisma.FieldRef<"Product", 'Int'>
   readonly stockReserved: Prisma.FieldRef<"Product", 'Int'>

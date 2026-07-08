@@ -253,6 +253,7 @@
         "active": "Status",
         "price": "Preis",
         "cost": "Kosten",
+        "shippingWeight": "Versandgewicht",
         "discount": "Rabatt",
         "stockOnHand": "Lagerbestand",
         "stockReserved": "Reserviert",
@@ -261,6 +262,8 @@
         "actions": "Aktionen"
       },
       "discountValue": "{percent} %",
+      "weightGrams": "{grams} g",
+      "noWeight": "Ignoriert",
       "noDiscount": "—",
       "dispatchRange": "{min}–{max} Tage"
     },
@@ -280,6 +283,7 @@
         "descriptionPlaceholder": "Verwenden Sie Überschriften, Listen, Links, Fett- und Kursivtext.",
         "price": "Preis (CHF)",
         "cost": "Kosten (CHF)",
+        "shippingWeightGrams": "Versandgewicht (g, optional)",
         "stockOnHand": "Lagerbestand",
         "dispatchMinDays": "Versand min. (Tage)",
         "dispatchMaxDays": "Versand max. (Tage)",
@@ -294,6 +298,7 @@
         "manufacturerRequired": "Hersteller ist erforderlich.",
         "priceRequired": "Bitte geben Sie einen gültigen Preis ein.",
         "costRequired": "Bitte geben Sie gültige Kosten ein.",
+        "shippingWeightRequired": "Bitte geben Sie ein positives Versandgewicht in Gramm ein oder lassen Sie das Feld leer.",
         "stockRequired": "Bitte geben Sie eine gültige Lagermenge ein.",
         "dispatchMinRequired": "Bitte geben Sie eine gültige Mindest-Versandzeit ein.",
         "dispatchMaxRequired": "Bitte geben Sie eine gültige Maximal-Versandzeit ein.",
@@ -333,6 +338,7 @@
         "descriptionPlaceholder": "Verwenden Sie Überschriften, Listen, Links, Fett- und Kursivtext.",
         "price": "Preis (CHF)",
         "cost": "Kosten (CHF)",
+        "shippingWeightGrams": "Versandgewicht (g, optional)",
         "stockOnHand": "Lagerbestand",
         "dispatchMinDays": "Versand min. (Tage)",
         "dispatchMaxDays": "Versand max. (Tage)",
@@ -344,6 +350,7 @@
         "manufacturerRequired": "Hersteller ist erforderlich.",
         "priceRequired": "Bitte geben Sie einen gültigen Preis ein.",
         "costRequired": "Bitte geben Sie gültige Kosten ein.",
+        "shippingWeightRequired": "Bitte geben Sie ein positives Versandgewicht in Gramm ein oder lassen Sie das Feld leer.",
         "stockRequired": "Bitte geben Sie eine gültige Lagermenge ein.",
         "dispatchMinRequired": "Bitte geben Sie eine gültige Mindest-Versandzeit ein.",
         "dispatchMaxRequired": "Bitte geben Sie eine gültige Maximal-Versandzeit ein.",
@@ -583,7 +590,8 @@
       "problems": {
         "MISSING_PRODUCT": "Dieses Produkt ist nicht mehr im Katalog.",
         "INACTIVE_PRODUCT": "Dieses Produkt ist derzeit nicht bestellbar.",
-        "INSUFFICIENT_STOCK": "Die gewünschte Menge ist nicht verfügbar. {availableStock, plural, one {# Stück ist auf Lager.} other {# Stück sind auf Lager.}}"
+        "INSUFFICIENT_STOCK": "Die gewünschte Menge ist nicht verfügbar. {availableStock, plural, one {# Stück ist auf Lager.} other {# Stück sind auf Lager.}}",
+        "OVER_WEIGHT_LIMIT": "Diese Bestellung ist über 30 kg schwer und kann nicht als eine Bestellung versendet werden."
       },
       "subtotal": "Zwischensumme",
       "discount": "Rabatt",
@@ -724,7 +732,7 @@
         "product": "Produkt",
         "productPlaceholder": "Produkt auswählen",
         "quantity": "Menge",
-        "shippingCents": "Versand (Rappen)",
+        "shippingWeight": "Versandgewicht",
         "shippingSalutation": "Anrede",
         "salutationNone": "Keine Anrede",
         "shippingFirstName": "Vorname",
@@ -743,13 +751,14 @@
       },
       "hints": {
         "availableStock": "{count, plural, one {# Stück verfügbar} other {# Stück verfügbar}}",
-        "shippingCents": "Pauschale Versandgebühr als Snapshot in CHF-Rappen."
+        "shippingWeight": "{grams} g Versandgewicht gesamt"
       },
       "preview": {
         "title": "Totalvorschau",
         "subtotal": "Zwischensumme",
         "discount": "Produktrabatt",
         "shipping": "Versand",
+        "overWeightLimit": "Über 30 kg",
         "total": "Total"
       },
       "cancel": "Abbrechen",
@@ -761,7 +770,7 @@
         "quantityRequired": "Bitte eine gültige Menge eingeben.",
         "insufficientStock": "Nur {available} Stück verfügbar.",
         "insufficientStockServer": "Für dieses Produkt ist nicht genug Bestand verfügbar.",
-        "shippingCentsRequired": "Bitte einen gültigen Versandbetrag in Rappen eingeben.",
+        "overWeightLimit": "Diese Bestellung ist über 30 kg schwer und kann nicht als eine Bestellung versendet werden.",
         "shippingFirstNameRequired": "Vorname für die Lieferadresse ist erforderlich.",
         "shippingLastNameRequired": "Nachname für die Lieferadresse ist erforderlich.",
         "shippingStreetRequired": "Strasse ist erforderlich.",

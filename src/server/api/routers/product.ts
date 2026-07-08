@@ -35,6 +35,7 @@ const listInputSchema = z.object({
       'active',
       'priceCents',
       'costCents',
+      'shippingWeightGrams',
       'discountPercent',
       'stockOnHand',
       'stockReserved',
@@ -52,6 +53,7 @@ const createInputSchema = z.object({
   description: z.custom<Prisma.InputJsonValue>().nullable().optional(),
   priceCents: z.number().int().min(0),
   costCents: z.number().int().min(0),
+  shippingWeightGrams: z.number().int().min(1).nullable(),
   stockOnHand: z.number().int().min(0).default(0),
   dispatchMinDays: z.number().int().min(0),
   dispatchMaxDays: z.number().int().min(0),
@@ -140,6 +142,7 @@ function buildOrderBy(
     case 'active':
     case 'priceCents':
     case 'costCents':
+    case 'shippingWeightGrams':
     case 'discountPercent':
     case 'stockOnHand':
     case 'stockReserved':
@@ -161,6 +164,7 @@ function mapProductRow(product: ProductMaintenanceRow) {
     featured: product.featured,
     priceCents: product.priceCents,
     costCents: product.costCents,
+    shippingWeightGrams: product.shippingWeightGrams,
     discountPercent: product.discountPercent,
     stockOnHand: product.stockOnHand,
     stockReserved: product.stockReserved,
@@ -324,6 +328,7 @@ export const productRouter = createTRPCRouter({
         description: productDescriptionJsonSchema.parse(product.description),
         priceCents: product.priceCents,
         costCents: product.costCents,
+        shippingWeightGrams: product.shippingWeightGrams,
         stockOnHand: product.stockOnHand,
         dispatchMinDays: product.dispatchMinDays,
         dispatchMaxDays: product.dispatchMaxDays,

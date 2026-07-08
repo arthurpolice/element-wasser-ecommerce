@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-const envMock = vi.hoisted(() => ({
+const envMock: { CRON_SECRET: string | undefined } = vi.hoisted(() => ({
   CRON_SECRET: 'cron-secret'
 }))
 

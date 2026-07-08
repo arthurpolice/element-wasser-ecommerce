@@ -35,6 +35,7 @@ const baseInput = {
   manufacturerName: 'Element Wasser',
   priceCents: 500,
   costCents: 200,
+  shippingWeightGrams: 750,
   stockOnHand: 12,
   dispatchMinDays: 1,
   dispatchMaxDays: 3,
@@ -157,6 +158,7 @@ describe('Product Maintenance', () => {
       slug: 'mineral-water',
       manufacturerId: 'manufacturer-1',
       description: productDescription,
+      shippingWeightGrams: 750,
       images: {
         create: [
           {

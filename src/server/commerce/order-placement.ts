@@ -29,6 +29,7 @@ export const orderListInclude = {
       listPriceCents: true,
       discountPercent: true,
       unitPriceCents: true,
+      unitShippingWeightGrams: true,
       lineTotalCents: true
     }
   },
@@ -60,7 +61,6 @@ export type PlaceOrderInput = {
   productId?: string
   quantity?: number
   paymentMethod?: CheckoutPaymentMethod
-  shippingCents: number
   addressId?: string
   shippingSalutation?: Salutation
   shippingFirstName: string
@@ -90,6 +90,7 @@ export type OrderPlacementErrorCode =
   | 'PRODUCT_NOT_FOUND'
   | 'PRODUCT_INACTIVE'
   | 'INSUFFICIENT_STOCK'
+  | 'OVER_WEIGHT_LIMIT'
   | 'ADDRESS_NOT_FOUND'
   | 'EMPTY_CART'
 
@@ -227,6 +228,7 @@ function buildOrderLineSnapshot(
     listPriceCents: product.priceCents,
     discountPercent: product.discountPercent,
     unitPriceCents,
+    unitShippingWeightGrams: product.shippingWeightGrams ?? 0,
     unitCostCents: product.costCents,
     lineTotalCents
   }
@@ -249,6 +251,11 @@ function toOrderPlacementError(problemCode: OrderQuoteProblemCode) {
       return new OrderPlacementError(
         'INSUFFICIENT_STOCK',
         'Insufficient stock available.'
+      )
+    case 'OVER_WEIGHT_LIMIT':
+      return new OrderPlacementError(
+        'OVER_WEIGHT_LIMIT',
+        'Order is too heavy to ship.'
       )
   }
 }
@@ -295,7 +302,7 @@ export async function placeOrderInTransaction(
   const products = await tx.product.findMany({
     where: { id: { in: requestedLines.map((line) => line.productId) } }
   })
-  const quote = quoteOrderLines(products, requestedLines, input.shippingCents)
+  const quote = quoteOrderLines(products, requestedLines)
   const firstProblem = quote.problems[0]
 
   if (firstProblem) {
@@ -347,6 +354,8 @@ export async function placeOrderInTransaction(
   const totals = {
     subtotalCents: quote.subtotalCents,
     discountCents: quote.discountCents,
+    shippingCents: quote.shippingCents,
+    shippingWeightGrams: quote.shippingWeightGrams,
     totalCents: quote.totalCents
   }
   const snapshotCountryCode = shippingSnapshot.countryCode.toUpperCase()
@@ -368,7 +377,8 @@ export async function placeOrderInTransaction(
       guestCheckoutFingerprint: input.guestCheckoutFingerprint,
       paymentExpiresAt,
       subtotalCents: totals.subtotalCents,
-      shippingCents: input.shippingCents,
+      shippingCents: totals.shippingCents,
+      shippingWeightGrams: totals.shippingWeightGrams,
       discountCents: totals.discountCents,
       totalCents: totals.totalCents,
       currencyCode: 'CHF',

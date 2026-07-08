@@ -93,7 +93,7 @@ An Email Notification owed because of one specific Payment outcome. Its identity
 _Avoid_: Order payment email
 
 **Order Line**:
-One product entry inside an order, including purchase-time quantity, price, and cost.
+One product entry inside an order, including purchase-time quantity, price, cost, and any recorded Product Shipping Weight.
 _Avoid_: Order product, product reference
 
 **Price**:
@@ -141,8 +141,12 @@ The address snapshot stored on an order for invoicing and payment records.
 _Avoid_: Payment address
 
 **Product**:
-A sellable catalog item with current price, current cost, inventory, manufacturer, slug, and SKU.
+A sellable catalog item with current price, current cost, optional Product Shipping Weight, inventory, manufacturer, slug, and SKU.
 _Avoid_: Item, article
+
+**Product Shipping Weight**:
+The optional weight of one product unit used to determine shipping charges, stored in grams and representing the product as it should count for carrier pricing. A product without a Product Shipping Weight contributes no weight to shipping-price calculation.
+_Avoid_: Product weight, package weight
 
 **Orderable Product**:
 A product that can currently be placed into an order because it is active, exists in the catalog, and has enough available stock for the requested quantity.
@@ -236,12 +240,20 @@ _Avoid_: Order count
 The CHF cent amount charged for an order, broken down into subtotal, shipping, discount, and final total.
 _Avoid_: Total price
 
+**Order Shipping Weight**:
+The total shipment weight used to determine an Order's shipping charge, calculated from each Order Line's purchase-time Product Shipping Weight and quantity.
+_Avoid_: Total weight, cart weight
+
+**Carrier Weight Limit**:
+The maximum Order Shipping Weight accepted for one Order under the supported Carrier's shipping price tiers.
+_Avoid_: Maximum cart weight, overweight threshold
+
 **Customer Non-cancelled Order Value**:
 The sum of Order Totals across a Customer's Orders whose Order Lifecycle Status is not cancelled. It describes retained Order value and does not imply that every included Order has been paid.
 _Avoid_: Total spent, customer revenue
 
 **Shipping Charge**:
-The flat CHF cent amount charged for shipping and stored on the order as a checkout snapshot.
+The CHF cent amount charged for shipping and stored on the order as a checkout snapshot.
 _Avoid_: Shipping rule
 
 **Discount**:

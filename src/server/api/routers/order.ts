@@ -58,7 +58,6 @@ const createInputSchema = z
     customerId: z.string().min(1),
     productId: z.string().min(1),
     quantity: z.number().int().min(1),
-    shippingCents: z.number().int().min(0),
     addressId: z.string().min(1).optional()
   })
   .merge(shippingSnapshotSchema)
@@ -164,6 +163,7 @@ function toOrderPlacementTrpcError(error: OrderPlacementError): TRPCError {
     case 'EMPTY_CART':
     case 'PRODUCT_INACTIVE':
     case 'INSUFFICIENT_STOCK':
+    case 'OVER_WEIGHT_LIMIT':
       return new TRPCError({
         code: 'BAD_REQUEST',
         message: error.message
@@ -317,6 +317,7 @@ export const orderRouter = createTRPCRouter({
           sku: true,
           priceCents: true,
           costCents: true,
+          shippingWeightGrams: true,
           discountPercent: true,
           stockOnHand: true,
           stockReserved: true,

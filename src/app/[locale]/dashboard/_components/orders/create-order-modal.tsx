@@ -17,6 +17,7 @@ import {
 } from '~/lib/form-schemas'
 import {
   calculateAvailableStock,
+  calculateShippingCentsForWeight,
   calculateUnitPriceCents
 } from '~/lib/order-quote'
 import { api, type RouterOutputs } from '~/trpc/react'
@@ -31,7 +32,6 @@ const defaultValues: CreateOrderFormValues = {
   productId: '',
   addressId: '',
   quantity: 1,
-  shippingCents: 0,
   shippingSalutation: '',
   shippingFirstName: '',
   shippingLastName: '',
@@ -79,7 +79,6 @@ export function CreateOrderDialog() {
         quantityRequired: tForm('validation.quantityRequired'),
         insufficientStock: (available) =>
           tForm('validation.insufficientStock', { available }),
-        shippingCentsRequired: tForm('validation.shippingCentsRequired'),
         shippingFirstNameRequired: tForm(
           'validation.shippingFirstNameRequired'
         ),
@@ -111,7 +110,6 @@ export function CreateOrderDialog() {
 
   const addressId = watch('addressId')
   const quantity = watch('quantity')
-  const shippingCents = watch('shippingCents')
 
   const availableStock = selectedProduct
     ? calculateAvailableStock(selectedProduct)
@@ -141,15 +139,20 @@ export function CreateOrderDialog() {
     const lineTotalCents = unitPriceCents * quantity
     const subtotalCents = selectedProduct.priceCents * quantity
     const discountCents = subtotalCents - lineTotalCents
+    const shippingWeightGrams =
+      (selectedProduct.shippingWeightGrams ?? 0) * quantity
+    const shippingCents = calculateShippingCentsForWeight(shippingWeightGrams)
     const totalCents = lineTotalCents + (shippingCents ?? 0)
 
     return {
       subtotalCents,
       discountCents,
       lineTotalCents,
+      shippingWeightGrams,
+      shippingCents,
       totalCents
     }
-  }, [quantity, selectedProduct, shippingCents])
+  }, [quantity, selectedProduct])
 
   useEffect(() => {
     const dialog = dialogRef.current
@@ -228,6 +231,14 @@ export function CreateOrderDialog() {
         message: tForm('validation.insufficientStock', {
           available: availableStock
         })
+      })
+      return
+    }
+
+    if (preview?.shippingCents == null) {
+      setError('quantity', {
+        type: 'manual',
+        message: tForm('validation.overWeightLimit')
       })
       return
     }
@@ -402,24 +413,16 @@ export function CreateOrderDialog() {
                   ) : null}
                 </label>
 
-                <label className="grid gap-1 text-sm">
-                  <span>{tForm('fields.shippingCents')}</span>
-                  <input
-                    className={dashInputClass}
-                    min={0}
-                    type="number"
-                    {...register('shippingCents', { valueAsNumber: true })}
-                  />
-                  {errors.shippingCents ? (
-                    <span className="text-dash-danger text-xs">
-                      {errors.shippingCents.message}
-                    </span>
-                  ) : (
-                    <span className="text-dash-muted text-xs">
-                      {tForm('hints.shippingCents')}
-                    </span>
-                  )}
-                </label>
+                {preview ? (
+                  <div className="grid gap-1 text-sm">
+                    <span>{tForm('fields.shippingWeight')}</span>
+                    <p className="text-dash-muted rounded-lg bg-[#f6f9fc] px-3 py-2">
+                      {tForm('hints.shippingWeight', {
+                        grams: preview.shippingWeightGrams
+                      })}
+                    </p>
+                  </div>
+                ) : null}
               </div>
             </section>
 
@@ -589,7 +592,11 @@ export function CreateOrderDialog() {
                     <dt className="text-dash-muted">
                       {tForm('preview.shipping')}
                     </dt>
-                    <dd>{formatMoney(shippingCents ?? 0)}</dd>
+                    <dd>
+                      {preview.shippingCents == null
+                        ? tForm('preview.overWeightLimit')
+                        : formatMoney(preview.shippingCents)}
+                    </dd>
                   </div>
                   <div className="border-dash-border text-dash-ink flex justify-between gap-4 border-t pt-2 font-semibold">
                     <dt>{tForm('preview.total')}</dt>
@@ -610,9 +617,12 @@ export function CreateOrderDialog() {
                       'Insufficient stock available.'
                     ? tForm('validation.insufficientStockServer')
                     : createOrder.error.message ===
-                        'Order number conflict. Please try again.'
-                      ? tForm('validation.orderNumberConflict')
-                      : tForm('validation.generic')}
+                        'Order is too heavy to ship.'
+                      ? tForm('validation.overWeightLimit')
+                      : createOrder.error.message ===
+                          'Order number conflict. Please try again.'
+                        ? tForm('validation.orderNumberConflict')
+                        : tForm('validation.generic')}
             </p>
           ) : null}
 

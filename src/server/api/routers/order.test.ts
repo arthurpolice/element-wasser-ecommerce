@@ -71,6 +71,7 @@ function createMockDb(): MockDb {
             priceCents: 2000,
             costCents: 900,
             discountPercent: null,
+            shippingWeightGrams: 1000,
             stockOnHand: 10,
             stockReserved: 0
           }
@@ -120,7 +121,6 @@ describe('order router Address Book Entry snapshots', () => {
       customerId: 'customer-1',
       productId: 'product-1',
       quantity: 1,
-      shippingCents: 900,
       addressId: 'address-main',
       shippingFirstName: 'Manual',
       shippingLastName: 'Address',

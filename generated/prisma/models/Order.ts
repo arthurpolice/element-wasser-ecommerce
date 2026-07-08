@@ -29,6 +29,7 @@ export type AggregateOrder = {
 export type OrderAvgAggregateOutputType = {
   subtotalCents: number | null
   shippingCents: number | null
+  shippingWeightGrams: number | null
   discountCents: number | null
   totalCents: number | null
 }
@@ -36,6 +37,7 @@ export type OrderAvgAggregateOutputType = {
 export type OrderSumAggregateOutputType = {
   subtotalCents: number | null
   shippingCents: number | null
+  shippingWeightGrams: number | null
   discountCents: number | null
   totalCents: number | null
 }
@@ -64,6 +66,7 @@ export type OrderMinAggregateOutputType = {
   paymentExceptionReason: string | null
   subtotalCents: number | null
   shippingCents: number | null
+  shippingWeightGrams: number | null
   discountCents: number | null
   totalCents: number | null
   currencyCode: string | null
@@ -119,6 +122,7 @@ export type OrderMaxAggregateOutputType = {
   paymentExceptionReason: string | null
   subtotalCents: number | null
   shippingCents: number | null
+  shippingWeightGrams: number | null
   discountCents: number | null
   totalCents: number | null
   currencyCode: string | null
@@ -174,6 +178,7 @@ export type OrderCountAggregateOutputType = {
   paymentExceptionReason: number
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams: number
   discountCents: number
   totalCents: number
   currencyCode: number
@@ -210,6 +215,7 @@ export type OrderCountAggregateOutputType = {
 export type OrderAvgAggregateInputType = {
   subtotalCents?: true
   shippingCents?: true
+  shippingWeightGrams?: true
   discountCents?: true
   totalCents?: true
 }
@@ -217,6 +223,7 @@ export type OrderAvgAggregateInputType = {
 export type OrderSumAggregateInputType = {
   subtotalCents?: true
   shippingCents?: true
+  shippingWeightGrams?: true
   discountCents?: true
   totalCents?: true
 }
@@ -245,6 +252,7 @@ export type OrderMinAggregateInputType = {
   paymentExceptionReason?: true
   subtotalCents?: true
   shippingCents?: true
+  shippingWeightGrams?: true
   discountCents?: true
   totalCents?: true
   currencyCode?: true
@@ -300,6 +308,7 @@ export type OrderMaxAggregateInputType = {
   paymentExceptionReason?: true
   subtotalCents?: true
   shippingCents?: true
+  shippingWeightGrams?: true
   discountCents?: true
   totalCents?: true
   currencyCode?: true
@@ -355,6 +364,7 @@ export type OrderCountAggregateInputType = {
   paymentExceptionReason?: true
   subtotalCents?: true
   shippingCents?: true
+  shippingWeightGrams?: true
   discountCents?: true
   totalCents?: true
   currencyCode?: true
@@ -497,6 +507,7 @@ export type OrderGroupByOutputType = {
   paymentExceptionReason: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams: number
   discountCents: number
   totalCents: number
   currencyCode: string
@@ -575,6 +586,7 @@ export type OrderWhereInput = {
   paymentExceptionReason?: Prisma.StringNullableFilter<"Order"> | string | null
   subtotalCents?: Prisma.IntFilter<"Order"> | number
   shippingCents?: Prisma.IntFilter<"Order"> | number
+  shippingWeightGrams?: Prisma.IntFilter<"Order"> | number
   discountCents?: Prisma.IntFilter<"Order"> | number
   totalCents?: Prisma.IntFilter<"Order"> | number
   currencyCode?: Prisma.StringFilter<"Order"> | string
@@ -634,6 +646,7 @@ export type OrderOrderByWithRelationInput = {
   paymentExceptionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
   currencyCode?: Prisma.SortOrder
@@ -696,6 +709,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   paymentExceptionReason?: Prisma.StringNullableFilter<"Order"> | string | null
   subtotalCents?: Prisma.IntFilter<"Order"> | number
   shippingCents?: Prisma.IntFilter<"Order"> | number
+  shippingWeightGrams?: Prisma.IntFilter<"Order"> | number
   discountCents?: Prisma.IntFilter<"Order"> | number
   totalCents?: Prisma.IntFilter<"Order"> | number
   currencyCode?: Prisma.StringFilter<"Order"> | string
@@ -755,6 +769,7 @@ export type OrderOrderByWithAggregationInput = {
   paymentExceptionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
   currencyCode?: Prisma.SortOrder
@@ -818,6 +833,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   paymentExceptionReason?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   subtotalCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   shippingCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
+  shippingWeightGrams?: Prisma.IntWithAggregatesFilter<"Order"> | number
   discountCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   totalCents?: Prisma.IntWithAggregatesFilter<"Order"> | number
   currencyCode?: Prisma.StringWithAggregatesFilter<"Order"> | string
@@ -872,6 +888,7 @@ export type OrderCreateInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -931,6 +948,7 @@ export type OrderUncheckedCreateInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -988,6 +1006,7 @@ export type OrderUpdateInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1047,6 +1066,7 @@ export type OrderUncheckedUpdateInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1105,6 +1125,7 @@ export type OrderCreateManyInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -1159,6 +1180,7 @@ export type OrderUpdateManyMutationInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1214,6 +1236,7 @@ export type OrderUncheckedUpdateManyInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1279,6 +1302,7 @@ export type OrderCountOrderByAggregateInput = {
   paymentExceptionReason?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
   currencyCode?: Prisma.SortOrder
@@ -1313,6 +1337,7 @@ export type OrderCountOrderByAggregateInput = {
 export type OrderAvgOrderByAggregateInput = {
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
 }
@@ -1341,6 +1366,7 @@ export type OrderMaxOrderByAggregateInput = {
   paymentExceptionReason?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
   currencyCode?: Prisma.SortOrder
@@ -1396,6 +1422,7 @@ export type OrderMinOrderByAggregateInput = {
   paymentExceptionReason?: Prisma.SortOrder
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
   currencyCode?: Prisma.SortOrder
@@ -1430,6 +1457,7 @@ export type OrderMinOrderByAggregateInput = {
 export type OrderSumOrderByAggregateInput = {
   subtotalCents?: Prisma.SortOrder
   shippingCents?: Prisma.SortOrder
+  shippingWeightGrams?: Prisma.SortOrder
   discountCents?: Prisma.SortOrder
   totalCents?: Prisma.SortOrder
 }
@@ -1566,6 +1594,7 @@ export type OrderCreateWithoutCustomerInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -1623,6 +1652,7 @@ export type OrderUncheckedCreateWithoutCustomerInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -1710,6 +1740,7 @@ export type OrderScalarWhereInput = {
   paymentExceptionReason?: Prisma.StringNullableFilter<"Order"> | string | null
   subtotalCents?: Prisma.IntFilter<"Order"> | number
   shippingCents?: Prisma.IntFilter<"Order"> | number
+  shippingWeightGrams?: Prisma.IntFilter<"Order"> | number
   discountCents?: Prisma.IntFilter<"Order"> | number
   totalCents?: Prisma.IntFilter<"Order"> | number
   currencyCode?: Prisma.StringFilter<"Order"> | string
@@ -1764,6 +1795,7 @@ export type OrderCreateWithoutEmailNotificationsInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -1822,6 +1854,7 @@ export type OrderUncheckedCreateWithoutEmailNotificationsInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -1894,6 +1927,7 @@ export type OrderUpdateWithoutEmailNotificationsInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1952,6 +1986,7 @@ export type OrderUncheckedUpdateWithoutEmailNotificationsInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2008,6 +2043,7 @@ export type OrderCreateWithoutLinesInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -2066,6 +2102,7 @@ export type OrderUncheckedCreateWithoutLinesInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -2138,6 +2175,7 @@ export type OrderUpdateWithoutLinesInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2196,6 +2234,7 @@ export type OrderUncheckedUpdateWithoutLinesInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2252,6 +2291,7 @@ export type OrderCreateWithoutPaymentsInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -2310,6 +2350,7 @@ export type OrderUncheckedCreateWithoutPaymentsInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -2382,6 +2423,7 @@ export type OrderUpdateWithoutPaymentsInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2440,6 +2482,7 @@ export type OrderUncheckedUpdateWithoutPaymentsInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2496,6 +2539,7 @@ export type OrderCreateManyCustomerInput = {
   paymentExceptionReason?: string | null
   subtotalCents: number
   shippingCents: number
+  shippingWeightGrams?: number
   discountCents?: number
   totalCents: number
   currencyCode?: string
@@ -2550,6 +2594,7 @@ export type OrderUpdateWithoutCustomerInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2607,6 +2652,7 @@ export type OrderUncheckedUpdateWithoutCustomerInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2664,6 +2710,7 @@ export type OrderUncheckedUpdateManyWithoutCustomerInput = {
   paymentExceptionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subtotalCents?: Prisma.IntFieldUpdateOperationsInput | number
   shippingCents?: Prisma.IntFieldUpdateOperationsInput | number
+  shippingWeightGrams?: Prisma.IntFieldUpdateOperationsInput | number
   discountCents?: Prisma.IntFieldUpdateOperationsInput | number
   totalCents?: Prisma.IntFieldUpdateOperationsInput | number
   currencyCode?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2768,6 +2815,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   paymentExceptionReason?: boolean
   subtotalCents?: boolean
   shippingCents?: boolean
+  shippingWeightGrams?: boolean
   discountCents?: boolean
   totalCents?: boolean
   currencyCode?: boolean
@@ -2828,6 +2876,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   paymentExceptionReason?: boolean
   subtotalCents?: boolean
   shippingCents?: boolean
+  shippingWeightGrams?: boolean
   discountCents?: boolean
   totalCents?: boolean
   currencyCode?: boolean
@@ -2884,6 +2933,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   paymentExceptionReason?: boolean
   subtotalCents?: boolean
   shippingCents?: boolean
+  shippingWeightGrams?: boolean
   discountCents?: boolean
   totalCents?: boolean
   currencyCode?: boolean
@@ -2940,6 +2990,7 @@ export type OrderSelectScalar = {
   paymentExceptionReason?: boolean
   subtotalCents?: boolean
   shippingCents?: boolean
+  shippingWeightGrams?: boolean
   discountCents?: boolean
   totalCents?: boolean
   currencyCode?: boolean
@@ -2971,7 +3022,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "origin" | "dispatchCarrier" | "trackingNumber" | "dispatchedAt" | "paymentExpiresAt" | "paymentExpiryStartedAt" | "checkoutSubmissionId" | "checkoutSubmissionFingerprint" | "guestCheckoutFingerprint" | "paymentExceptionAt" | "paymentExceptionReason" | "subtotalCents" | "shippingCents" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "customerId" | "customerSalutation" | "customerFirstName" | "customerLastName" | "customerEmail" | "status" | "paymentStatus" | "fulfillmentStatus" | "origin" | "dispatchCarrier" | "trackingNumber" | "dispatchedAt" | "paymentExpiresAt" | "paymentExpiryStartedAt" | "checkoutSubmissionId" | "checkoutSubmissionFingerprint" | "guestCheckoutFingerprint" | "paymentExceptionAt" | "paymentExceptionReason" | "subtotalCents" | "shippingCents" | "shippingWeightGrams" | "discountCents" | "totalCents" | "currencyCode" | "shippingSalutation" | "shippingFirstName" | "shippingLastName" | "shippingCompany" | "shippingStreetLine1" | "shippingStreetLine2" | "shippingPostalCode" | "shippingCity" | "shippingCountryCode" | "shippingPhone" | "billingSameAsShipping" | "billingSalutation" | "billingFirstName" | "billingLastName" | "billingCompany" | "billingStreetLine1" | "billingStreetLine2" | "billingPostalCode" | "billingCity" | "billingCountryCode" | "billingPhone" | "placedAt" | "completedAt" | "cancelledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   customer?: boolean | Prisma.CustomerDefaultArgs<ExtArgs>
   lines?: boolean | Prisma.Order$linesArgs<ExtArgs>
@@ -3018,6 +3069,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     paymentExceptionReason: string | null
     subtotalCents: number
     shippingCents: number
+    shippingWeightGrams: number
     discountCents: number
     totalCents: number
     currencyCode: string
@@ -3497,6 +3549,7 @@ export interface OrderFieldRefs {
   readonly paymentExceptionReason: Prisma.FieldRef<"Order", 'String'>
   readonly subtotalCents: Prisma.FieldRef<"Order", 'Int'>
   readonly shippingCents: Prisma.FieldRef<"Order", 'Int'>
+  readonly shippingWeightGrams: Prisma.FieldRef<"Order", 'Int'>
   readonly discountCents: Prisma.FieldRef<"Order", 'Int'>
   readonly totalCents: Prisma.FieldRef<"Order", 'Int'>
   readonly currencyCode: Prisma.FieldRef<"Order", 'String'>

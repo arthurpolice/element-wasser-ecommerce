@@ -211,6 +211,7 @@ model Product {
   description             Json?
   priceCents              Int
   costCents               Int
+  shippingWeightGrams     Int?
   discountPercent         Int?
   stockOnHand             Int                    @default(0)
   stockReserved           Int                    @default(0)
@@ -363,6 +364,7 @@ model Order {
   paymentExceptionReason        String?
   subtotalCents                 Int
   shippingCents                 Int
+  shippingWeightGrams           Int                 @default(0)
   discountCents                 Int                 @default(0)
   totalCents                    Int
   currencyCode                  String              @default("CHF")
@@ -465,23 +467,24 @@ model ResendWebhookEvent {
 }
 
 model OrderLine {
-  id              String        @id @default(cuid())
-  orderId         String
-  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId       String
-  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
-  productName     String
-  productSku      String
-  quantity        Int
-  listPriceCents  Int
-  discountPercent Int?
-  unitPriceCents  Int
-  unitCostCents   Int
-  lineTotalCents  Int
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  review          Review?
-  reviewInvite    ReviewInvite?
+  id                      String        @id @default(cuid())
+  orderId                 String
+  order                   Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId               String
+  product                 Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName             String
+  productSku              String
+  quantity                Int
+  listPriceCents          Int
+  discountPercent         Int?
+  unitPriceCents          Int
+  unitShippingWeightGrams Int           @default(0)
+  unitCostCents           Int
+  lineTotalCents          Int
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  review                  Review?
+  reviewInvite            ReviewInvite?
 
   @@index([orderId])
   @@index([productId])

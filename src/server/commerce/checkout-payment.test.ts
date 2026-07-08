@@ -55,6 +55,7 @@ function createPlacementFailureDb() {
           priceCents: 2000,
           costCents: 900,
           discountPercent: null,
+          shippingWeightGrams: 1000,
           stockOnHand: 10,
           stockReserved: 0
         }
@@ -192,6 +193,7 @@ function createCheckoutStartDb() {
           priceCents: 2000,
           costCents: 900,
           discountPercent: null,
+          shippingWeightGrams: 1000,
           stockOnHand: 10,
           stockReserved: 0
         }
@@ -211,16 +213,16 @@ function createCheckoutStartDb() {
           id: 'order-1',
           ...data,
           customer: { userId: 'user-1' },
-          lines: data.lines.create.map(
-            (line: Record<string, unknown>, index: number) => ({
-              id: `line-${index + 1}`,
-              ...line
-            })
-          ),
+          lines: (
+            data.lines as { create: Record<string, unknown>[] }
+          ).create.map((line: Record<string, unknown>, index: number) => ({
+            id: `line-${index + 1}`,
+            ...line
+          })),
           payments: [
             {
               id: 'payment-1',
-              ...data.payments.create,
+              ...(data.payments as { create: Record<string, unknown> }).create,
               status: 'PENDING',
               providerReference: null,
               stripeCheckoutSessionId: null,
@@ -266,7 +268,6 @@ describe('beginGuestCheckoutPayment', () => {
         order: {
           lines: [{ productId: 'product-1', quantity: 1 }],
           paymentMethod: 'CARD',
-          shippingCents: 900,
           shippingFirstName: 'River',
           shippingLastName: 'Stone',
           shippingStreetLine1: 'Wasserweg 1',
@@ -297,7 +298,6 @@ describe('beginGuestCheckoutPayment', () => {
         order: {
           lines: [{ productId: 'product-1', quantity: 1 }],
           paymentMethod: 'CARD',
-          shippingCents: 900,
           shippingFirstName: 'River',
           shippingLastName: 'Stone',
           shippingStreetLine1: 'Wasserweg 1',
@@ -335,7 +335,6 @@ describe('beginCheckoutPayment', () => {
       customerId: 'customer-1',
       lines: [{ productId: 'product-1', quantity: 1 }],
       paymentMethod: 'CARD' as const,
-      shippingCents: 900,
       shippingFirstName: 'River',
       shippingLastName: 'Stone',
       shippingStreetLine1: 'Wasserweg 1',

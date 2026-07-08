@@ -1050,7 +1050,9 @@ function CheckoutItems({
             aria-hidden="true"
             className="mt-0.5 size-3.5 shrink-0"
           />
-          {t('unavailable')}
+          {preview.problemCode === 'OVER_WEIGHT_LIMIT'
+            ? t('problems.OVER_WEIGHT_LIMIT')
+            : t('unavailable')}
         </p>
       ) : null}
     </div>

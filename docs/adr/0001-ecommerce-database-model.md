@@ -12,7 +12,7 @@ Use `Order` plus `OrderLine` instead of direct order-product references. Order l
 
 Keep carts outside the database for now. Create an order only when checkout is placed, reserve stock for 30 minutes while payment is pending, and allow multiple Stripe-backed card or TWINT payment attempts through a separate `Payment` table. Before any operation releases an unpaid Order's Stock Reservation, including automatic expiry or owner cancellation, close the Active Payment Attempt so Stripe can no longer accept payment for stock that has been released. Release expired reservations through a reusable backend operation first; wire that same operation to a scheduled job once the deployment/runtime scheduler is decided.
 
-Use product-level percentage discounts for clearance sales, flat shipping stored as an order snapshot, product-owned images, nested categories with global slugs, and verified-purchase reviews tied to order lines. Guest reviews use expiring secure review invites.
+Use product-level percentage discounts for clearance sales, calculated shipping stored as an order snapshot, product-owned images, nested categories with global slugs, and verified-purchase reviews tied to order lines. Guest reviews use expiring secure review invites.
 
 ## Considered Options
 

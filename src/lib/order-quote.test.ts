@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   calculateAvailableStock,
+  calculateShippingCentsForWeight,
   calculateUnitPriceCents,
   normalizeOrderQuoteLines,
   quoteOrderLines
@@ -12,6 +13,7 @@ const activeProduct = {
   active: true,
   priceCents: 12000,
   discountPercent: 10,
+  shippingWeightGrams: 1000,
   stockOnHand: 4,
   stockReserved: 1
 }
@@ -43,13 +45,17 @@ describe('order quote', () => {
   it('calculates discount price and available stock consistently', () => {
     expect(calculateUnitPriceCents(12000, 10)).toBe(10800)
     expect(calculateAvailableStock(activeProduct)).toBe(3)
+    expect(calculateShippingCentsForWeight(0)).toBe(900)
+    expect(calculateShippingCentsForWeight(2000)).toBe(900)
+    expect(calculateShippingCentsForWeight(2001)).toBe(1200)
+    expect(calculateShippingCentsForWeight(10001)).toBe(2300)
+    expect(calculateShippingCentsForWeight(30001)).toBeNull()
   })
 
-  it('quotes orderable lines and applies shipping when at least one line can be placed', () => {
+  it('quotes orderable lines and applies shipping from total shipping weight', () => {
     const quote = quoteOrderLines(
       [activeProduct],
-      [{ productId: activeProduct.id, quantity: 2 }],
-      900
+      [{ productId: activeProduct.id, quantity: 2 }]
     )
 
     expect(quote.lines[0]).toMatchObject({
@@ -60,6 +66,7 @@ describe('order quote', () => {
       lineSubtotalCents: 24000,
       lineDiscountCents: 2400,
       lineTotalCents: 21600,
+      lineShippingWeightGrams: 2000,
       availableStock: 3,
       canPlaceLine: true,
       problemCode: null
@@ -68,6 +75,7 @@ describe('order quote', () => {
       subtotalCents: 24000,
       discountCents: 2400,
       lineTotalCents: 21600,
+      shippingWeightGrams: 2000,
       shippingCents: 900,
       totalCents: 22500,
       canPlaceOrder: true,
@@ -82,8 +90,7 @@ describe('order quote', () => {
         { productId: 'missing-1', quantity: 1 },
         { productId: inactiveProduct.id, quantity: 1 },
         { productId: activeProduct.id, quantity: 4 }
-      ],
-      900
+      ]
     )
 
     expect(quote.problems).toEqual([
@@ -97,5 +104,35 @@ describe('order quote', () => {
     ])
     expect(quote.shippingCents).toBe(0)
     expect(quote.canPlaceOrder).toBe(false)
+  })
+
+  it('rejects otherwise orderable lines above the carrier weight limit', () => {
+    const quote = quoteOrderLines(
+      [{ ...activeProduct, shippingWeightGrams: 15050 }],
+      [{ productId: activeProduct.id, quantity: 2 }]
+    )
+
+    expect(quote.shippingWeightGrams).toBe(30100)
+    expect(quote.shippingCents).toBe(0)
+    expect(quote.totalCents).toBe(21600)
+    expect(quote.canPlaceOrder).toBe(false)
+    expect(quote.problems).toEqual([
+      { productId: '', quantity: 0, code: 'OVER_WEIGHT_LIMIT' }
+    ])
+  })
+
+  it('ignores products without recorded shipping weight', () => {
+    const quote = quoteOrderLines(
+      [{ ...activeProduct, shippingWeightGrams: null }],
+      [{ productId: activeProduct.id, quantity: 2 }]
+    )
+
+    expect(quote.shippingWeightGrams).toBe(0)
+    expect(quote.lines[0]).toMatchObject({
+      lineShippingWeightGrams: 0
+    })
+    expect(quote.shippingCents).toBe(900)
+    expect(quote.totalCents).toBe(22500)
+    expect(quote.canPlaceOrder).toBe(true)
   })
 })
