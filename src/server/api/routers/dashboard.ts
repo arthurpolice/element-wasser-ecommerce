@@ -6,6 +6,21 @@ import { createTRPCRouter, ownerProcedure } from '~/server/api/trpc'
 const LOW_STOCK_THRESHOLD = 5
 const NEW_CUSTOMER_DAYS = 30
 const CHART_DAYS = 30
+const CHART_MONTHS = 12
+const CHART_YEARS = 5
+
+const timeSeriesPeriodSchema = z.enum(['daily', 'monthly', 'yearly'])
+
+type TimeSeriesPeriod = z.infer<typeof timeSeriesPeriodSchema>
+
+type TimeSeriesValues = {
+  revenueCents: number
+  orderCount: number
+}
+
+type TimeSeriesPoint = TimeSeriesValues & {
+  date: string
+}
 
 function startOfUtcDay(date: Date): Date {
   return new Date(
@@ -19,20 +34,44 @@ function addUtcDays(date: Date, days: number): Date {
   return next
 }
 
+function startOfUtcMonth(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1))
+}
+
+function startOfUtcYear(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), 0, 1))
+}
+
+function addUtcMonths(date: Date, months: number): Date {
+  const next = new Date(date)
+  next.setUTCMonth(next.getUTCMonth() + months)
+  return next
+}
+
+function addUtcYears(date: Date, years: number): Date {
+  const next = new Date(date)
+  next.setUTCFullYear(next.getUTCFullYear() + years)
+  return next
+}
+
 function toDayKey(date: Date): string {
   return date.toISOString().slice(0, 10)
+}
+
+function toMonthKey(date: Date): string {
+  return date.toISOString().slice(0, 7)
+}
+
+function toYearKey(date: Date): string {
+  return date.toISOString().slice(0, 4)
 }
 
 function buildDailySeries(
   since: Date,
   days: number,
-  valuesByDay: Map<string, { revenueCents: number; orderCount: number }>
-): Array<{ date: string; revenueCents: number; orderCount: number }> {
-  const points: Array<{
-    date: string
-    revenueCents: number
-    orderCount: number
-  }> = []
+  valuesByDay: Map<string, TimeSeriesValues>
+): TimeSeriesPoint[] {
+  const points: TimeSeriesPoint[] = []
 
   for (let index = 0; index < days; index += 1) {
     const day = addUtcDays(since, index)
@@ -45,6 +84,58 @@ function buildDailySeries(
   }
 
   return points
+}
+
+function buildMonthlySeries(
+  since: Date,
+  months: number,
+  valuesByMonth: Map<string, TimeSeriesValues>
+): TimeSeriesPoint[] {
+  const points: TimeSeriesPoint[] = []
+
+  for (let index = 0; index < months; index += 1) {
+    const month = addUtcMonths(since, index)
+    const date = toMonthKey(month)
+    const values = valuesByMonth.get(date) ?? {
+      revenueCents: 0,
+      orderCount: 0
+    }
+    points.push({ date, ...values })
+  }
+
+  return points
+}
+
+function buildYearlySeries(
+  since: Date,
+  years: number,
+  valuesByYear: Map<string, TimeSeriesValues>
+): TimeSeriesPoint[] {
+  const points: TimeSeriesPoint[] = []
+
+  for (let index = 0; index < years; index += 1) {
+    const year = addUtcYears(since, index)
+    const date = toYearKey(year)
+    const values = valuesByYear.get(date) ?? {
+      revenueCents: 0,
+      orderCount: 0
+    }
+    points.push({ date, ...values })
+  }
+
+  return points
+}
+
+function getBucketKey(date: Date, period: TimeSeriesPeriod): string {
+  if (period === 'yearly') {
+    return toYearKey(startOfUtcYear(date))
+  }
+
+  if (period === 'monthly') {
+    return toMonthKey(startOfUtcMonth(date))
+  }
+
+  return toDayKey(startOfUtcDay(date))
 }
 
 export const dashboardRouter = createTRPCRouter({
@@ -95,13 +186,21 @@ export const dashboardRouter = createTRPCRouter({
     .input(
       z
         .object({
-          days: z.number().int().min(7).max(90).default(CHART_DAYS)
+          days: z.number().int().min(7).max(90).default(CHART_DAYS),
+          period: timeSeriesPeriodSchema.default('daily')
         })
         .optional()
     )
     .query(async ({ ctx, input }) => {
+      const period = input?.period ?? 'daily'
       const days = input?.days ?? CHART_DAYS
-      const since = addUtcDays(startOfUtcDay(new Date()), -(days - 1))
+      const now = new Date()
+      const since =
+        period === 'yearly'
+          ? addUtcYears(startOfUtcYear(now), -(CHART_YEARS - 1))
+          : period === 'monthly'
+            ? addUtcMonths(startOfUtcMonth(now), -(CHART_MONTHS - 1))
+            : addUtcDays(startOfUtcDay(now), -(days - 1))
 
       const orders = await ctx.db.order.findMany({
         where: { placedAt: { gte: since } },
@@ -112,14 +211,11 @@ export const dashboardRouter = createTRPCRouter({
         }
       })
 
-      const valuesByDay = new Map<
-        string,
-        { revenueCents: number; orderCount: number }
-      >()
+      const valuesByBucket = new Map<string, TimeSeriesValues>()
 
       for (const order of orders) {
-        const date = toDayKey(startOfUtcDay(order.placedAt))
-        const current = valuesByDay.get(date) ?? {
+        const date = getBucketKey(order.placedAt, period)
+        const current = valuesByBucket.get(date) ?? {
           revenueCents: 0,
           orderCount: 0
         }
@@ -129,11 +225,19 @@ export const dashboardRouter = createTRPCRouter({
           current.revenueCents += order.totalCents
         }
 
-        valuesByDay.set(date, current)
+        valuesByBucket.set(date, current)
       }
 
+      const points =
+        period === 'yearly'
+          ? buildYearlySeries(since, CHART_YEARS, valuesByBucket)
+          : period === 'monthly'
+            ? buildMonthlySeries(since, CHART_MONTHS, valuesByBucket)
+            : buildDailySeries(since, days, valuesByBucket)
+
       return {
-        points: buildDailySeries(since, days, valuesByDay)
+        period,
+        points
       }
     }),
 

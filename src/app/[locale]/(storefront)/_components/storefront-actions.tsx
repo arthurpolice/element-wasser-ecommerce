@@ -30,6 +30,7 @@ type TopNavActionsProps = {
   renderedDropdown: StorefrontDropdown | null
   sessionUserName: string
   setOpenDropdown: (dropdown: StorefrontDropdown | null) => void
+  showDashboardLink: boolean
   signedIn: boolean
 }
 
@@ -50,6 +51,7 @@ export function TopNavActions({
   renderedDropdown,
   sessionUserName,
   setOpenDropdown,
+  showDashboardLink,
   signedIn
 }: TopNavActionsProps) {
   const t = useTranslations('Storefront.topNav')
@@ -107,6 +109,7 @@ export function TopNavActions({
         <UserDropdown
           animationClass={dropdownAnimationClass}
           name={sessionUserName}
+          showDashboardLink={showDashboardLink}
         />
       ) : null}
       {mode === 'mobile' && renderedDropdown === 'user' && signedIn ? (
@@ -119,6 +122,7 @@ export function TopNavActions({
           <UserMenuContent
             name={sessionUserName}
             onNavigate={() => setOpenDropdown(null)}
+            showDashboardLink={showDashboardLink}
           />
         </StorefrontMobileActionDrawer>
       ) : null}
@@ -162,24 +166,28 @@ export function TopNavActions({
 
 function UserDropdown({
   animationClass,
-  name
+  name,
+  showDashboardLink
 }: {
   animationClass: string
   name: string
+  showDashboardLink: boolean
 }) {
   return (
     <div className={`${dropdownClass} ${animationClass} hidden lg:block`}>
-      <UserMenuContent name={name} />
+      <UserMenuContent name={name} showDashboardLink={showDashboardLink} />
     </div>
   )
 }
 
 function UserMenuContent({
   name,
-  onNavigate
+  onNavigate,
+  showDashboardLink
 }: {
   name: string
   onNavigate?: () => void
+  showDashboardLink: boolean
 }) {
   const router = useRouter()
   const t = useTranslations('Storefront.topNav')
@@ -213,6 +221,15 @@ function UserMenuContent({
         >
           {t('addresses')}
         </Link>
+        {showDashboardLink ? (
+          <Link
+            className={menuLinkClass}
+            href="/dashboard"
+            onClick={onNavigate}
+          >
+            {t('dashboard')}
+          </Link>
+        ) : null}
       </div>
       <form
         className="border-store-border/70 mt-5 border-t pt-5"

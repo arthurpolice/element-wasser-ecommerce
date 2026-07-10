@@ -30,7 +30,17 @@
     },
     "charts": {
       "revenueOrdersTitle": "Umsatz und Bestellungen",
-      "revenueOrdersDescription": "Täglicher bezahlter Umsatz und aufgegebene Bestellungen der letzten 30 Tage.",
+      "revenueOrdersDescription": {
+        "daily": "Täglicher bezahlter Umsatz und aufgegebene Bestellungen der letzten 30 Tage.",
+        "monthly": "Monatlicher bezahlter Umsatz und aufgegebene Bestellungen der letzten 12 Monate.",
+        "yearly": "Jährlicher bezahlter Umsatz und aufgegebene Bestellungen der letzten 5 Jahre."
+      },
+      "periodLabel": "Zeitraum des Umsatzdiagramms",
+      "periods": {
+        "daily": "Täglich",
+        "monthly": "Monatlich",
+        "yearly": "Jährlich"
+      },
       "statusTitle": "Bestellstatus",
       "statusDescription": "Verteilung der Bestellungen nach Status.",
       "revenueSeries": "Umsatz",
@@ -436,6 +446,7 @@
       "orders": "Bestellungen",
       "personalInformation": "Persönliche Informationen",
       "addresses": "Adressen",
+      "dashboard": "Dashboard",
       "signOut": "Abmelden",
       "cartSummary": "Warenkorb",
       "cartEmpty": "Ihr Warenkorb ist leer.",

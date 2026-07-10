@@ -46,6 +46,7 @@ export function StorefrontShell({
   const [addedCartItem, setAddedCartItem] =
     useState<StorefrontAddedCartItem | null>(null)
   const userName = session?.user.name ?? session?.user.email ?? ''
+  const isOwner = session?.user.role === 'owner'
   const renderedDropdown = openDropdown ?? closingDropdown
 
   useEffect(() => {
@@ -175,6 +176,7 @@ export function StorefrontShell({
                 mode="mobile"
                 openDropdown={openDropdown}
                 renderedDropdown={renderedDropdown}
+                showDashboardLink={isOwner}
                 sessionUserName={userName}
                 setOpenDropdown={handleDropdownChange}
                 signedIn={Boolean(session?.user)}
@@ -219,6 +221,7 @@ export function StorefrontShell({
                 mode="desktop"
                 openDropdown={openDropdown}
                 renderedDropdown={renderedDropdown}
+                showDashboardLink={isOwner}
                 sessionUserName={userName}
                 setOpenDropdown={handleDropdownChange}
                 signedIn={Boolean(session?.user)}

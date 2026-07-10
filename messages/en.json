@@ -30,7 +30,17 @@
     },
     "charts": {
       "revenueOrdersTitle": "Revenue and orders",
-      "revenueOrdersDescription": "Daily paid revenue and placed orders over the last 30 days.",
+      "revenueOrdersDescription": {
+        "daily": "Daily paid revenue and placed orders over the last 30 days.",
+        "monthly": "Monthly paid revenue and placed orders over the last 12 months.",
+        "yearly": "Yearly paid revenue and placed orders over the last 5 years."
+      },
+      "periodLabel": "Revenue chart period",
+      "periods": {
+        "daily": "Daily",
+        "monthly": "Monthly",
+        "yearly": "Yearly"
+      },
       "statusTitle": "Order status",
       "statusDescription": "Distribution of orders by status.",
       "revenueSeries": "Revenue",
@@ -436,6 +446,7 @@
       "orders": "Orders",
       "personalInformation": "Personal information",
       "addresses": "Addresses",
+      "dashboard": "Dashboard",
       "signOut": "Sign out",
       "cartSummary": "Cart Summary",
       "cartEmpty": "Your cart is empty.",
