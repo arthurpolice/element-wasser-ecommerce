@@ -94,7 +94,7 @@ function ReadOnlyField({
         {label}
       </p>
       <p className="text-store-ink mt-1 text-sm font-semibold">
-        {value || '-'}
+        {value ?? '-'}
       </p>
     </div>
   )

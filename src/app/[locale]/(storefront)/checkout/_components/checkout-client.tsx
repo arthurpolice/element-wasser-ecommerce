@@ -295,7 +295,6 @@ export function CheckoutClient() {
         <div className="py-8 lg:py-12">
           <div className="mx-auto max-w-6xl">
             <CheckoutSection
-              complete={progression.addressComplete}
               stepIndex={1}
               title={t('addressTitle')}
             >
@@ -324,7 +323,6 @@ export function CheckoutClient() {
             </CheckoutSection>
 
             <CheckoutSection
-              complete={progression.paymentComplete}
               stepIndex={2}
               title={t('paymentTitle')}
             >
@@ -451,12 +449,10 @@ function EmptyCheckoutState() {
 
 function CheckoutSection({
   children,
-  complete = false,
   stepIndex,
   title
 }: {
   children: React.ReactNode
-  complete?: boolean
   stepIndex: number
   title: string
 }) {

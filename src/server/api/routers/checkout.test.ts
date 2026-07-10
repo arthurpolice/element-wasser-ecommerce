@@ -937,14 +937,14 @@ describe('checkout router', () => {
     })
     db.order.update = vi.fn(async () => order())
     let transactionChain = Promise.resolve()
-    db.$transaction = vi.fn((callback) => {
+    db.$transaction = vi.fn((callback: (tx: MockDb) => Promise<unknown>) => {
       const result = transactionChain.then(() => callback(db))
       transactionChain = result.then(
         () => undefined,
         () => undefined
       )
       return result
-    }) as never
+    })
     const { caller } = createRegisteredCaller(db)
 
     const results = await Promise.allSettled([

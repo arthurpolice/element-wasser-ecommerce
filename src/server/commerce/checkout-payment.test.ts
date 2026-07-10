@@ -171,8 +171,17 @@ function createRetryDb() {
   return db
 }
 
+type StoredOrder = {
+  id: string
+  checkoutSubmissionFingerprint?: string | null
+  customer: { userId: string | null }
+  lines: Array<Record<string, unknown>>
+  payments: Array<Record<string, unknown>>
+  [key: string]: unknown
+}
+
 function createCheckoutStartDb() {
-  let storedOrder: Record<string, any> | null = null
+  let storedOrder: StoredOrder | null = null
   const db = {
     customer: {
       findUnique: vi.fn(async () => ({
@@ -239,8 +248,13 @@ function createCheckoutStartDb() {
     },
     payment: {
       update: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
-        Object.assign(storedOrder!.payments[0], data)
-        return storedOrder!.payments[0]
+        const payment = storedOrder?.payments[0]
+
+        if (!payment) {
+          throw new Error('Expected the stored order to have a payment.')
+        }
+        Object.assign(payment, data)
+        return payment
       })
     },
     emailNotification: {
