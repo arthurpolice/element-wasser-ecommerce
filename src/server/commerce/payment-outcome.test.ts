@@ -349,6 +349,7 @@ describe('handleStripeWebhookEvent', () => {
 
   it('cancels an Order and releases its reservation when Checkout expires', async () => {
     const db = createMockDb()
+    const cancelledAt = new Date('2026-06-20T12:00:00Z')
 
     await handleStripeWebhookEvent(
       db as never,
@@ -357,7 +358,8 @@ describe('handleStripeWebhookEvent', () => {
         metadata: {
           paymentId: 'payment-1'
         }
-      })
+      }),
+      { now: () => cancelledAt }
     )
 
     expect(db.payment.updateMany).toHaveBeenCalledWith({
@@ -378,7 +380,7 @@ describe('handleStripeWebhookEvent', () => {
         status: 'CANCELLED',
         fulfillmentStatus: 'CANCELLED',
         paymentExpiryStartedAt: null,
-        cancelledAt: expect.any(Date)
+        cancelledAt
       }
     })
   })

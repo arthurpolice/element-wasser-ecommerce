@@ -509,7 +509,7 @@ describe('Email Notifications', () => {
 
     await expect(
       deliverEmailNotification(db as never, 'notification-1', {
-        transport: { sendMail: send } as never
+        transport: { sendMail: send }
       })
     ).rejects.toThrow('Mailbox unavailable')
 
