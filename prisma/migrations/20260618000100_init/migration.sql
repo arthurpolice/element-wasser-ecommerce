@@ -558,4 +558,3 @@ ALTER TABLE "Review" ADD CONSTRAINT "Review_orderLineId_fkey" FOREIGN KEY ("orde
 
 -- AddForeignKey
 ALTER TABLE "ReviewInvite" ADD CONSTRAINT "ReviewInvite_orderLineId_fkey" FOREIGN KEY ("orderLineId") REFERENCES "OrderLine"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
