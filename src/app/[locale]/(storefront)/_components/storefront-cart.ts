@@ -90,7 +90,10 @@ export const useStorefrontCart = create<StorefrontCartState>()(
       }
     }),
     {
-      name: 'element-wasser-cart'
+      name: 'element-wasser-cart',
+      // The server cannot read local storage. Restore a saved Cart only after
+      // React has hydrated the server-rendered empty Cart.
+      skipHydration: true
     }
   )
 )

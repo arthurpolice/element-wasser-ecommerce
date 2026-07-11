@@ -13,6 +13,7 @@ import {
 } from '~/app/[locale]/(storefront)/_components/storefront-actions'
 import {
   storefrontCartItemAddedEventName,
+  useStorefrontCart,
   type StorefrontAddedCartItem
 } from '~/app/[locale]/(storefront)/_components/storefront-cart'
 import { StorefrontMobileCategoryDrawer } from '~/app/[locale]/(storefront)/_components/storefront-mobile-category-drawer'
@@ -48,6 +49,10 @@ export function StorefrontShell({
   const userName = session?.user.name ?? session?.user.email ?? ''
   const isOwner = session?.user.role === 'owner'
   const renderedDropdown = openDropdown ?? closingDropdown
+
+  useEffect(() => {
+    void useStorefrontCart.persist.rehydrate()
+  }, [])
 
   useEffect(() => {
     if (!openDropdown) {

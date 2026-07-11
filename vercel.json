@@ -3,15 +3,11 @@
   "crons": [
     {
       "path": "/api/cron/payments/expire",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/catalog/search/reindex",
-      "schedule": "*/10 * * * *"
+      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/cron/catalog/review-ratings/reconcile",
-      "schedule": "0 4 1 * *"
+      "schedule": "0 4 * * *"
     },
     {
       "path": "/api/cron/email/webhooks/cleanup",

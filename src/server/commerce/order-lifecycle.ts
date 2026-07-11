@@ -143,6 +143,61 @@ function aggregateProductQuantities(
   }))
 }
 
+/**
+ * Cancels an order whose payment provider has authoritatively reported that
+ * its payment window expired. This is deliberately separate from
+ * `cancelOrder`: an expiry is an automated lifecycle transition and must not
+ * send the merchant-cancellation email.
+ */
+export async function cancelOrderForExpiredPayment(
+  db: Db,
+  input: { orderId: string },
+  deps: OrderLifecycleDeps = {}
+): Promise<OrderListRow | null> {
+  const cancelledAt = nowFromDeps(deps)
+
+  return db.$transaction(async (tx) => {
+    await tx.$queryRaw`
+      SELECT "id" FROM "Order" WHERE "id" = ${input.orderId} FOR UPDATE
+    `
+    const order = await findOrder(tx, input.orderId)
+
+    if (
+      order.status === 'CANCELLED' ||
+      order.paymentStatus === 'PAID' ||
+      order.fulfillmentStatus === 'FULFILLED' ||
+      order.fulfillmentStatus === 'DISPATCHED' ||
+      (order.payments ?? []).some((payment) => payment.status === 'CAPTURED')
+    ) {
+      return null
+    }
+
+    await releaseStockReservation(tx, order)
+    await tx.payment.updateMany({
+      where: { orderId: order.id, status: 'PENDING' },
+      data: {
+        status: 'CANCELLED',
+        failureReason: 'Payment Window expired.'
+      }
+    })
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'CANCELLED',
+        fulfillmentStatus: 'CANCELLED',
+        paymentExpiryStartedAt: null,
+        cancelledAt
+      }
+    })
+    await projectOrderPaymentStatus(tx, order.id, cancelledAt)
+
+    return tx.order.findUniqueOrThrow({
+      where: { id: order.id },
+      include: orderListInclude
+    })
+  })
+}
+
 export async function cancelOrder(
   db: Db,
   input: { orderId: string },

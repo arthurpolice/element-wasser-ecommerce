@@ -10,7 +10,9 @@ import { OrderPlacedEmail } from '~/server/email/templates/order-placed'
 import { PaymentConfirmedEmail } from '~/server/email/templates/payment-confirmed'
 import { PaymentFailedEmail } from '~/server/email/templates/payment-failed'
 import { NewPaidOrderEmail } from '~/server/email/templates/new-paid-order'
-import { getResendClient } from '~/server/email/resend'
+import { getEmailTransport } from '~/server/email/nodemailer'
+// Temporary SMTP replacement for Resend:
+// import { getResendClient } from '~/server/email/resend'
 import {
   isQstashConfigured,
   publishQstashJson,
@@ -80,7 +82,8 @@ export async function deliverEmailNotification(
   db: EmailNotificationDb,
   id: string,
   deps: {
-    resend?: ReturnType<typeof getResendClient>
+    transport?: Pick<ReturnType<typeof getEmailTransport>, 'sendMail'>
+    // resend?: ReturnType<typeof getResendClient>
     now?: () => Date
   } = {}
 ) {
@@ -223,17 +226,22 @@ export async function deliverEmailNotification(
   }
 
   try {
-    const result = await (deps.resend ?? getResendClient()).emails.send(
-      message,
-      {
-        idempotencyKey: `${notification.id}:${notification.deliveryGeneration}`
-      }
+    // Resend delivery is temporarily disabled in favour of SMTP.
+    // const result = await (deps.resend ?? getResendClient()).emails.send(
+    //   message,
+    //   {
+    //     idempotencyKey: `${notification.id}:${notification.deliveryGeneration}`
+    //   }
+    // )
+    //
+    // if (result.error) throw new Error(result.error.message)
+    const result = await (deps.transport ?? getEmailTransport()).sendMail(
+      message
     )
 
-    if (result.error) throw new Error(result.error.message)
-
     const sentAt = deps.now?.() ?? new Date()
-    const providerId = result.data?.id
+    // const providerId = result.data?.id
+    const providerId = result.messageId
 
     return db.emailNotification.update({
       where: { id },

@@ -30,7 +30,8 @@ type SendInput = {
   html: string
   text: string
 }
-type SendOptions = { idempotencyKey: string }
+// Temporary SMTP replacement for the Resend test adapter:
+// type SendOptions = { idempotencyKey: string }
 type UpdateInput = {
   data: {
     status: string
@@ -261,50 +262,57 @@ describe('Email Notifications', () => {
     )
   })
 
-  it('renders German Order Placed copy and sends HTML and text idempotently', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-1' },
-      error: null
-    }))
+  it('renders German Order Placed copy and sends HTML and text through SMTP', async () => {
+    // Resend test setup, temporarily disabled:
+    // const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
+    //   data: { id: 'resend-1' },
+    //   error: null
+    // }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-1' }))
 
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-1', {
-      resend: { emails: { send } } as never
+      // resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
-    const [message, options] = send.mock.calls[0]!
+    const [message] = send.mock.calls[0]!
+    // const [message, options] = send.mock.calls[0]!
     expect(message.subject).toBe(
       'Ihre Bestellung EW-2026-00001 wurde aufgegeben'
     )
     expect(message.html).toContain('Zahlungseingang wird separat bestätigt')
     expect(message.text).toContain('Bestellung ansehen')
-    expect(options).toEqual({ idempotencyKey: 'notification-1:0' })
+    // expect(options).toEqual({ idempotencyKey: 'notification-1:0' })
     const updateInput = db.emailNotification.update.mock.calls[0]![0]
     expect(updateInput.data.status).toBe('SENT')
-    expect(updateInput.data.providerId).toBe('resend-1')
+    // expect(updateInput.data.providerId).toBe('resend-1')
+    expect(updateInput.data.providerId).toBe('smtp-1')
     expect(updateInput.data.deliveryAttempts).toMatchObject({
       upsert: {
         create: {
           generation: 0,
-          providerId: 'resend-1',
+          // providerId: 'resend-1',
+          providerId: 'smtp-1',
           status: 'SENT'
         }
       }
     })
   })
 
-  it('returns the rendered message without calling Resend in development', async () => {
+  it('returns the rendered message without calling SMTP in development', async () => {
     envMock.NODE_ENV = 'development'
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-1' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-1' }))
     const db = createMockDb()
 
-    const result = await deliverEmailNotification(db as never, 'notification-1', {
-      resend: { emails: { send } } as never
-    })
+    const result = await deliverEmailNotification(
+      db as never,
+      'notification-1',
+      {
+        transport: { sendMail: send } as never
+      }
+    )
 
     expect(send).not.toHaveBeenCalled()
     expect(db.emailNotification.update).not.toHaveBeenCalled()
@@ -325,13 +333,10 @@ describe('Email Notifications', () => {
 
   it('does not resend an already-sent notification', async () => {
     const db = createMockDb()
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-1' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-1' }))
 
     await deliverEmailNotification(db as never, 'notification-2', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     expect(send).not.toHaveBeenCalled()
@@ -357,10 +362,10 @@ describe('Email Notifications', () => {
     const send = vi.fn(async () => {
       releaseSend()
       await sendCanFinish
-      return { data: { id: 'resend-1' }, error: null }
+      return { messageId: 'smtp-1' }
     })
     const deps = {
-      resend: { emails: { send } } as never,
+      transport: { sendMail: send } as never,
       now: () => new Date('2026-06-21T12:00:00Z')
     }
 
@@ -375,14 +380,11 @@ describe('Email Notifications', () => {
   })
 
   it('renders German whole-Order cancellation copy with a session-authorized link', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-3' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-3' }))
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-3', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     const [message] = send.mock.calls[0]!
@@ -398,14 +400,11 @@ describe('Email Notifications', () => {
   })
 
   it('gives a Customer without a user account a signed cancellation link', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-4' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-4' }))
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-4', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     const [message] = send.mock.calls[0]!
@@ -416,14 +415,11 @@ describe('Email Notifications', () => {
   })
 
   it('renders German dispatch copy and the derived Swiss Post tracking link', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-5' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-5' }))
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-5', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     const [message] = send.mock.calls[0]!
@@ -435,14 +431,11 @@ describe('Email Notifications', () => {
   })
 
   it('renders German customer payment confirmation from Order snapshots', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-6' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-6' }))
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-6', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     const [message] = send.mock.calls[0]!
@@ -456,14 +449,11 @@ describe('Email Notifications', () => {
   })
 
   it('renders the German merchant paid-order message from Order snapshots', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-7' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-7' }))
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-7', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     const [message] = send.mock.calls[0]!
@@ -475,14 +465,11 @@ describe('Email Notifications', () => {
   })
 
   it('renders generic German Payment Failed copy with an authorized retry link', async () => {
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-8' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-8' }))
     const db = createMockDb()
 
     await deliverEmailNotification(db as never, 'notification-8', {
-      resend: { emails: { send } } as never
+      transport: { sendMail: send } as never
     })
 
     const [message] = send.mock.calls[0]!
@@ -500,15 +487,13 @@ describe('Email Notifications', () => {
 
   it('records the failed attempt and rethrows the provider error', async () => {
     const db = createMockDb()
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-1' }
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-1' }))
 
     send.mockRejectedValue(new Error('Failed to send email'))
 
     await expect(
       deliverEmailNotification(db as never, 'notification-1', {
-        resend: { emails: { send } } as never
+        transport: { sendMail: send } as never
       })
     ).rejects.toThrow('Failed to send email')
     const updateInput = db.emailNotification.update.mock.calls[0]![0]
@@ -524,7 +509,7 @@ describe('Email Notifications', () => {
 
     await expect(
       deliverEmailNotification(db as never, 'notification-1', {
-        resend: { emails: { send } } as never
+        transport: { sendMail: send } as never
       })
     ).rejects.toThrow('Mailbox unavailable')
 
@@ -536,16 +521,13 @@ describe('Email Notifications', () => {
 
   it('returns null when notification is not found', async () => {
     const db = createMockDb()
-    const send = vi.fn(async (_input: SendInput, _options: SendOptions) => ({
-      data: { id: 'resend-1' },
-      error: null
-    }))
+    const send = vi.fn(async (_input: SendInput) => ({ messageId: 'smtp-1' }))
 
     const result = await deliverEmailNotification(
       db as never,
       'notification-9',
       {
-        resend: { emails: { send } } as never
+        transport: { sendMail: send } as never
       }
     )
     expect(result).toBeNull()

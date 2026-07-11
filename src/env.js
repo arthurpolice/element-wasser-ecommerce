@@ -53,10 +53,7 @@ export const env = createEnv({
       process.env.NODE_ENV === 'production'
         ? z.string().url()
         : z.string().url().optional(),
-    APP_BASE_URL:
-      process.env.NODE_ENV === 'production'
-        ? z.string().url()
-        : z.string().url().optional(),
+    APP_BASE_URL: z.string().url().optional(),
     CRON_SECRET:
       process.env.NODE_ENV === 'production'
         ? z.string()
@@ -65,14 +62,19 @@ export const env = createEnv({
       process.env.NODE_ENV === 'production'
         ? z.string().min(32)
         : z.string().min(32).optional(),
-    RESEND_API_KEY:
+    // Resend remains configured only for its webhook endpoint while SMTP sends mail.
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_WEBHOOK_SECRET: z.string().optional(),
+    SMTP_HOST:
       process.env.NODE_ENV === 'production'
         ? z.string()
         : z.string().optional(),
-    RESEND_WEBHOOK_SECRET:
+    SMTP_PORT:
       process.env.NODE_ENV === 'production'
-        ? z.string()
-        : z.string().optional(),
+        ? z.coerce.number().int().positive()
+        : z.coerce.number().int().positive().optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASSWORD: z.string().optional(),
     EMAIL_FROM:
       process.env.NODE_ENV === 'production'
         ? z.string().email()
@@ -126,6 +128,10 @@ export const env = createEnv({
     ORDER_ACCESS_SECRET: process.env.ORDER_ACCESS_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_WEBHOOK_SECRET: process.env.RESEND_WEBHOOK_SECRET,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASSWORD: process.env.SMTP_PASSWORD,
     EMAIL_FROM: process.env.EMAIL_FROM,
     EMAIL_REPLY_TO: process.env.EMAIL_REPLY_TO,
     EMAIL_INTERNAL_RECIPIENT: process.env.EMAIL_INTERNAL_RECIPIENT,

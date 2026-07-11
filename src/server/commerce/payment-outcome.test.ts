@@ -59,6 +59,7 @@ type MockDb = {
     >
   }
   order: {
+    findUnique: Mock<() => Promise<Record<string, unknown>>>
     findUniqueOrThrow: Mock<() => Promise<Record<string, unknown>>>
     update: Mock<
       (args: {
@@ -139,6 +140,11 @@ function createMockDb(payment = createPayment()): MockDb {
       })
     },
     order: {
+      findUnique: vi.fn(async () => ({
+        ...payment.order,
+        lines: [],
+        payments: [{ status: payment.status }]
+      })),
       findUniqueOrThrow: vi.fn(async () => ({
         ...payment.order,
         payments: [{ status: payment.status }]
@@ -341,7 +347,7 @@ describe('handleStripeWebhookEvent', () => {
     expect(db.emailNotification.upsert).not.toHaveBeenCalled()
   })
 
-  it('marks an expired Checkout Session cancelled without releasing stock', async () => {
+  it('cancels an Order and releases its reservation when Checkout expires', async () => {
     const db = createMockDb()
 
     await handleStripeWebhookEvent(
@@ -366,7 +372,15 @@ describe('handleStripeWebhookEvent', () => {
       where: { id: 'order-1' },
       data: { paymentStatus: 'CANCELLED' }
     })
-    expect('product' in db).toBe(false)
+    expect(db.order.update).toHaveBeenCalledWith({
+      where: { id: 'order-1' },
+      data: {
+        status: 'CANCELLED',
+        fulfillmentStatus: 'CANCELLED',
+        paymentExpiryStartedAt: null,
+        cancelledAt: expect.any(Date)
+      }
+    })
   })
 
   it('ignores an expired Checkout Session when the Payment was already captured', async () => {

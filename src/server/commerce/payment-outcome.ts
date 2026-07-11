@@ -9,6 +9,7 @@ import {
   paymentEmailNotificationKey
 } from '~/server/commerce/email-notification-key'
 import { retrieveStripeCheckoutSession } from '~/server/payments/stripe-checkout'
+import { cancelOrderForExpiredPayment } from '~/server/commerce/order-lifecycle'
 
 type PaymentOutcomeDb = Pick<PrismaClient, '$transaction' | 'payment'>
 
@@ -364,8 +365,10 @@ async function handleCheckoutSessionExpired(
   })
 
   if (!payment) {
-    return []
+    return null
   }
+
+  if (payment.status === 'CAPTURED') return null
 
   await markPaymentFailed(
     tx,
@@ -376,6 +379,8 @@ async function handleCheckoutSessionExpired(
     },
     deps
   )
+
+  return payment.orderId
 }
 
 async function handlePaymentIntentFailed(
@@ -410,12 +415,17 @@ export async function handleStripeWebhookEvent(
   event: Stripe.Event,
   deps: PaymentOutcomeDeps = {}
 ) {
+  let expiredOrderId: string | null = null
   const notificationIds = await db.$transaction(async (tx) => {
     switch (event.type) {
       case 'checkout.session.completed':
         return handleCheckoutSessionCompleted(tx, event.data.object, deps)
       case 'checkout.session.expired':
-        await handleCheckoutSessionExpired(tx, event.data.object, deps)
+        expiredOrderId = await handleCheckoutSessionExpired(
+          tx,
+          event.data.object,
+          deps
+        )
         return []
       case 'payment_intent.payment_failed':
         return handlePaymentIntentFailed(tx, event.data.object, deps)
@@ -423,6 +433,10 @@ export async function handleStripeWebhookEvent(
         return []
     }
   })
+
+  if (expiredOrderId) {
+    await cancelOrderForExpiredPayment(db, { orderId: expiredOrderId }, deps)
+  }
 
   for (const id of notificationIds) {
     void publishEmailNotificationSafely(id)

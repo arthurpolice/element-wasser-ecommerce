@@ -425,7 +425,7 @@ function EmptyCheckoutState() {
   const t = useTranslations('Storefront.checkout')
 
   return (
-    <section className="grid min-h-[24rem] place-items-center py-12 text-center">
+    <section className="grid min-h-96 place-items-center py-12 text-center">
       <div className="max-w-md">
         <div className="border-store-border text-store-accent mx-auto flex size-16 items-center justify-center rounded-full border">
           <FaShoppingBag aria-hidden="true" className="size-6" />
@@ -575,7 +575,7 @@ function RegisteredAddressStep({
                   </span>
                 ) : null}
               </span>
-              <span className="text-store-muted block break-words">
+              <span className="text-store-muted block wrap-break-word">
                 {formatAddressBookEntry(address)}
               </span>
             </span>
@@ -1104,7 +1104,7 @@ function CheckoutItemRow({
 
       <div className="min-w-0">
         <Link
-          className="text-store-ink decoration-store-border hover:text-store-accent hover:decoration-store-accent focus-visible:ring-store-accent/25 text-base font-semibold break-words underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
+          className="text-store-ink decoration-store-border hover:text-store-accent hover:decoration-store-accent focus-visible:ring-store-accent/25 text-base font-semibold wrap-break-word underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
           href={`/products/${productSlug}`}
         >
           {productName}
