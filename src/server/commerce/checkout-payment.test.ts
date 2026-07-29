@@ -72,7 +72,20 @@ function createPlacementFailureDb() {
         }
       }
     ),
-    $queryRaw: vi.fn(async () => [])
+    $queryRaw: vi.fn(async (strings: TemplateStringsArray) => {
+      const query = strings.join('?')
+
+      if (
+        query.includes('pg_advisory_xact_lock') &&
+        !query.includes('::text')
+      ) {
+        throw new Error(
+          "Failed to deserialize column of type 'void'. Try casting this column to a supported type."
+        )
+      }
+
+      return [{ guestCheckoutLock: '' }]
+    })
   }
 
   return { db, customers }
@@ -269,6 +282,35 @@ function createCheckoutStartDb() {
 }
 
 describe('beginGuestCheckoutPayment', () => {
+  it('continues Guest Checkout after acquiring its advisory lock', async () => {
+    const { db } = createPlacementFailureDb()
+
+    await expect(
+      beginGuestCheckoutPayment(db as never, {
+        guestCustomer: {
+          email: 'river@example.com',
+          firstName: 'River',
+          lastName: 'Stone'
+        },
+        order: {
+          lines: [{ productId: 'product-1', quantity: 1 }],
+          paymentMethod: 'CARD',
+          shippingFirstName: 'River',
+          shippingLastName: 'Stone',
+          shippingStreetLine1: 'Wasserweg 1',
+          shippingPostalCode: '8000',
+          shippingCity: 'Zurich',
+          shippingCountryCode: 'CH'
+        },
+        locale: 'en',
+        checkoutSubmissionId: 'submission-lock-regression',
+        guestCheckoutFingerprint: 'fingerprint-1'
+      })
+    ).rejects.toBeInstanceOf(OrderPlacementError)
+
+    expect(db.$queryRaw).toHaveBeenCalledOnce()
+  })
+
   it('does not leave a Guest Customer when Order placement fails', async () => {
     const { db, customers } = createPlacementFailureDb()
 

@@ -302,7 +302,7 @@ export async function beginGuestCheckoutPayment(
         await tx.$queryRaw`
           SELECT pg_advisory_xact_lock(
             hashtextextended(${input.guestCheckoutFingerprint}, 0)
-          )
+          )::text
         `
         const openOrderCount = await tx.order.count({
           where: {
