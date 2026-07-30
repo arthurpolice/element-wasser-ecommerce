@@ -162,7 +162,6 @@ export function CheckoutConfirmationClient({
             <p className="text-store-muted mt-3 text-sm leading-6 sm:text-base">
               {format.dateTime(order.placedAt, {
                 dateStyle: 'medium',
-                timeStyle: 'short'
               })}
             </p>
           </div>

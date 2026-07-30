@@ -20,6 +20,10 @@ const completeAddress: GuestCheckoutAddress = {
 }
 
 describe('guest checkout progression', () => {
+  it('starts new checkout addresses in Switzerland', () => {
+    expect(createEmptyGuestCheckoutAddress().countryCode).toBe('CH')
+  })
+
   it('requires guest contact and shipping address fields before payment unlocks', () => {
     const address = {
       ...completeAddress,

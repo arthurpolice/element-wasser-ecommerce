@@ -29,7 +29,7 @@ export function createEmptyGuestCheckoutAddress(): GuestCheckoutAddress {
     streetLine1: '',
     postalCode: '',
     city: '',
-    countryCode: '',
+    countryCode: 'CH',
     phone: ''
   }
 }

@@ -472,7 +472,7 @@ function CheckoutSection({
           {title}
         </h2>
       </div>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 lg:ml-4">{children}</div>
     </section>
   )
 }
@@ -679,13 +679,9 @@ function AddressBookEntryForm({
           value={address.city}
         />
       </div>
-      <Field
-        autoComplete="country"
-        inputMode="text"
+      <CountrySelectField
         label={t('fields.countryCode')}
-        maxLength={2}
         onChange={(value) => onFieldChange('countryCode', value)}
-        required
         value={address.countryCode}
       />
       <button
@@ -792,13 +788,9 @@ function AddressForm({
           value={address.city}
         />
       </div>
-      <Field
-        autoComplete="country"
-        inputMode="text"
+      <CountrySelectField
         label={t('fields.countryCode')}
-        maxLength={2}
         onChange={(value) => onFieldChange('countryCode', value)}
-        required
         value={address.countryCode}
       />
       <Field
@@ -881,6 +873,35 @@ function SelectField({
         <option value="">{t('salutations.none')}</option>
         <option value="HERR">{t('salutations.HERR')}</option>
         <option value="FRAU">{t('salutations.FRAU')}</option>
+      </select>
+    </label>
+  )
+}
+
+function CountrySelectField({
+  label,
+  onChange,
+  value
+}: {
+  label: string
+  onChange: (value: string) => void
+  value: string
+}) {
+  return (
+    <label className="text-store-ink grid gap-2 text-sm font-semibold">
+      <span>
+        {label}
+        <span aria-hidden="true"> *</span>
+      </span>
+      <select
+        autoComplete="country"
+        aria-required="true"
+        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
+        onChange={(event) => onChange(event.target.value)}
+        required
+        value={value}
+      >
+        <option value="CH">CH</option>
       </select>
     </label>
   )

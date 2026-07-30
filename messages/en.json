@@ -577,7 +577,7 @@
         "streetLine2": "Street line 2",
         "postalCode": "Postal code",
         "city": "City",
-        "countryCode": "Country code",
+        "countryCode": "Country",
         "phone": "Phone"
       },
       "salutations": {
@@ -753,7 +753,7 @@
         "shippingStreetLine2": "Street line 2",
         "shippingPostalCode": "Postal code",
         "shippingCity": "City",
-        "shippingCountryCode": "Country code",
+        "shippingCountryCode": "Country",
         "shippingPhone": "Phone"
       },
       "salutations": {

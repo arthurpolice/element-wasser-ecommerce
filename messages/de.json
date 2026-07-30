@@ -247,7 +247,7 @@
   "Products": {
     "title": "Produkte",
     "description": "Verwalten Sie Katalogprodukte, Lagerbestand und Hersteller.",
-    "createButton": "Produkt anlegen",
+    "createButton": "Produkt hinzufügen",
     "editButton": "Bearbeiten",
     "searchLabel": "Suche",
     "searchPlaceholder": "Nach Name oder Hersteller suchen",
@@ -283,7 +283,7 @@
       "next": "Weiter"
     },
     "create": {
-      "title": "Produkt anlegen",
+      "title": "Produkt hinzufügen",
       "description": "Fügen Sie ein neues Produkt zum Katalog hinzu.",
       "fields": {
         "name": "Produktname",
@@ -577,7 +577,7 @@
         "streetLine2": "Strasse Zeile 2",
         "postalCode": "PLZ",
         "city": "Ort",
-        "countryCode": "Ländercode",
+        "countryCode": "Land",
         "phone": "Telefon"
       },
       "salutations": {
@@ -753,7 +753,7 @@
         "shippingStreetLine2": "Strasse Zeile 2",
         "shippingPostalCode": "PLZ",
         "shippingCity": "Ort",
-        "shippingCountryCode": "Ländercode",
+        "shippingCountryCode": "Land",
         "shippingPhone": "Telefon"
       },
       "salutations": {

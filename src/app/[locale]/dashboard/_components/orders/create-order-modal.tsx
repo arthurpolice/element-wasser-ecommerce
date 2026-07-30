@@ -535,22 +535,13 @@ export function CreateOrderDialog() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm">
                   <span>{tForm('fields.shippingCountryCode')}</span>
-                  <input
+                  <select
                     autoComplete="shipping country"
-                    className={`${dashInputClass} uppercase`}
-                    maxLength={2}
-                    type="text"
-                    {...register('shippingCountryCode', {
-                      onChange: (
-                        event: React.ChangeEvent<HTMLInputElement>
-                      ) => {
-                        setValue(
-                          'shippingCountryCode',
-                          event.target.value.toUpperCase()
-                        )
-                      }
-                    })}
-                  />
+                    className={dashInputClass}
+                    {...register('shippingCountryCode')}
+                  >
+                    <option value="CH">CH</option>
+                  </select>
                   {errors.shippingCountryCode ? (
                     <span className="text-dash-danger text-xs">
                       {errors.shippingCountryCode.message}

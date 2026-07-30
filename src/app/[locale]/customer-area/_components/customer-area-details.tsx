@@ -357,10 +357,18 @@ function CustomerAddressForm({
           register={addressForm.register('city')}
         />
       </div>
-      <Input
-        label={t('addresses.countryCode')}
-        register={addressForm.register('countryCode')}
-      />
+      <label className="block">
+        <span className="text-store-muted mb-2 block text-xs font-semibold tracking-[0.14em] uppercase">
+          {t('addresses.countryCode')}
+        </span>
+        <select
+          autoComplete="country"
+          className={inputClass}
+          {...addressForm.register('countryCode')}
+        >
+          <option value="CH">CH</option>
+        </select>
+      </label>
       <label className="text-store-ink flex items-center gap-2 text-sm">
         <input
           className="size-4"
