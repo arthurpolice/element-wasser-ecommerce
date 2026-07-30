@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 
+import { cartRouter } from '~/server/api/routers/cart'
 import { checkoutRouter } from '~/server/api/routers/checkout'
 import { createCallerFactory } from '~/server/api/trpc'
 import { startStripeCheckout } from '~/server/payments/stripe-checkout'
@@ -30,6 +31,7 @@ vi.mock('~/server/payments/stripe-checkout', () => ({
 }))
 
 const createCaller = createCallerFactory(checkoutRouter)
+const createCartCaller = createCallerFactory(cartRouter)
 
 const filter = {
   id: 'filter-1',
@@ -354,6 +356,14 @@ function createPublicCaller(db: ReturnType<typeof createMockDb>) {
   })
 }
 
+function createCartPublicCaller(db: ReturnType<typeof createMockDb>) {
+  return createCartCaller({
+    db: db as never,
+    session: null,
+    headers: new Headers()
+  })
+}
+
 function createRegisteredCaller(db: ReturnType<typeof createMockDb>) {
   return {
     caller: createCaller({
@@ -372,7 +382,7 @@ function createRegisteredCaller(db: ReturnType<typeof createMockDb>) {
   }
 }
 
-describe('checkout router', () => {
+describe('checkout and cart routers', () => {
   let db: ReturnType<typeof createMockDb>
 
   beforeEach(() => {
@@ -384,7 +394,7 @@ describe('checkout router', () => {
   })
 
   it('previews a multi-line cart with server-authoritative totals and weight-based shipping', async () => {
-    const caller = createPublicCaller(db)
+    const caller = createCartPublicCaller(db)
 
     const result = await caller.preview({
       lines: [
@@ -428,7 +438,7 @@ describe('checkout router', () => {
   })
 
   it('blocks placement when the cart includes a product that is not in the active catalog', async () => {
-    const caller = createPublicCaller(db)
+    const caller = createCartPublicCaller(db)
 
     const result = await caller.preview({
       lines: [
@@ -460,7 +470,7 @@ describe('checkout router', () => {
         shippingWeightGrams: 15050
       }
     ])
-    const caller = createPublicCaller(db)
+    const caller = createCartPublicCaller(db)
 
     const result = await caller.preview({
       lines: [{ productId: filter.id, quantity: 2 }]
@@ -473,7 +483,7 @@ describe('checkout router', () => {
   })
 
   it('normalizes duplicate product IDs while preserving first-seen cart order', async () => {
-    const caller = createPublicCaller(db)
+    const caller = createCartPublicCaller(db)
 
     const result = await caller.preview({
       lines: [
@@ -492,7 +502,7 @@ describe('checkout router', () => {
   })
 
   it('includes inactive and insufficient-stock products with problem codes and excludes them from payable totals', async () => {
-    const caller = createPublicCaller(db)
+    const caller = createCartPublicCaller(db)
 
     const result = await caller.preview({
       lines: [
@@ -527,7 +537,7 @@ describe('checkout router', () => {
   })
 
   it('uses zero shipping when no cart lines are orderable', async () => {
-    const caller = createPublicCaller(db)
+    const caller = createCartPublicCaller(db)
 
     const result = await caller.preview({
       lines: [

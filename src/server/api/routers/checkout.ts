@@ -24,30 +24,8 @@ import {
   retryCheckoutPayment
 } from '~/server/commerce/checkout-payment'
 import { guestCheckoutFingerprint } from '~/server/commerce/guest-checkout-abuse'
-import {
-  normalizeOrderQuoteLines,
-  quoteOrderLines,
-  type OrderQuoteProblemCode
-} from '~/lib/order-quote'
+import { cartPreviewInputSchema } from '~/server/commerce/cart-preview'
 import { reconcileStripePayment } from '~/server/commerce/payment-outcome'
-
-const checkoutCurrencyCode = 'CHF'
-type CheckoutPreviewProblemCode =
-  | 'MISSING_PRODUCT'
-  | 'INACTIVE_PRODUCT'
-  | 'INSUFFICIENT_STOCK'
-type CheckoutPreviewOrderProblemCode = 'OVER_WEIGHT_LIMIT'
-
-const previewInputSchema = z.object({
-  lines: z
-    .array(
-      z.object({
-        productId: z.string().trim().min(1),
-        quantity: z.number().int().min(1).max(99)
-      })
-    )
-    .max(99)
-})
 
 const paymentMethodSchema = z.enum(['CARD', 'TWINT'])
 
@@ -66,7 +44,7 @@ const shippingAddressInputSchema = addressInputSchema.extend({
   phone: z.string().trim().optional()
 })
 
-const placeOrderInputSchema = previewInputSchema
+const placeOrderInputSchema = cartPreviewInputSchema
   .extend({
     checkoutSubmissionId: z
       .string()
@@ -78,7 +56,7 @@ const placeOrderInputSchema = previewInputSchema
   })
   .merge(shippingAddressInputSchema)
 
-const placeGuestOrderInputSchema = previewInputSchema
+const placeGuestOrderInputSchema = cartPreviewInputSchema
   .extend({
     checkoutSubmissionId: z
       .string()
@@ -99,18 +77,6 @@ const retryPaymentInputSchema = orderConfirmationInputSchema.extend({
   paymentMethod: paymentMethodSchema,
   locale: z.enum(['de', 'en']).default('de')
 })
-
-const checkoutProductInclude = {
-  images: {
-    orderBy: { sortOrder: 'asc' as const },
-    take: 1,
-    select: { url: true, altText: true }
-  }
-} satisfies Prisma.ProductInclude
-
-type CheckoutProduct = Prisma.ProductGetPayload<{
-  include: typeof checkoutProductInclude
-}>
 
 const checkoutAddressSelect = {
   id: true,
@@ -231,16 +197,6 @@ function toGuestOrderInput(
     shippingPhone: input.phone
   }
 }
-
-const checkoutPreviewProblemCodes = {
-  MISSING_PRODUCT: 'MISSING_PRODUCT',
-  INACTIVE_PRODUCT: 'INACTIVE_PRODUCT',
-  INSUFFICIENT_STOCK: 'INSUFFICIENT_STOCK',
-  OVER_WEIGHT_LIMIT: 'OVER_WEIGHT_LIMIT'
-} satisfies Record<
-  OrderQuoteProblemCode,
-  CheckoutPreviewProblemCode | CheckoutPreviewOrderProblemCode
->
 
 export const checkoutRouter = createTRPCRouter({
   bootstrap: publicProcedure.query(async ({ ctx }) => {
@@ -553,100 +509,6 @@ export const checkoutRouter = createTRPCRouter({
         }
 
         throw error
-      }
-    }),
-
-  preview: publicProcedure
-    .input(previewInputSchema)
-    .query(async ({ ctx, input }) => {
-      const normalizedLines = normalizeOrderQuoteLines(input.lines, {
-        maxQuantity: 99
-      })
-
-      if (normalizedLines.length === 0) {
-        return {
-          items: [],
-          subtotalCents: 0,
-          discountCents: 0,
-          shippingCents: 0,
-          shippingWeightGrams: 0,
-          problemCode: null,
-          totalCents: 0,
-          currencyCode: checkoutCurrencyCode,
-          canPlaceOrder: false
-        }
-      }
-
-      const products: CheckoutProduct[] = await ctx.db.product.findMany({
-        where: {
-          id: { in: normalizedLines.map((line) => line.productId) }
-        },
-        include: checkoutProductInclude
-      })
-
-      const quote = quoteOrderLines(products, normalizedLines)
-      const orderProblemCode =
-        quote.problems.find((problem) => problem.code === 'OVER_WEIGHT_LIMIT')
-          ?.code ?? null
-      const items = quote.lines.map((line) => {
-        const product = line.product
-        const problemCode = line.problemCode
-          ? checkoutPreviewProblemCodes[line.problemCode]
-          : null
-
-        if (!product) {
-          return {
-            productId: line.productId,
-            name: null,
-            slug: null,
-            quantity: line.quantity,
-            unitPriceCents: 0,
-            originalUnitPriceCents: 0,
-            discountPercent: null,
-            lineSubtotalCents: 0,
-            lineDiscountCents: 0,
-            lineTotalCents: 0,
-            imageUrl: null,
-            imageAlt: null,
-            availableStock: 0,
-            canPlaceLine: false,
-            problemCode
-          }
-        }
-
-        const primaryImage = product.images[0]
-
-        return {
-          productId: product.id,
-          name: product.name,
-          slug: product.slug,
-          quantity: line.quantity,
-          unitPriceCents: line.unitPriceCents,
-          originalUnitPriceCents: line.originalUnitPriceCents,
-          discountPercent: line.discountPercent,
-          lineSubtotalCents: line.lineSubtotalCents,
-          lineDiscountCents: line.lineDiscountCents,
-          lineTotalCents: line.lineTotalCents,
-          imageUrl: primaryImage?.url ?? null,
-          imageAlt: primaryImage?.altText ?? null,
-          availableStock: line.availableStock,
-          canPlaceLine: line.canPlaceLine,
-          problemCode
-        }
-      })
-
-      return {
-        items,
-        subtotalCents: quote.subtotalCents,
-        discountCents: quote.discountCents,
-        shippingCents: quote.shippingCents,
-        shippingWeightGrams: quote.shippingWeightGrams,
-        problemCode: orderProblemCode
-          ? checkoutPreviewProblemCodes[orderProblemCode]
-          : null,
-        totalCents: quote.totalCents,
-        currencyCode: checkoutCurrencyCode,
-        canPlaceOrder: quote.canPlaceOrder
       }
     })
 })

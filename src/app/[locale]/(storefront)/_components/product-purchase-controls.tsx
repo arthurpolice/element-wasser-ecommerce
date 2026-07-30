@@ -89,9 +89,6 @@ export function ProductPurchaseControls({
 
       <div className="flex flex-wrap items-end gap-4">
         <label className="grid gap-2">
-          <span className="text-store-muted text-xs tracking-[0.16em] uppercase">
-            {t('amount')}
-          </span>
           <span className="text-store-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
             <span>
               {t('availableAmount', { count: product.availableStock })}

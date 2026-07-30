@@ -1,6 +1,7 @@
 import { customerRouter } from '~/server/api/routers/customer'
 import { categoryRouter } from '~/server/api/routers/category'
 import { catalogRouter } from '~/server/api/routers/catalog'
+import { cartRouter } from '~/server/api/routers/cart'
 import { checkoutRouter } from '~/server/api/routers/checkout'
 import { dashboardRouter } from '~/server/api/routers/dashboard'
 import { orderRouter } from '~/server/api/routers/order'
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   product: productRouter,
   category: categoryRouter,
   catalog: catalogRouter,
+  cart: cartRouter,
   checkout: checkoutRouter
 })
 

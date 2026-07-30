@@ -40,6 +40,14 @@ _Avoid_: Checkout request, form submit
 A customer's pre-checkout selection of products and quantities intended to become one order.
 _Avoid_: Basket
 
+**Cart Line**:
+One Product and the quantity requested for it in a Cart. A Cart Line retains the Customer's requested quantity until the Customer changes or removes it.
+_Avoid_: Cart row, Cart item
+
+**Cart Preview**:
+A current evaluation of a Cart and its Cart Lines against the catalog, pricing, and Available Stock, including whether their requested quantities can become an Order.
+_Avoid_: Cart snapshot, Checkout Preview
+
 **Order**:
 A customer commitment to buy one or more products at recorded purchase terms. Cancellations apply to whole orders, and customer contact details are stored as order snapshots.
 _Avoid_: Purchase, transaction

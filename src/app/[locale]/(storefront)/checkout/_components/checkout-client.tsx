@@ -32,7 +32,7 @@ import {
 import { formatPriceCents } from '~/lib/format-catalog'
 import { api, type RouterOutputs } from '~/trpc/react'
 
-type CheckoutPreview = RouterOutputs['checkout']['preview']
+type CheckoutPreview = RouterOutputs['cart']['preview']
 type CheckoutPreviewItem = CheckoutPreview['items'][number]
 type CheckoutBootstrap = RouterOutputs['checkout']['bootstrap']
 type RegisteredCheckoutCustomer = Extract<
@@ -117,7 +117,7 @@ export function CheckoutClient() {
     previewLines,
     debouncedPreviewLines
   )
-  const previewQuery = api.checkout.preview.useQuery(
+  const previewQuery = api.cart.preview.useQuery(
     {
       lines: debouncedPreviewLines
     },
@@ -292,12 +292,9 @@ export function CheckoutClient() {
           {t('error')}
         </p>
       ) : (
-        <div className="py-8 lg:py-12">
+        <div>
           <div className="mx-auto max-w-6xl">
-            <CheckoutSection
-              stepIndex={1}
-              title={t('addressTitle')}
-            >
+            <CheckoutSection stepIndex={1} title={t('addressTitle')}>
               {bootstrap?.status === 'needs-onboarding' ? (
                 <CheckoutOnboardingPrompt />
               ) : registeredCustomer ? (
@@ -322,10 +319,7 @@ export function CheckoutClient() {
               )}
             </CheckoutSection>
 
-            <CheckoutSection
-              stepIndex={2}
-              title={t('paymentTitle')}
-            >
+            <CheckoutSection stepIndex={2} title={t('paymentTitle')}>
               <PaymentMethodPicker
                 disabled={!progression.paymentUnlocked}
                 paymentMethod={paymentMethod}
@@ -831,7 +825,7 @@ function Field({
   value: string
 }) {
   return (
-    <label className="text-store-ink grid gap-2 text-sm font-semibold">
+    <label className="text-store-ink grid min-w-0 gap-2 text-sm font-semibold">
       <span>
         {label}
         {required ? <span aria-hidden="true"> *</span> : null}
@@ -839,7 +833,7 @@ function Field({
       <input
         autoComplete={autoComplete}
         aria-required={required}
-        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
+        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 w-full min-w-0 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
         inputMode={inputMode}
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
@@ -863,10 +857,10 @@ function SelectField({
   const t = useTranslations('Storefront.checkout')
 
   return (
-    <label className="text-store-ink grid gap-2 text-sm font-semibold">
+    <label className="text-store-ink grid min-w-0 gap-2 text-sm font-semibold">
       <span>{label}</span>
       <select
-        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
+        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 w-full min-w-0 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
         onChange={(event) => onChange(event.target.value)}
         value={value}
       >
@@ -888,7 +882,7 @@ function CountrySelectField({
   value: string
 }) {
   return (
-    <label className="text-store-ink grid gap-2 text-sm font-semibold">
+    <label className="text-store-ink grid min-w-0 gap-2 text-sm font-semibold">
       <span>
         {label}
         <span aria-hidden="true"> *</span>
@@ -896,7 +890,7 @@ function CountrySelectField({
       <select
         autoComplete="country"
         aria-required="true"
-        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
+        className="border-store-border bg-store-surface text-store-ink focus:border-store-accent focus-visible:ring-store-accent/25 disabled:bg-store-border/35 disabled:text-store-muted h-11 w-full min-w-0 border px-3 text-sm font-normal transition outline-none focus-visible:ring-2 disabled:cursor-not-allowed"
         onChange={(event) => onChange(event.target.value)}
         required
         value={value}
@@ -1105,7 +1099,7 @@ function CheckoutItemRow({
         : null
 
   return (
-    <div className="grid gap-y-5 py-6 sm:grid-cols-[6rem_minmax(0,1fr)_9rem] sm:items-start sm:gap-x-6">
+    <div className="grid gap-y-5 py-6 sm:grid-cols-[6rem_minmax(0,1fr)] sm:items-start sm:gap-x-6">
       <div className="border-store-border bg-store-surface relative size-24 overflow-hidden border">
         {imageUrl ? (
           <Image
@@ -1124,12 +1118,26 @@ function CheckoutItemRow({
       </div>
 
       <div className="min-w-0">
-        <Link
-          className="text-store-ink decoration-store-border hover:text-store-accent hover:decoration-store-accent focus-visible:ring-store-accent/25 text-base font-semibold wrap-break-word underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
-          href={`/products/${productSlug}`}
-        >
-          {productName}
-        </Link>
+        <div className="flex items-start justify-between gap-4">
+          <Link
+            className="text-store-ink decoration-store-border hover:text-store-accent hover:decoration-store-accent focus-visible:ring-store-accent/25 min-w-0 text-base font-semibold wrap-break-word underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
+            href={`/products/${productSlug}`}
+          >
+            {productName}
+          </Link>
+          <div className="text-store-ink flex shrink-0 items-center gap-2 text-right font-semibold">
+            {previewItem?.problemCode ? (
+              t('notPayable')
+            ) : previewItem ? (
+              <>
+                <span>
+                  {formatPriceCents(previewItem.lineTotalCents, locale)}
+                </span>
+                {updating ? <UpdatingSpinner /> : null}
+              </>
+            ) : null}
+          </div>
+        </div>
         {previewItem ? (
           <p className="text-store-muted mt-2 flex items-center gap-2 text-sm">
             <span>{formatPriceCents(previewItem.unitPriceCents, locale)}</span>
@@ -1145,32 +1153,40 @@ function CheckoutItemRow({
             {problemMessage}
           </p>
         ) : null}
-        <div className="mt-4 flex flex-wrap items-center gap-3">
+        <div className="mt-4 flex items-center justify-between">
           <div
             aria-label={t('quantity')}
-            className="border-store-border inline-flex h-10 items-center border"
+            className="flex items-center"
             role="group"
           >
             <button
               aria-label={t('decreaseQuantity', { name: productName })}
-              className="text-store-ink hover:text-store-accent focus-visible:ring-store-accent/25 disabled:text-store-muted/40 inline-flex size-10 items-center justify-center transition focus-visible:ring-2 focus-visible:outline-none"
+              className="border-store-border text-store-ink hover:border-store-accent/45 hover:text-store-accent focus-visible:ring-store-accent/25 inline-flex size-7 items-center justify-center border transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40"
               disabled={cartItem.amount <= 1}
               onClick={() =>
                 updateAmount(cartItem.productId, cartItem.amount - 1)
               }
               type="button"
             >
-              <FaMinus aria-hidden="true" className="size-3" />
+              <FaMinus aria-hidden="true" className="size-2.5" />
             </button>
-            <span
-              aria-live="polite"
-              className="text-store-ink w-10 text-center text-sm font-semibold"
-            >
-              {cartItem.amount}
-            </span>
+            <input
+              className="border-store-border bg-store-surface text-store-ink focus:ring-store-accent/25 h-7 w-11 border-y text-center text-xs font-semibold outline-none focus:ring-2"
+              inputMode="numeric"
+              max={maxQuantity}
+              min={1}
+              onChange={(event) =>
+                updateAmount(
+                  cartItem.productId,
+                  Number.parseInt(event.target.value, 10) || 1
+                )
+              }
+              type="number"
+              value={cartItem.amount}
+            />
             <button
               aria-label={t('increaseQuantity', { name: productName })}
-              className="text-store-ink hover:text-store-accent focus-visible:ring-store-accent/25 disabled:text-store-muted/40 inline-flex size-10 items-center justify-center transition focus-visible:ring-2 focus-visible:outline-none"
+              className="border-store-border text-store-ink hover:border-store-accent/45 hover:text-store-accent focus-visible:ring-store-accent/25 inline-flex size-7 items-center justify-center border transition focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40"
               disabled={cartItem.amount >= maxQuantity}
               onClick={() =>
                 updateAmount(
@@ -1180,30 +1196,18 @@ function CheckoutItemRow({
               }
               type="button"
             >
-              <FaPlus aria-hidden="true" className="size-3" />
+              <FaPlus aria-hidden="true" className="size-2.5" />
             </button>
           </div>
           <button
             aria-label={t('removeItem', { name: productName })}
-            className="text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 inline-flex h-10 items-center gap-2 text-sm font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
+            className="inline-flex size-7 items-center justify-center text-red-700 transition hover:bg-red-50 hover:text-red-900 focus-visible:ring-2 focus-visible:ring-red-700/25 focus-visible:outline-none"
             onClick={() => removeItem(cartItem.productId)}
             type="button"
           >
-            <FaRegTrashAlt aria-hidden="true" className="size-3.5" />
-            {t('remove')}
+            <FaRegTrashAlt aria-hidden="true" className="size-3" />
           </button>
         </div>
-      </div>
-
-      <div className="text-store-ink flex items-center gap-2 text-left font-semibold sm:justify-end sm:text-right">
-        {previewItem?.problemCode ? (
-          t('notPayable')
-        ) : previewItem ? (
-          <>
-            <span>{formatPriceCents(previewItem.lineTotalCents, locale)}</span>
-            {updating ? <UpdatingSpinner /> : null}
-          </>
-        ) : null}
       </div>
     </div>
   )

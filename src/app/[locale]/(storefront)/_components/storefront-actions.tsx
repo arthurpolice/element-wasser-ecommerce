@@ -2,9 +2,11 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
 import {
+  FaMinus,
+  FaPlus,
   FaRegTrashAlt,
   FaRegUserCircle,
   FaShoppingBag,
@@ -18,9 +20,13 @@ import {
   type StorefrontCartItem
 } from '~/app/[locale]/(storefront)/_components/storefront-cart'
 import { Link } from '~/i18n/navigation'
+import { formatPriceCents } from '~/lib/format-catalog'
 import { authClient } from '~/server/better-auth/client'
+import { api, type RouterOutputs } from '~/trpc/react'
 
 export type StorefrontDropdown = 'user' | 'cart' | 'added'
+
+type CartPreviewItem = RouterOutputs['cart']['preview']['items'][number]
 
 type TopNavActionsProps = {
   addedCartItem: StorefrontAddedCartItem | null
@@ -42,6 +48,23 @@ const dropdownClass =
 
 const menuLinkClass =
   'block py-2 text-sm font-medium text-store-ink underline decoration-store-border underline-offset-4 transition hover:text-store-accent hover:decoration-store-accent'
+
+const amountButtonClass =
+  'inline-flex size-7 items-center justify-center border border-store-border text-store-ink transition hover:border-store-accent/45 hover:text-store-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-store-accent/25 disabled:pointer-events-none disabled:opacity-40'
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedValue(value)
+    }, delayMs)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [delayMs, value])
+
+  return debouncedValue
+}
 
 export function TopNavActions({
   addedCartItem,
@@ -289,6 +312,31 @@ function CartContent({
 }) {
   const t = useTranslations('Storefront.topNav')
   const items = useStorefrontCart((state) => state.items)
+  const previewLines = useMemo(
+    () =>
+      items.map((item) => ({
+        productId: item.productId,
+        quantity: item.amount
+      })),
+    [items]
+  )
+  const debouncedPreviewLines = useDebouncedValue(previewLines, 250)
+  const previewQuery = api.cart.preview.useQuery(
+    { lines: debouncedPreviewLines },
+    {
+      enabled: debouncedPreviewLines.length > 0,
+      placeholderData: (previousData) => previousData,
+      refetchOnMount: 'always',
+      refetchOnReconnect: 'always',
+      refetchOnWindowFocus: 'always'
+    }
+  )
+  const previewItemsById = new Map(
+    previewQuery.data?.items.map((item) => [item.productId, item]) ?? []
+  )
+  const hasKnownLineProblem = items.some(
+    (item) => previewItemsById.get(item.productId)?.problemCode != null
+  )
 
   return (
     <>
@@ -300,17 +348,38 @@ function CartContent({
       {items.length > 0 ? (
         <>
           <div className="border-store-border/70 divide-store-border/70 mt-4 divide-y border-t">
-            {items.map((item) => (
-              <CartDropdownItem key={item.productId} item={item} />
-            ))}
+            {items.map((item) => {
+              const previewItem = previewItemsById.get(item.productId)
+
+              return (
+                <CartDropdownItem
+                  key={item.productId}
+                  item={item}
+                  previewItem={previewItem}
+                  showPreviewSkeleton={
+                    previewQuery.isFetching && previewItem == null
+                  }
+                />
+              )
+            })}
           </div>
-          <Link
-            className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink focus-visible:ring-store-accent/25 mt-5 inline-flex h-10 w-full items-center justify-center border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
-            href="/checkout"
-            onClick={onNavigate}
-          >
-            {t('checkout')}
-          </Link>
+          {hasKnownLineProblem ? (
+            <span
+              aria-disabled="true"
+              className="border-store-border text-store-muted mt-5 inline-flex h-10 w-full cursor-not-allowed items-center justify-center border px-3 text-sm font-semibold opacity-60"
+              title={t('resolveCartIssues')}
+            >
+              {t('checkout')}
+            </span>
+          ) : (
+            <Link
+              className="border-store-accent/45 text-store-accent hover:border-store-ink hover:text-store-ink focus-visible:ring-store-accent/25 mt-5 inline-flex h-10 w-full items-center justify-center border px-3 text-sm font-semibold transition focus-visible:ring-2 focus-visible:outline-none"
+              href="/checkout"
+              onClick={onNavigate}
+            >
+              {t('checkout')}
+            </Link>
+          )}
         </>
       ) : (
         <p className="text-store-muted border-store-border/70 mt-4 border-t pt-4 text-sm">
@@ -353,21 +422,55 @@ function StorefrontMobileActionDrawer({
   )
 }
 
-function CartDropdownItem({ item }: { item: StorefrontCartItem }) {
+function CartDropdownItem({
+  item,
+  previewItem,
+  showPreviewSkeleton
+}: {
+  item: StorefrontCartItem
+  previewItem: CartPreviewItem | undefined
+  showPreviewSkeleton: boolean
+}) {
   const t = useTranslations('Storefront.topNav')
+  const locale = useLocale()
   const removeItem = useStorefrontCart((state) => state.removeItem)
   const updateAmount = useStorefrontCart((state) => state.updateAmount)
+  const productName = previewItem?.name ?? item.name
+  const productSlug = previewItem?.slug ?? item.slug
+  const imageUrl = previewItem?.imageUrl ?? item.imageUrl
+  const imageAlt = previewItem?.imageAlt ?? item.imageAlt
+  const problemCode = previewItem?.problemCode
+  const productUnavailable =
+    problemCode === 'MISSING_PRODUCT' || problemCode === 'INACTIVE_PRODUCT'
+  const availableStock = previewItem?.availableStock
+  const noStockAvailable =
+    problemCode === 'INSUFFICIENT_STOCK' &&
+    availableStock != null &&
+    availableStock <= 0
+  const quantityControlsDisabled = productUnavailable || noStockAvailable
+  const maximumIncreaseAmount =
+    previewItem && !productUnavailable
+      ? Math.min(99, Math.max(0, previewItem.availableStock))
+      : previewItem
+        ? 0
+        : 99
+  const atAvailableStockLimit =
+    previewItem != null &&
+    !productUnavailable &&
+    previewItem.availableStock > 0 &&
+    item.amount >= previewItem.availableStock
+  const productCanLink = !productUnavailable && Boolean(productSlug)
 
   return (
     <div className="flex gap-4 py-4">
       <div className="border-store-border/70 bg-store-bg relative size-14 shrink-0 overflow-hidden border">
-        {item.imageUrl ? (
+        {imageUrl ? (
           <Image
-            alt={item.imageAlt ?? item.name}
+            alt={imageAlt ?? productName}
             className="object-cover"
             fill
             sizes="56px"
-            src={item.imageUrl}
+            src={imageUrl}
           />
         ) : (
           <FaShoppingBag
@@ -377,39 +480,140 @@ function CartDropdownItem({ item }: { item: StorefrontCartItem }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <Link
-          className="text-store-ink decoration-store-border hover:text-store-accent hover:decoration-store-accent block truncate text-sm font-semibold underline underline-offset-4 transition"
-          href={`/products/${item.slug}`}
-        >
-          {item.name}
-        </Link>
-        <label className="text-store-muted mt-2 flex items-center gap-2 text-xs">
-          {t('amount')}
-          <select
-            className="border-store-border bg-store-surface text-store-ink focus:border-store-accent border-b px-1 py-0.5 outline-none"
-            onChange={(event) =>
-              updateAmount(item.productId, Number(event.target.value))
-            }
-            value={item.amount}
+        {productCanLink ? (
+          <Link
+            className="text-store-ink decoration-store-border hover:text-store-accent hover:decoration-store-accent block truncate text-sm font-semibold underline underline-offset-4 transition"
+            href={`/products/${productSlug}`}
           >
-            {Array.from({ length: 99 }, (_, index) => index + 1).map(
-              (amount) => (
-                <option key={amount} value={amount}>
-                  {amount}
-                </option>
-              )
-            )}
-          </select>
-        </label>
-        <button
-          aria-label={t('removeItem', { name: item.name })}
-          className="text-store-muted hover:text-store-ink focus-visible:ring-store-accent/25 mt-3 inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition focus-visible:ring-2 focus-visible:outline-none"
-          onClick={() => removeItem(item.productId)}
-          type="button"
-        >
-          <FaRegTrashAlt aria-hidden="true" className="size-3" />
-          {t('remove')}
-        </button>
+            {productName}
+          </Link>
+        ) : (
+          <p className="text-store-ink truncate text-sm font-semibold">
+            {productName}
+          </p>
+        )}
+
+        {showPreviewSkeleton ? (
+          <div
+            aria-hidden="true"
+            className="mt-2 flex animate-pulse items-center justify-between gap-3"
+          >
+            <span className="bg-store-border/60 h-3 w-20 rounded-sm" />
+            <span className="bg-store-border/60 h-3 w-14 rounded-sm" />
+          </div>
+        ) : previewItem ? (
+          <div className="text-store-muted mt-2 flex items-baseline justify-between gap-3 text-xs">
+            <span className="flex min-w-0 items-baseline gap-1.5">
+              <span>
+                {formatPriceCents(previewItem.unitPriceCents, locale)}
+              </span>
+              {previewItem.discountPercent ? (
+                <span className="text-store-muted/70 line-through">
+                  {formatPriceCents(previewItem.originalUnitPriceCents, locale)}
+                </span>
+              ) : null}
+            </span>
+            <span className="text-store-ink shrink-0 font-semibold">
+              {productUnavailable
+                ? t('unavailable')
+                : problemCode
+                  ? t('needsAttention')
+                  : formatPriceCents(previewItem.lineTotalCents, locale)}
+            </span>
+          </div>
+        ) : null}
+
+        <div className="mt-3 grid gap-2">
+          <div className="flex items-center justify-between">
+            <div
+              className="flex items-center"
+              role="group"
+            >
+              <button
+                aria-label={t('decreaseAmount')}
+                className={amountButtonClass}
+                disabled={item.amount <= 1 || quantityControlsDisabled}
+                onClick={() =>
+                  updateAmount(item.productId, Math.max(1, item.amount - 1))
+                }
+                type="button"
+              >
+                <FaMinus aria-hidden="true" className="size-2.5" />
+              </button>
+              <input
+                className="border-store-border bg-store-surface text-store-ink focus:ring-store-accent/25 h-7 w-11 border-y text-center text-xs font-semibold outline-none focus:ring-2"
+                inputMode="numeric"
+                max={99}
+                min={1}
+                onChange={(event) =>
+                  updateAmount(
+                    item.productId,
+                    Number.parseInt(event.target.value, 10) || 1
+                  )
+                }
+                disabled={quantityControlsDisabled}
+                type="number"
+                value={item.amount}
+              />
+              <button
+                aria-label={t('increaseAmount')}
+                className={amountButtonClass}
+                disabled={
+                  quantityControlsDisabled ||
+                  item.amount >= maximumIncreaseAmount
+                }
+                onClick={() =>
+                  updateAmount(
+                    item.productId,
+                    Math.min(maximumIncreaseAmount, item.amount + 1)
+                  )
+                }
+                type="button"
+              >
+                <FaPlus aria-hidden="true" className="size-2.5" />
+              </button>
+            </div>
+            <button
+              aria-label={t('removeItem', { name: productName })}
+              className="inline-flex size-7 items-center justify-center text-red-700 transition hover:bg-red-50 hover:text-red-900 focus-visible:ring-2 focus-visible:ring-red-700/25 focus-visible:outline-none"
+              onClick={() => removeItem(item.productId)}
+              type="button"
+            >
+              <FaRegTrashAlt aria-hidden="true" className="size-3" />
+            </button>
+          </div>
+        </div>
+
+        {showPreviewSkeleton ? (
+          <div aria-hidden="true" className="mt-3 animate-pulse">
+            <div className="bg-store-border/60 h-3 w-36 rounded-sm" />
+          </div>
+        ) : problemCode === 'INSUFFICIENT_STOCK' &&
+          availableStock != null &&
+          availableStock > 0 ? (
+          <div className="mt-3 text-xs font-medium text-red-700">
+            <p>{t('insufficientStock', { count: availableStock })}</p>
+            <button
+              className="focus-visible:ring-store-accent/25 mt-1.5 underline underline-offset-4 transition hover:text-red-900 focus-visible:ring-2 focus-visible:outline-none"
+              onClick={() => updateAmount(item.productId, availableStock)}
+              type="button"
+            >
+              {t('setToAvailableStock', { count: availableStock })}
+            </button>
+          </div>
+        ) : noStockAvailable ? (
+          <p className="mt-3 text-xs font-medium text-red-700">
+            {t('outOfStockAction')}
+          </p>
+        ) : productUnavailable ? (
+          <p className="mt-3 text-xs font-medium text-red-700">
+            {t('unavailableAction')}
+          </p>
+        ) : atAvailableStockLimit && availableStock != null ? (
+          <p className="text-store-muted mt-3 text-xs">
+            {t('availableStockLimit', { count: availableStock })}
+          </p>
+        ) : null}
       </div>
     </div>
   )
